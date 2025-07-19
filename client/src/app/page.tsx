@@ -1,11 +1,8 @@
-import Header2 from "@/components/mvpblocks/header-2";
-import Image from "next/image";
-
+import LandingPage from "@/app/Landing/page";
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-     <h1>Hello World</h1>
-    <Header2 />
-    </div>
+    <div > 
+      <LandingPage />
+       </div>
   );
 }
