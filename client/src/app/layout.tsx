@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "School_Management_System",
-  description: "School_Management_System is a comprehensive platform for managing school operations, including student enrollment, attendance tracking, and academic performance monitoring.",
+  title: "EduManage - School Management System",
+  description: "EduManage is a comprehensive school management system that streamlines administrative tasks, enhances communication, and improves educational outcomes. Manage students, teachers, courses, attendance, and more with ease.",
 };
 
 export default function RootLayout({

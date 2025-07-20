@@ -5,18 +5,22 @@ import { easeInOut, motion, spring } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
-  Database,
-  Sparkles,
-  Zap,
+  GraduationCap,
+  Users,
+  BookOpen,
+  Calendar,
   ArrowUpRight,
+  School,
+  Award,
+  Clock,
 } from 'lucide-react';
 
 export default function AppHero() {
   // State for animated counters
   const [stats, setStats] = useState({
-    users: 0,
-    transactions: 0,
-    networks: 0,
+    students: 0,
+    teachers: 0,
+    courses: 0,
   });
 
   // State for particle positions and animations
@@ -44,23 +48,22 @@ export default function AppHero() {
   useEffect(() => {
     const interval = setInterval(() => {
       setStats((prev) => {
-        const newUsers = prev.users >= 20000 ? 20000 : prev.users + 500;
-        const newTransactions =
-          prev.transactions >= 1500000 ? 1500000 : prev.transactions + 37500;
-        const newNetworks = prev.networks >= 40 ? 40 : prev.networks + 1;
+        const newStudents = prev.students >= 2500 ? 2500 : prev.students + 50;
+        const newTeachers = prev.teachers >= 150 ? 150 : prev.teachers + 3;
+        const newCourses = prev.courses >= 120 ? 120 : prev.courses + 2;
 
         if (
-          newUsers === 20000 &&
-          newTransactions === 1500000 &&
-          newNetworks === 40
+          newStudents === 2500 &&
+          newTeachers === 150 &&
+          newCourses === 120
         ) {
           clearInterval(interval);
         }
 
         return {
-          users: newUsers,
-          transactions: newTransactions,
-          networks: newNetworks,
+          students: newStudents,
+          teachers: newTeachers,
+          courses: newCourses,
         };
       });
     }, 50);
@@ -89,7 +92,7 @@ export default function AppHero() {
     },
   };
 
-  // Floating animation for the cube
+  // Floating animation for the school building
   const floatingAnimation = {
     y: [0, -10, 0],
     transition: {
@@ -99,7 +102,7 @@ export default function AppHero() {
     },
   };
 
-  // Rotation animation for the orbital ring
+  // Rotation animation for the graduation cap
   const rotateAnimation = {
     rotate: 360,
     transition: {
@@ -147,7 +150,7 @@ export default function AppHero() {
 
   return (
     <section className="relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-black py-16 text-white sm:px-6 lg:px-8 lg:py-2">
-      <div className="absolute inset-0 z-0 h-full w-full rotate-180 items-center px-5 py-24 opacity-80 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
+      <div className="absolute inset-0 z-0 h-full w-full items-center px-5 py-24 opacity-80 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
       <svg
         id="noice"
         className="absolute inset-0 z-10 h-full w-full opacity-30"
@@ -201,7 +204,7 @@ export default function AppHero() {
           {particles.map((particle) => (
             <motion.div
               key={particle.id}
-              className="absolute h-1 w-1 rounded-full bg-white"
+              className="absolute h-1 w-1 rounded-full bg-purple-400"
               style={{
                 top: `${particle.top}%`,
                 left: `${particle.left}%`,
@@ -222,19 +225,20 @@ export default function AppHero() {
       </div>
 
       <div className="fadein-blur relative z-0 mx-auto mb-10 h-[300px] w-[300px] lg:absolute lg:right-1/2 lg:top-1/2 lg:mx-0 lg:mb-0 lg:h-[500px] lg:w-[500px] lg:-translate-y-2/3 lg:translate-x-1/2">
-        <img
-          src="https://blocks.mvp-subha.me/Adobe Express - file(1).png"
-          alt="Nexus Platform 3D Visualization"
-          className="h-full w-full object-contain drop-shadow-[0_0_35px_#3358ea85] transition-all duration-1000 hover:scale-110"
-        />
+        <motion.div
+          animate={floatingAnimation}
+          className="h-full w-full"
+        >
+          <School className="h-full w-full text-purple-400 opacity-80" />
+        </motion.div>
         <motion.div
           variants={tooltipVariants}
           className="absolute -left-4 top-4 rounded-lg border border-purple-500/30 bg-black/80 p-2 backdrop-blur-md lg:-left-20 lg:top-1/4"
         >
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-purple-400" />
+            <Users className="h-4 w-4 text-purple-400" />
             <span className="text-xs font-medium text-purple-200">
-              High Performance
+              Student Management
             </span>
           </div>
         </motion.div>
@@ -244,21 +248,21 @@ export default function AppHero() {
           className="absolute -right-4 top-1/2 rounded-lg border border-blue-500/30 bg-black/80 p-2 backdrop-blur-md lg:-right-24"
         >
           <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-blue-400" />
+            <BookOpen className="h-4 w-4 text-blue-400" />
             <span className="text-xs font-medium text-blue-200">
-              Decentralized Storage
+              Course Management
             </span>
           </div>
         </motion.div>
 
         <motion.div
           variants={tooltipVariants}
-          className="absolute bottom-4 left-4 rounded-lg border border-indigo-500/30 bg-black/80 p-2 backdrop-blur-md lg:bottom-1/4 lg:left-8"
+          className="absolute bottom-4 left-4 rounded-lg border border-purple-500/30 bg-black/80 p-2 backdrop-blur-md lg:bottom-1/4 lg:left-8"
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-indigo-400" />
-            <span className="text-xs font-medium text-indigo-200">
-              AI-Powered
+            <Calendar className="h-4 w-4 text-purple-400" />
+            <span className="text-xs font-medium text-purple-200">
+              Attendance Tracking
             </span>
           </div>
         </motion.div>
@@ -280,16 +284,16 @@ export default function AppHero() {
               <span className="mr-2 rounded-full bg-purple-500 px-2 py-0.5 text-xs font-semibold text-white">
                 New
               </span>
-              Introducing Nexus Platform
+              Introducing School Management System
             </motion.div>
 
             <motion.h1
               variants={itemVariants}
               className="mb-6 bg-gradient-to-r from-white/70 via-white to-slate-500/80 bg-clip-text text-3xl leading-tight text-transparent sm:text-4xl md:text-5xl lg:text-6xl"
             >
-              The Bridge Between <br className="hidden sm:inline" />
+              Streamline Your <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                AI and Web3
+                School Operations
               </span>
             </motion.h1>
 
@@ -298,49 +302,49 @@ export default function AppHero() {
               variants={itemVariants}
               className="mb-6 flex flex-wrap justify-center gap-4 md:gap-6 lg:justify-start"
             >
-              <div className="rounded-lg border border-purple-500/20 bg-black/40 px-4 py-2 backdrop-blur-sm">
-                <p className="text-2xl font-bold text-white">
-                  {stats.users.toLocaleString()}+
+              <div className="rounded-lg border border-purple-500/20 bg-black/40 px-4 py-2 backdrop-blur-sm shadow-sm">
+                <p className="text-2xl font-bold text-purple-400">
+                  {stats.students.toLocaleString()}+
                 </p>
-                <p className="text-xs text-gray-400">Active Users</p>
+                <p className="text-xs text-slate-300">Active Students</p>
               </div>
-              <div className="rounded-lg border border-blue-500/20 bg-black/40 px-4 py-2 backdrop-blur-sm">
-                <p className="text-2xl font-bold text-white">
-                  {stats.transactions.toLocaleString()}+
+              <div className="rounded-lg border border-blue-500/20 bg-black/40 px-4 py-2 backdrop-blur-sm shadow-sm">
+                <p className="text-2xl font-bold text-blue-400">
+                  {stats.teachers.toLocaleString()}+
                 </p>
-                <p className="text-xs text-gray-400">Transactions</p>
+                <p className="text-xs text-slate-300">Qualified Teachers</p>
               </div>
-              <div className="rounded-lg border border-indigo-500/20 bg-black/40 px-4 py-2 backdrop-blur-sm">
-                <p className="text-2xl font-bold text-white">
-                  {stats.networks}+
+              <div className="rounded-lg border border-purple-500/20 bg-black/40 px-4 py-2 backdrop-blur-sm shadow-sm">
+                <p className="text-2xl font-bold text-purple-400">
+                  {stats.courses}+
                 </p>
-                <p className="text-xs text-gray-400">Networks</p>
+                <p className="text-xs text-slate-300">Available Courses</p>
               </div>
             </motion.div>
 
-            {/* Integration badges */}
+            {/* Feature badges - integrated with content */}
             <motion.div
               variants={itemVariants}
-              className="mb-8 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
+              className="mb-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start"
             >
-              <span className="text-xs font-medium text-gray-400">
-                Integrates with:
+              <span className="text-xs font-medium text-slate-300">
+                Key Features:
               </span>
-              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-2 py-1 text-xs font-medium text-slate-300 backdrop-blur-sm transition-all hover:bg-purple-950">
-                <div className="h-2 w-2 rounded-full bg-blue-400"></div>
-                Ethereum
-              </div>
-              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-2 py-1 text-xs font-medium text-slate-300 backdrop-blur-sm transition-all hover:bg-purple-950">
-                <div className="h-2 w-2 rounded-full bg-purple-400"></div>
-                Solana
-              </div>
-              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-2 py-1 text-xs font-medium text-slate-300 backdrop-blur-sm transition-all hover:bg-purple-950">
+              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-300 backdrop-blur-sm transition-all hover:bg-purple-500/20">
                 <div className="h-2 w-2 rounded-full bg-green-400"></div>
-                OpenAI
+                Student Portal
               </div>
-              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-2 py-1 text-xs font-medium text-slate-300 backdrop-blur-sm transition-all hover:bg-purple-950">
-                <div className="h-2 w-2 rounded-full bg-yellow-400"></div>
-                +5 more
+              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-300 backdrop-blur-sm transition-all hover:bg-blue-500/20">
+                <div className="h-2 w-2 rounded-full bg-blue-400"></div>
+                Teacher Dashboard
+              </div>
+              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-300 backdrop-blur-sm transition-all hover:bg-purple-500/20">
+                <div className="h-2 w-2 rounded-full bg-purple-400"></div>
+                Attendance System
+              </div>
+              <div className="flex cursor-pointer items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-2 py-1 text-xs font-medium text-orange-300 backdrop-blur-sm transition-all hover:bg-orange-500/20">
+                <div className="h-2 w-2 rounded-full bg-orange-400"></div>
+                +8 more
               </div>
             </motion.div>
           </div>
@@ -350,25 +354,25 @@ export default function AppHero() {
               variants={itemVariants}
               className="mb-8 max-w-md px-6 text-center text-lg leading-relaxed text-slate-300/90 lg:text-end"
             >
-              Nexus connects AI tools with Web3 infrastructure, giving
-              developers the power to build beyond limits. One platform. Endless
-              potential.
+              Comprehensive school management solution that simplifies administrative tasks, 
+              enhances communication, and improves educational outcomes. Manage students, 
+              teachers, courses, and more with ease.
             </motion.p>
             <motion.div
               variants={itemVariants}
               className="mb-8 flex flex-col flex-wrap gap-4 sm:flex-row lg:justify-end"
             >
               <Button
-                className="group rounded-full border-t border-purple-400 bg-gradient-to-b from-purple-700 to-slate-950/80 px-6 py-6 text-white shadow-lg shadow-purple-600/20 transition-all hover:shadow-purple-600/40"
+                className="group rounded-full border-t border-purple-400 bg-gradient-to-b from-purple-600 to-blue-700 px-6 py-6 text-white shadow-lg shadow-purple-600/20 transition-all hover:shadow-purple-600/40"
                 size="lg"
               >
-                Start Building
+                Get Started
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
 
               <Button
                 variant="outline"
-                className="rounded-full border-purple-500/30 bg-transparent text-white hover:bg-purple-500/10 hover:text-white"
+                className="rounded-full border-purple-500/30 bg-transparent text-purple-400 hover:bg-purple-500/10 hover:text-purple-300"
                 size="lg"
               >
                 View Demo
@@ -378,30 +382,27 @@ export default function AppHero() {
             {/* Social proof */}
             <motion.div
               variants={itemVariants}
-              className="mx-auto flex items-center gap-3 rounded-full border border-slate-800 bg-slate-900/50 px-3 py-1 backdrop-blur-sm lg:mx-0 lg:ml-auto"
+              className="mx-auto flex items-center gap-3 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 backdrop-blur-sm lg:mx-0 lg:ml-auto"
             >
               <div className="flex -space-x-2">
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="h-6 w-6 overflow-hidden rounded-full border-2 border-slate-900 bg-slate-800"
+                    className="h-6 w-6 overflow-hidden rounded-full border-2 border-purple-500/30 bg-gradient-to-br from-purple-500 to-blue-600"
                   >
                     <div className="h-full w-full bg-gradient-to-br from-purple-500 to-blue-600 opacity-80"></div>
                   </div>
                 ))}
               </div>
               <span className="text-xs text-slate-300">
-                <span className="font-semibold text-white">500+</span>{' '}
-                developers already building
+                <span className="font-semibold text-white">100+</span>{' '}
+                schools already using our system
               </span>
               <ArrowUpRight className="h-3 w-3 text-purple-400" />
             </motion.div>
           </div>
         </motion.div>
       </motion.main>
-      <div className="absolute -bottom-40 left-1/2 right-auto h-96 w-20 -translate-x-1/2 -rotate-45 rounded-full bg-gray-200/30 blur-[80px] lg:left-auto lg:right-96 lg:translate-x-0"></div>
-      <div className="absolute -bottom-52 left-1/2 right-auto h-96 w-20 -translate-x-1/2 -rotate-45 rounded-full bg-gray-300/20 blur-[80px] lg:left-auto lg:right-auto lg:translate-x-0"></div>
-      <div className="absolute -bottom-60 left-1/2 right-auto h-96 w-10 -translate-x-20 -rotate-45 rounded-full bg-gray-300/20 blur-[80px] lg:left-auto lg:right-96 lg:-translate-x-40"></div>
     </section>
   );
 }
