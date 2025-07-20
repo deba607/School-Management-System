@@ -115,7 +115,7 @@ export default function Footer4col() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-700">
                 <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              <div>
+          <div>
                 <h3 className="text-xl font-bold text-white">EduManage</h3>
                 <p className={getDescriptionClass()}>School Management System</p>
               </div>
@@ -148,11 +148,11 @@ export default function Footer4col() {
                     <li key={item.name}>
                       <a href={item.href} className={getLinkClass()}>
                         {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
               <div className="mt-10 md:mt-0">
                 <h3 className={getTitleClass()}>Support</h3>
                 <ul role="list" className="mt-6 space-y-4">
@@ -160,11 +160,11 @@ export default function Footer4col() {
                     <li key={item.name}>
                       <a href={item.href} className={getLinkClass()}>
                         {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
             </div>
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
@@ -174,11 +174,11 @@ export default function Footer4col() {
                     <li key={item.name}>
                       <a href={item.href} className={getLinkClass()}>
                         {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
               <div className="mt-10 md:mt-0">
                 <h3 className={getTitleClass()}>Legal</h3>
                 <ul role="list" className="mt-6 space-y-4">
@@ -186,13 +186,13 @@ export default function Footer4col() {
                     <li key={item.name}>
                       <a href={item.href} className={getLinkClass()}>
                         {item.name}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
+        </div>
         </div>
         <div className={`mt-16 border-t ${getDividerClass()} pt-8 sm:mt-20 lg:mt-24`}>
           <p className={getCopyrightClass()}>

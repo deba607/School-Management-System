@@ -11,9 +11,13 @@ export async function POST(request: Request) {
     await connectDB();
 
     const body = await request.json();
+    console.log('Received school data:', JSON.stringify(body, null, 2));
+    
     const validation = validateSchool(body);
+    console.log('Validation result:', validation);
     
     if (!validation.success) {
+      console.log('Validation errors:', validation.errors);
       return NextResponse.json(
         { 
           success: false, 
@@ -87,7 +91,7 @@ export async function GET(request: Request) {
       let filteredSchools = schools;
       if (search) {
         filteredSchools = schools.filter(school => 
-          school.schoolName.toLowerCase().includes(search.toLowerCase()) ||
+          school.name.toLowerCase().includes(search.toLowerCase()) ||
           school.email.toLowerCase().includes(search.toLowerCase()) ||
           school.address.toLowerCase().includes(search.toLowerCase())
         );

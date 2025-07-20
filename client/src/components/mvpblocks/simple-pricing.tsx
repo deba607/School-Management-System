@@ -29,12 +29,12 @@ export default function SimplePricing() {
     };
   }, []);
 
-  const plans = [
-    {
+const plans = [
+  {
       name: 'Basic',
       price: isYearly ? 29 : 39,
       description: 'Perfect for small schools getting started',
-      features: [
+    features: [
         'Up to 100 students',
         'Basic reporting',
         'Email support',
@@ -54,7 +54,7 @@ export default function SimplePricing() {
       name: 'Professional',
       price: isYearly ? 79 : 99,
       description: 'Ideal for growing schools with advanced needs',
-      features: [
+    features: [
         'Up to 500 students',
         'Advanced reporting',
         'Priority support',
@@ -71,13 +71,13 @@ export default function SimplePricing() {
         'White-label solution',
         'Dedicated account manager',
       ],
-      popular: true,
-    },
-    {
-      name: 'Enterprise',
+    popular: true,
+  },
+  {
+    name: 'Enterprise',
       price: isYearly ? 199 : 249,
       description: 'For large schools with unlimited requirements',
-      features: [
+    features: [
         'Unlimited students',
         'Advanced reporting',
         'Priority support',
@@ -249,16 +249,16 @@ export default function SimplePricing() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className={getCardClass(plan.popular)}
-            >
-              {plan.popular && (
+              >
+                {plan.popular && (
                 <div className="absolute -top-5 left-0 right-0 mx-auto w-32 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 px-3 py-2 text-center text-sm font-medium text-white">
                   Most Popular
-                </div>
-              )}
+                  </div>
+                )}
               
               <div className="text-center">
                 <h3 className={`text-lg font-semibold leading-8 ${getCardTitleClass(plan.popular)}`}>
-                  {plan.name}
+                      {plan.name}
                 </h3>
                 <p className={`mt-4 text-sm leading-6 ${getCardDescriptionClass(plan.popular)}`}>
                   {plan.description}
@@ -266,16 +266,16 @@ export default function SimplePricing() {
                 <p className="mt-6 flex items-baseline justify-center gap-x-1">
                   <span className={`text-4xl font-bold tracking-tight ${getPriceClass(plan.popular)}`}>
                     ${plan.price}
-                  </span>
+                          </span>
                   <span className={`text-sm font-semibold leading-6 ${getCardDescriptionClass(plan.popular)}`}>
                     /month
-                  </span>
+                        </span>
                 </p>
-                <Button
+                  <Button
                   className={`mt-6 w-full rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 ${getButtonClass(plan.popular)}`}
                 >
                   Get started
-                </Button>
+                  </Button>
               </div>
 
               <ul className="mt-8 space-y-3 text-sm leading-6">

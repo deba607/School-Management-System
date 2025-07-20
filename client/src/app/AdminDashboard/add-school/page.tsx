@@ -12,13 +12,9 @@ import {
   MapPin, 
   Phone, 
   Image, 
-  Key, 
-  Lock, 
   CheckCircle2, 
   AlertCircle,
-  Upload,
-  Eye,
-  EyeOff
+  Upload
 } from 'lucide-react';
 import AdminHeader from '../admin-header';
 import AdminSidebar from '../admin-sidebar';
@@ -66,20 +62,21 @@ const fileInputStyles = `
 
 export default function AddSchool() {
   const [form, setForm] = useState({
-    schoolName: '',
+    name: '',
     email: '',
     address: '',
     phone: '',
-    token: '',
-    password: '',
-    confirmPassword: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: '',
+    website: '',
+    description: '',
   });
   const [pictures, setPictures] = useState<FileList | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -120,6 +117,7 @@ export default function AddSchool() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    console.log('Form field changed:', e.target.name, 'Value:', e.target.value);
     setForm({ ...form, [e.target.name]: e.target.value });
     
     // Animate the field on change
@@ -194,28 +192,55 @@ export default function AddSchool() {
       repeat: 1
     });
 
-    // Simple validation
-    if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      
-      // Animate error
-      gsap.to('.error-message', {
-        x: 0,
-        duration: 0.5,
-        ease: "power2.out"
-      });
-      return;
-    }
-
     try {
-      // Prepare form data
+      let base64Images: Array<{
+        originalName: string;
+        mimeType: string;
+        size: number;
+        base64Data: string;
+      }> = [];
+
+      // Upload and convert files to base64 if any are selected
+      if (pictures && pictures.length > 0) {
+        try {
+          const uploadFormData = new FormData();
+          Array.from(pictures).forEach((file) => {
+            uploadFormData.append('files', file);
+          });
+
+          console.log('Uploading files:', Array.from(pictures).map(f => f.name));
+
+          const uploadResponse = await fetch('/api/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          });
+
+          console.log('Upload response status:', uploadResponse.status);
+
+          const uploadResult = await uploadResponse.json();
+          console.log('Upload result:', uploadResult);
+
+          if (!uploadResponse.ok) {
+            throw new Error(uploadResult.error || 'Failed to upload images');
+          }
+
+          if (uploadResult.success) {
+            base64Images = uploadResult.data;
+            console.log('Base64 images:', base64Images.length);
+          }
+        } catch (uploadError: any) {
+          console.error('Upload error details:', uploadError);
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+      }
+
+      // Prepare form data with base64 image data
       const formData = {
         ...form,
-        pictures: selectedFiles // For now, we'll just send the file names
-        // In a real app, you'd upload files to a service like AWS S3 or Cloudinary
-        // and get back URLs to store in the database
+        pictures: base64Images
       };
+
+      console.log('Submitting form data:', JSON.stringify(formData, null, 2));
 
       // Submit to backend
       const response = await fetch('/api/schools', {
@@ -229,12 +254,16 @@ export default function AddSchool() {
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle validation errors specifically
+        if (result.details && Array.isArray(result.details)) {
+          throw new Error(result.details.join(', '));
+        }
         throw new Error(result.error || 'Failed to create school');
       }
 
       if (result.success) {
-        setSuccess(true);
-        setLoading(false);
+      setSuccess(true);
+      setLoading(false);
         
         // Success animation
         gsap.to('.success-message', {
@@ -244,16 +273,19 @@ export default function AddSchool() {
         });
         
         // Reset form
-        setForm({
-          schoolName: '',
-          email: '',
-          address: '',
-          phone: '',
-          token: '',
-          password: '',
-          confirmPassword: '',
-        });
-        setPictures(null);
+      setForm({
+        name: '',
+        email: '',
+        address: '',
+        phone: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: '',
+        website: '',
+        description: '',
+      });
+      setPictures(null);
         setSelectedFiles([]);
         
         // Clear file input
@@ -317,9 +349,9 @@ export default function AddSchool() {
             <style dangerouslySetInnerHTML={{ __html: fileInputStyles }} />
             <div className="max-w-2xl mx-auto">
               {/* Header */}
-              <motion.div
+    <motion.div
                 initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-center mb-8"
               >
@@ -351,22 +383,22 @@ export default function AddSchool() {
                     transition={{ duration: 0.5, ease: easeOut, delay: 0.5 }}
                     className="form-field"
                   >
-                    <Label htmlFor="schoolName" className="text-slate-200 flex items-center gap-2 mb-2">
+                    <Label htmlFor="name" className="text-slate-200 flex items-center gap-2 mb-2">
                       <Building2 className="w-4 h-4" />
                       School Name
                     </Label>
                     <div className="relative">
-                      <Input
-                        type="text"
-                        name="schoolName"
-                        id="schoolName"
+          <Input
+            type="text"
+            name="name"
+            id="name"
                         className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-                        value={form.schoolName}
-                        onChange={handleChange}
+            value={form.name}
+            onChange={handleChange}
                         placeholder="Enter school name"
-                        required
-                      />
-                    </div>
+            required
+          />
+        </div>
                   </motion.div>
 
                   {/* Email */}
@@ -381,16 +413,16 @@ export default function AddSchool() {
                       <Mail className="w-4 h-4" />
                       Official Email
                     </Label>
-                    <Input
-                      type="email"
-                      name="email"
-                      id="email"
+          <Input
+            type="email"
+            name="email"
+            id="email"
                       className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-                      value={form.email}
-                      onChange={handleChange}
+            value={form.email}
+            onChange={handleChange}
                       placeholder="school@example.com"
-                      required
-                    />
+            required
+          />
                   </motion.div>
 
                   {/* Address */}
@@ -405,15 +437,15 @@ export default function AddSchool() {
                       <MapPin className="w-4 h-4" />
                       Address
                     </Label>
-                    <Textarea
-                      name="address"
-                      id="address"
+          <Textarea
+            name="address"
+            id="address"
                       className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 min-h-[80px]"
-                      value={form.address}
-                      onChange={handleChange}
+            value={form.address}
+            onChange={handleChange}
                       placeholder="Enter complete address"
-                      required
-                    />
+            required
+          />
                   </motion.div>
 
                   {/* Phone */}
@@ -428,16 +460,16 @@ export default function AddSchool() {
                       <Phone className="w-4 h-4" />
                       Phone Number
                     </Label>
-                    <Input
-                      type="tel"
-                      name="phone"
-                      id="phone"
+          <Input
+            type="tel"
+            name="phone"
+            id="phone"
                       className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-                      value={form.phone}
-                      onChange={handleChange}
+            value={form.phone}
+            onChange={handleChange}
                       placeholder="+1 (555) 123-4567"
-                      required
-                    />
+            required
+          />
                   </motion.div>
 
                   {/* Pictures */}
@@ -453,15 +485,15 @@ export default function AddSchool() {
                       School Pictures
                     </Label>
                     <div className="relative">
-                      <Input
-                        type="file"
-                        name="pictures"
-                        id="pictures"
+          <Input
+            type="file"
+            name="pictures"
+            id="pictures"
                         className="file-input-custom bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-                        multiple
-                        onChange={handleFileChange}
-                        accept="image/*"
-                      />
+            multiple
+            onChange={handleFileChange}
+            accept="image/*"
+          />
                       <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
                     </div>
                     
@@ -560,14 +592,14 @@ export default function AddSchool() {
                                   <li>• Images will be optimized automatically</li>
                                 </ul>
                               </div>
-                            </div>
+        </div>
                           </motion.div>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </motion.div>
 
-                  {/* Token */}
+                  {/* City */}
                   <motion.div
                     variants={fieldVariants}
                     initial="hidden"
@@ -575,23 +607,23 @@ export default function AddSchool() {
                     transition={{ duration: 0.5, ease: easeOut, delay: 1.0 }}
                     className="form-field"
                   >
-                    <Label htmlFor="token" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Key className="w-4 h-4" />
-                      Access Token
+                    <Label htmlFor="city" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      City
                     </Label>
-                    <Input
-                      type="text"
-                      name="token"
-                      id="token"
+          <Input
+            type="text"
+            name="city"
+            id="city"
                       className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-                      value={form.token}
-                      onChange={handleChange}
-                      placeholder="Enter access token"
-                      required
-                    />
+            value={form.city}
+            onChange={handleChange}
+                      placeholder="Enter city"
+            required
+          />
                   </motion.div>
 
-                  {/* Password */}
+                  {/* State */}
                   <motion.div
                     variants={fieldVariants}
                     initial="hidden"
@@ -599,32 +631,23 @@ export default function AddSchool() {
                     transition={{ duration: 0.5, ease: easeOut, delay: 1.1 }}
                     className="form-field"
                   >
-                    <Label htmlFor="password" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Lock className="w-4 h-4" />
-                      Password
+                    <Label htmlFor="state" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      State
                     </Label>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        id="password"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 pr-10"
-                        value={form.password}
-                        onChange={handleChange}
-                        placeholder="Enter password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+          <Input
+            type="text"
+            name="state"
+            id="state"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
+            value={form.state}
+            onChange={handleChange}
+                      placeholder="Enter state"
+            required
+          />
                   </motion.div>
 
-                  {/* Confirm Password */}
+                  {/* ZIP Code */}
                   <motion.div
                     variants={fieldVariants}
                     initial="hidden"
@@ -632,29 +655,89 @@ export default function AddSchool() {
                     transition={{ duration: 0.5, ease: easeOut, delay: 1.2 }}
                     className="form-field"
                   >
-                    <Label htmlFor="confirmPassword" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Lock className="w-4 h-4" />
-                      Confirm Password
+                    <Label htmlFor="zipCode" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      ZIP Code
                     </Label>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        id="confirmPassword"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 pr-10"
-                        value={form.confirmPassword}
-                        onChange={handleChange}
-                        placeholder="Confirm password"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
+          <Input
+            type="text"
+            name="zipCode"
+            id="zipCode"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
+            value={form.zipCode}
+            onChange={handleChange}
+                      placeholder="Enter ZIP code"
+            required
+          />
+                  </motion.div>
+
+                  {/* Country */}
+                  <motion.div
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 0.5, ease: easeOut, delay: 1.3 }}
+                    className="form-field"
+                  >
+                    <Label htmlFor="country" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      Country
+                    </Label>
+          <Input
+            type="text"
+            name="country"
+            id="country"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
+            value={form.country}
+            onChange={handleChange}
+                      placeholder="Enter country"
+            required
+          />
+                  </motion.div>
+
+                  {/* Website */}
+                  <motion.div
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 0.5, ease: easeOut, delay: 1.4 }}
+                    className="form-field"
+                  >
+                    <Label htmlFor="website" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <Mail className="w-4 h-4" />
+                      Website
+                    </Label>
+          <Input
+            type="url"
+            name="website"
+            id="website"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
+            value={form.website}
+            onChange={handleChange}
+                      placeholder="https://school-website.com"
+          />
+                  </motion.div>
+
+                  {/* Description */}
+                  <motion.div
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 0.5, ease: easeOut, delay: 1.5 }}
+                    className="form-field"
+                  >
+                    <Label htmlFor="description" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <Building2 className="w-4 h-4" />
+                      Description
+                    </Label>
+          <Textarea
+            name="description"
+            id="description"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 min-h-[80px]"
+            value={form.description}
+            onChange={handleChange}
+                      placeholder="Enter school description"
+          />
                   </motion.div>
 
                   {/* Error Message */}
@@ -696,11 +779,11 @@ export default function AddSchool() {
                     className="form-field"
                   >
                     <motion.button
-                      type="submit"
+          type="submit"
                       variants={buttonVariants}
                       whileHover="hover"
                       whileTap="tap"
-                      disabled={loading}
+          disabled={loading}
                       className="submit-btn w-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
@@ -720,8 +803,8 @@ export default function AddSchool() {
                       )}
                     </motion.button>
                   </motion.div>
-                </form>
-              </motion.div>
+      </form>
+    </motion.div>
             </div>
           </motion.div>
         </main>

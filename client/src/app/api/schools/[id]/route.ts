@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { SchoolService } from '@/services/schoolService';
 import { validateSchoolUpdate } from '@/validators/SchoolValidators';
 import { connectDB } from '@/lib/mongoose';
@@ -7,23 +7,27 @@ const schoolService = new SchoolService();
 
 // GET - Get a specific school by ID
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
 
     const { id } = params;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'School ID is required' },
+        { status: 400 }
+      );
+    }
 
     try {
       const school = await schoolService.getSchoolById(id);
       
       if (!school) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'School not found' 
-          },
+          { success: false, error: 'School not found' },
           { status: 404 }
         );
       }
@@ -35,8 +39,8 @@ export async function GET(
         },
         { status: 200 }
       );
-    } catch (error) {
-      console.error('SchoolService GET by ID error:', error);
+    } catch (error: any) {
+      console.error('SchoolService error:', error);
       return NextResponse.json(
         { 
           success: false, 
@@ -46,7 +50,7 @@ export async function GET(
       );
     }
   } catch (error) {
-    console.error('SchoolRoute GET by ID error:', error);
+    console.error('SchoolRoute GET error:', error);
     return NextResponse.json(
       { 
         success: false, 
@@ -59,7 +63,7 @@ export async function GET(
 
 // PUT - Update a specific school
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -67,9 +71,21 @@ export async function PUT(
 
     const { id } = params;
     const body = await request.json();
+    
+    console.log('Updating school:', id, 'Data:', JSON.stringify(body, null, 2));
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'School ID is required' },
+        { status: 400 }
+      );
+    }
+
     const validation = validateSchoolUpdate(body);
+    console.log('Update validation result:', validation);
     
     if (!validation.success) {
+      console.log('Update validation errors:', validation.errors);
       return NextResponse.json(
         { 
           success: false, 
@@ -85,14 +101,13 @@ export async function PUT(
       
       if (!school) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'School not found' 
-          },
+          { success: false, error: 'School not found' },
           { status: 404 }
         );
       }
 
+      console.log('School updated successfully:', school._id);
+      
       return NextResponse.json(
         { 
           success: true, 
@@ -102,7 +117,7 @@ export async function PUT(
         { status: 200 }
       );
     } catch (error: any) {
-      console.error('SchoolService PUT error:', error);
+      console.error('SchoolService update error:', error);
       
       if (error.message.includes('already exists')) {
         return NextResponse.json(
@@ -136,27 +151,33 @@ export async function PUT(
 
 // DELETE - Delete a specific school
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
 
     const { id } = params;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'School ID is required' },
+        { status: 400 }
+      );
+    }
 
     try {
       const deleted = await schoolService.deleteSchool(id);
       
       if (!deleted) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'School not found' 
-          },
+          { success: false, error: 'School not found' },
           { status: 404 }
         );
       }
 
+      console.log('School deleted successfully:', id);
+      
       return NextResponse.json(
         { 
           success: true, 
@@ -164,8 +185,8 @@ export async function DELETE(
         },
         { status: 200 }
       );
-    } catch (error) {
-      console.error('SchoolService DELETE error:', error);
+    } catch (error: any) {
+      console.error('SchoolService delete error:', error);
       return NextResponse.json(
         { 
           success: false, 

@@ -1,5 +1,4 @@
 import { School, ISchool } from '@/models/School';
-import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/mongoose';
 
 export class SchoolService {
@@ -13,22 +12,8 @@ export class SchoolService {
         throw new Error('School with this email already exists');
       }
 
-      // Check if school with same token already exists
-      const existingToken = await School.findOne({ token: schoolData.token });
-      if (existingToken) {
-        throw new Error('School with this token already exists');
-      }
-
-      // Hash the password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(schoolData.password, saltRounds);
-
-      // Create new school with hashed password
-      const school = new School({
-        ...schoolData,
-        password: hashedPassword
-      });
-
+      // Create new school
+      const school = new School(schoolData);
       const savedSchool = await school.save();
       return savedSchool;
     } catch (error) {
@@ -73,28 +58,10 @@ export class SchoolService {
     }
   }
 
-  async getSchoolByToken(token: string): Promise<ISchool | null> {
-    await connectDB();
-    
-    try {
-      const school = await School.findOne({ token });
-      return school;
-    } catch (error) {
-      console.error('Error fetching school by token:', error);
-      throw error;
-    }
-  }
-
   async updateSchool(id: string, updateData: Partial<ISchool>): Promise<ISchool | null> {
     await connectDB();
     
     try {
-      // If password is being updated, hash it
-      if (updateData.password) {
-        const saltRounds = 12;
-        updateData.password = await bcrypt.hash(updateData.password, saltRounds);
-      }
-
       const school = await School.findByIdAndUpdate(
         id,
         { ...updateData, updatedAt: new Date() },
@@ -119,35 +86,19 @@ export class SchoolService {
     }
   }
 
-  async validateSchoolCredentials(email: string, password: string): Promise<ISchool | null> {
-    await connectDB();
-    
-    try {
-      const school = await School.findOne({ email });
-      if (!school) {
-        return null;
-      }
-
-      const isPasswordValid = await bcrypt.compare(password, school.password);
-      if (!isPasswordValid) {
-        return null;
-      }
-
-      return school;
-    } catch (error) {
-      console.error('Error validating school credentials:', error);
-      throw error;
-    }
-  }
-
-  async updateSchoolPictures(id: string, pictureUrls: string[]): Promise<ISchool | null> {
+  async updateSchoolPictures(id: string, pictures: Array<{
+    originalName: string;
+    mimeType: string;
+    size: number;
+    base64Data: string;
+  }>): Promise<ISchool | null> {
     await connectDB();
     
     try {
       const school = await School.findByIdAndUpdate(
         id,
-        { pictures: pictureUrls, updatedAt: new Date() },
-        { new: true }
+        { pictures, updatedAt: new Date() },
+        { new: true, runValidators: true }
       );
       return school;
     } catch (error) {
