@@ -10,7 +10,59 @@ import { GraduationCap, Mail, Phone, MapPin, Send } from 'lucide-react';
 
 export default function ContactUs1() {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
+  // Theme management
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem('theme');
+      setIsDarkMode(savedTheme === 'dark' || savedTheme === null);
+    };
+    handleThemeChange();
+    window.addEventListener('storage', handleThemeChange);
+    window.addEventListener('themeChanged', handleThemeChange);
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const res = await fetch('/api/contactroute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(
+          Array.isArray(data.error)
+            ? data.error.map((err: any) => err.message).join(', ')
+            : data.error || 'Something went wrong.'
+        );
+      } else {
+        setSuccess(true);
+        setForm({ name: '', email: '', phone: '', message: '' });
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Theme management
   useEffect(() => {
     const handleThemeChange = () => {
@@ -140,19 +192,22 @@ export default function ContactUs1() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto w-full max-w-2xl lg:mx-0"
           >
-            <form action="#" method="POST" className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="school-name" className={getLabelClass()}>
-                  School Name
+                <Label htmlFor="name" className={getLabelClass()}>
+                  Name
                 </Label>
                 <div className="mt-2.5">
                   <Input
                     type="text"
-                    name="school-name"
-                    id="school-name"
-                    autoComplete="organization"
+                    name="name"
+                    id="name"
+                    autoComplete="name"
                     className={getInputClass()}
-                    placeholder="Enter your school name"
+                    placeholder="Enter your name"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
@@ -168,6 +223,9 @@ export default function ContactUs1() {
                     autoComplete="email"
                     className={getInputClass()}
                     placeholder="Enter your email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
@@ -183,6 +241,9 @@ export default function ContactUs1() {
                     autoComplete="tel"
                     className={getInputClass()}
                     placeholder="Enter your phone number"
+                    value={form.phone}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
@@ -197,16 +258,22 @@ export default function ContactUs1() {
                     rows={9}
                     className={getTextareaClass()}
                     placeholder="Tell us about your school's needs"
+                    value={form.message}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
+              {error && <div className="text-red-500 text-sm">{error}</div>}
+              {success && <div className="text-green-500 text-sm">Message sent successfully!</div>}
               <div>
                 <Button
                   type="submit"
                   className="w-full rounded-md bg-gradient-to-r from-purple-600 to-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:from-purple-500 hover:to-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+                  disabled={loading}
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  Send Message
+                  {loading ? 'Sending...' : 'Send Message'}
                 </Button>
               </div>
             </form>
