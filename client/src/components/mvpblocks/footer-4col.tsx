@@ -1,204 +1,203 @@
-import {
-  Facebook,
-  Instagram,
-  Twitter,
-  Mail,
-  MapPin,
-  Phone,
-  School,
-  Users,
-  BookOpen,
-  Calendar,
-  Award,
-  GraduationCap,
-} from "lucide-react";
-import Link from "next/link";
+'use client';
 
-const data = {
-  facebookLink: "https://facebook.com/edumanage",
-  instaLink: "https://instagram.com/edumanage",
-  twitterLink: "https://twitter.com/edumanage",
-  services: {
-    studentPortal: "/student-portal",
-    teacherDashboard: "/teacher-dashboard",
-    attendanceSystem: "/attendance-system",
-    gradeManagement: "/grade-management",
-  },
-  about: {
-    aboutUs: "/about-us",
-    ourMission: "/our-mission",
-    privacyPolicy: "/privacy-policy",
-    termsOfService: "/terms-of-service",
-  },
-  help: {
-    faqs: "/faqs",
-    support: "/support",
-    documentation: "/documentation",
-  },
-  contact: {
-    email: "info@edumanage.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Education Street, Learning City, LC 12345",
-  },
-  company: {
-    name: "EduManage",
-    description:
-      "Comprehensive school management system that streamlines administrative tasks, enhances communication, and improves educational outcomes. Manage students, teachers, courses, and more with ease.",
-    logo: "/logo.webp",
-  },
-};
+import { useState, useEffect } from 'react';
+import { GraduationCap, Mail, Phone, MapPin } from 'lucide-react';
 
-const socialLinks = [
-  { icon: Facebook, label: "Facebook", href: data.facebookLink },
-  { icon: Instagram, label: "Instagram", href: data.instaLink },
-  { icon: Twitter, label: "Twitter", href: data.twitterLink },
-];
+export default function Footer4col() {
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
-const aboutLinks = [
-  { text: "About Us", href: data.about.aboutUs },
-  { text: "Our Mission", href: data.about.ourMission },
-  { text: "Privacy Policy", href: data.about.privacyPolicy },
-  { text: "Terms of Service", href: data.about.termsOfService },
-];
+  // Theme management
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem('theme');
+      setIsDarkMode(savedTheme === 'dark' || savedTheme === null);
+    };
 
-const serviceLinks = [
-  { text: "Student Portal", href: data.services.studentPortal },
-  { text: "Teacher Dashboard", href: data.services.teacherDashboard },
-  { text: "Attendance System", href: data.services.attendanceSystem },
-  { text: "Grade Management", href: data.services.gradeManagement },
-];
+    // Initial theme check
+    handleThemeChange();
 
-const helpfulLinks = [
-  { text: "FAQs", href: data.help.faqs },
-  { text: "Support", href: data.help.support },
-  { text: "Documentation", href: data.help.documentation, hasIndicator: true },
-];
+    // Listen for theme changes
+    window.addEventListener('storage', handleThemeChange);
+    window.addEventListener('themeChanged', handleThemeChange);
 
-const contactInfo = [
-  { icon: Mail, text: data.contact.email },
-  { icon: Phone, text: data.contact.phone },
-  { icon: MapPin, text: data.contact.address, isAddress: true },
-];
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
 
-export default function Footer4Col() {
+  // Theme-based styles
+  const getFooterClass = () => {
+    return isDarkMode 
+      ? "bg-black"
+      : "bg-slate-50";
+  };
+
+  const getContainerClass = () => {
+    return isDarkMode 
+      ? "mx-auto max-w-7xl px-6 lg:px-8"
+      : "mx-auto max-w-7xl px-6 lg:px-8";
+  };
+
+  const getTitleClass = () => {
+    return isDarkMode 
+      ? "text-sm font-semibold leading-6 text-white"
+      : "text-sm font-semibold leading-6 text-gray-900";
+  };
+
+  const getLinkClass = () => {
+    return isDarkMode 
+      ? "text-sm leading-6 text-slate-300 hover:text-white"
+      : "text-sm leading-6 text-gray-600 hover:text-gray-900";
+  };
+
+  const getDescriptionClass = () => {
+    return isDarkMode 
+      ? "text-sm leading-6 text-slate-300"
+      : "text-sm leading-6 text-gray-600";
+  };
+
+  const getContactItemClass = () => {
+    return isDarkMode 
+      ? "flex items-center gap-x-3 text-slate-300"
+      : "flex items-center gap-x-3 text-gray-600";
+  };
+
+  const getDividerClass = () => {
+    return isDarkMode 
+      ? "border-slate-700"
+      : "border-gray-200";
+  };
+
+  const getCopyrightClass = () => {
+    return isDarkMode 
+      ? "text-xs leading-5 text-slate-400"
+      : "text-xs leading-5 text-gray-500";
+  };
+
+  const navigation = {
+    solutions: [
+      { name: 'Student Management', href: '#' },
+      { name: 'Teacher Dashboard', href: '#' },
+      { name: 'Attendance Tracking', href: '#' },
+      { name: 'Performance Analytics', href: '#' },
+      { name: 'Communication Hub', href: '#' },
+    ],
+    support: [
+      { name: 'Documentation', href: '#' },
+      { name: 'Guides', href: '#' },
+      { name: 'API Reference', href: '#' },
+      { name: 'Community', href: '#' },
+      { name: 'Contact Support', href: '#' },
+    ],
+    company: [
+      { name: 'About', href: '#' },
+      { name: 'Blog', href: '#' },
+      { name: 'Careers', href: '#' },
+      { name: 'Press', href: '#' },
+      { name: 'Partners', href: '#' },
+    ],
+    legal: [
+      { name: 'Privacy', href: '#' },
+      { name: 'Terms', href: '#' },
+      { name: 'Cookie Policy', href: '#' },
+      { name: 'Licenses', href: '#' },
+      { name: 'Settings', href: '#' },
+    ],
+  };
+
   return (
-    <footer className="mt-16 w-full place-self-end rounded-t-xl bg-black border-t border-purple-500/30">
-      <div className="mx-auto max-w-screen-xl px-4 pb-6 pt-16 sm:px-6 lg:px-8 lg:pt-24">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div>
-            <div className="flex justify-center gap-2 text-purple-400 sm:justify-start">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600">
-                <School className="h-5 w-5 text-white" />
+    <footer className={getFooterClass()}>
+      <div className={getContainerClass()}>
+        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+          <div className="space-y-8">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-700">
+                <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-semibold text-white">{data.company.name}</span>
+              <div>
+                <h3 className="text-xl font-bold text-white">EduManage</h3>
+                <p className={getDescriptionClass()}>School Management System</p>
+              </div>
             </div>
-
-            <p className="mt-6 max-w-md text-center leading-relaxed text-slate-300/90 sm:max-w-xs sm:text-left">
-              {data.company.description}
+            <p className={getDescriptionClass()}>
+              Comprehensive school management solution that simplifies administrative tasks, 
+              enhances communication, and improves educational outcomes.
             </p>
-
-            <ul className="mt-8 flex justify-center gap-6 sm:justify-start md:gap-8">
-              {socialLinks.map(({ icon: Icon, label, href }) => (
-                <li key={label}>
-                  <Link href={href} className="text-slate-400 transition hover:text-purple-400">
-                    <span className="sr-only">{label}</span>
-                    <Icon className="size-6" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              <div className={getContactItemClass()}>
+                <Mail className="h-4 w-4 text-purple-400" />
+                <span>contact@edumanage.com</span>
+              </div>
+              <div className={getContactItemClass()}>
+                <Phone className="h-4 w-4 text-purple-400" />
+                <span>+1 (555) 123-4567</span>
+              </div>
+              <div className={getContactItemClass()}>
+                <MapPin className="h-4 w-4 text-purple-400" />
+                <span>123 Education St, Learning City, LC 12345</span>
+              </div>
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:col-span-2">
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-white">About Us</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {aboutLinks.map(({ text, href }) => (
-                  <li key={text}>
-                    <a className="text-slate-400 transition hover:text-purple-400" href={href}>
-                      {text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+            <div className="md:grid md:grid-cols-2 md:gap-8">
+              <div>
+                <h3 className={getTitleClass()}>Solutions</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {navigation.solutions.map((item) => (
+                    <li key={item.name}>
+                      <a href={item.href} className={getLinkClass()}>
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-10 md:mt-0">
+                <h3 className={getTitleClass()}>Support</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {navigation.support.map((item) => (
+                    <li key={item.name}>
+                      <a href={item.href} className={getLinkClass()}>
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-white">Our Services</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {serviceLinks.map(({ text, href }) => (
-                  <li key={text}>
-                    <a className="text-slate-400 transition hover:text-purple-400" href={href}>
-                      {text}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-white">Helpful Links</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {helpfulLinks.map(({ text, href, hasIndicator }) => (
-                  <li key={text}>
-                    <a
-                      href={href}
-                      className={`${
-                        hasIndicator
-                          ? "group flex justify-center gap-1.5 sm:justify-start"
-                          : "text-slate-400 transition hover:text-purple-400"
-                      }`}
-                    >
-                      <span className="text-slate-400 transition hover:text-purple-400">{text}</span>
-                      {hasIndicator && (
-                        <span className="relative flex size-2">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-500 opacity-75" />
-                          <span className="relative inline-flex size-2 rounded-full bg-purple-500" />
-                        </span>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="text-center sm:text-left">
-              <p className="text-lg font-medium text-white">Contact Us</p>
-              <ul className="mt-8 space-y-4 text-sm">
-                {contactInfo.map(({ icon: Icon, text, isAddress }) => (
-                  <li key={text}>
-                    <a
-                      className="flex items-center justify-center gap-1.5 sm:justify-start"
-                      href="#"
-                    >
-                      <Icon className="size-5 shrink-0 text-purple-400 shadow-sm" />
-                      {isAddress ? (
-                        <address className="-mt-0.5 flex-1 not-italic text-slate-400 transition">
-                          {text}
-                        </address>
-                      ) : (
-                        <span className="flex-1 text-slate-400 transition">
-                          {text}
-                        </span>
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            <div className="md:grid md:grid-cols-2 md:gap-8">
+              <div>
+                <h3 className={getTitleClass()}>Company</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {navigation.company.map((item) => (
+                    <li key={item.name}>
+                      <a href={item.href} className={getLinkClass()}>
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mt-10 md:mt-0">
+                <h3 className={getTitleClass()}>Legal</h3>
+                <ul role="list" className="mt-6 space-y-4">
+                  {navigation.legal.map((item) => (
+                    <li key={item.name}>
+                      <a href={item.href} className={getLinkClass()}>
+                        {item.name}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="mt-12 border-t border-purple-500/30 pt-6">
-          <div className="text-center sm:flex sm:justify-between sm:text-left">
-            <p className="text-sm text-slate-400">
-              <span className="block sm:inline">© 2024 EduManage. All rights reserved.</span>
-            </p>
-
-            <p className="text-slate-400 mt-4 text-sm transition sm:order-first sm:mt-0">
-              <span className="block sm:inline">Empowering Education Through Technology</span>
-            </p>
-          </div>
+        <div className={`mt-16 border-t ${getDividerClass()} pt-8 sm:mt-20 lg:mt-24`}>
+          <p className={getCopyrightClass()}>
+            &copy; 2024 EduManage. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

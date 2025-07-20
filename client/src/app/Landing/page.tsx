@@ -37,6 +37,7 @@ interface AnimationRefs {
 const LandingPage: React.FC = () => {
   // State for particles to avoid hydration mismatch
   const [particles, setParticles] = useState<ParticleProps[]>([]);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Refs for animation triggers
   const refs: AnimationRefs = {
@@ -72,6 +73,32 @@ const LandingPage: React.FC = () => {
     };
 
     setParticles(generateParticles());
+  }, []);
+
+  // Theme management
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem('theme');
+      setIsDarkMode(savedTheme === 'dark' || savedTheme === null);
+    };
+
+    // Initial theme check
+    handleThemeChange();
+
+    // Listen for theme changes
+    window.addEventListener('storage', handleThemeChange);
+    
+    // Custom event listener for theme changes from header
+    const handleCustomThemeChange = () => {
+      handleThemeChange();
+    };
+    
+    window.addEventListener('themeChanged', handleCustomThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChanged', handleCustomThemeChange);
+    };
   }, []);
 
   // GSAP Animations
@@ -252,20 +279,60 @@ const LandingPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Theme-based styles
+  const getBackgroundStyle = () => {
+    if (isDarkMode) {
+      return {
+        backgroundImage: 'radial-gradient(125% 125% at 50% 10%, #000 40%, #63e 100%)',
+        backgroundSize: '200% 200%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      };
+    } else {
+      return {
+        backgroundImage: 'radial-gradient(125% 125% at 50% 10%, #f8fafc 40%, #e0e7ff 100%)',
+        backgroundSize: '200% 200%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      };
+    }
+  };
+
+  const getContainerClass = () => {
+    return isDarkMode 
+      ? "relative min-h-screen bg-black" 
+      : "relative min-h-screen bg-slate-50";
+  };
+
+  const getParticleColor = () => {
+    return isDarkMode ? "bg-purple-400/30" : "bg-purple-600/40";
+  };
+
+  const getScrollProgressClass = () => {
+    return isDarkMode 
+      ? "fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-blue-500 origin-left z-50"
+      : "fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-blue-600 origin-left z-50";
+  };
+
+  const getFloatingButtonClass = () => {
+    return isDarkMode
+      ? "fixed bottom-8 right-8 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-700 text-white shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 transition-all duration-300"
+      : "fixed bottom-8 right-8 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-700 text-white shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 transition-all duration-300";
+  };
+
   return (
     <motion.div
       ref={refs.container}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="relative min-h-screen bg-black"
+      className={getContainerClass()}
     >
       {/* Animated Background */}
       <motion.div
         style={{ 
           y: backgroundY,
-          background: 'radial-gradient(125% 125% at 50% 10%, #000 40%, #63e 100%)',
-          backgroundSize: '200% 200%',
+          ...getBackgroundStyle(),
         }}
         className="fixed inset-0 z-0 animated-bg"
       />
@@ -275,7 +342,7 @@ const LandingPage: React.FC = () => {
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="floating-particle absolute h-2 w-2 rounded-full bg-purple-400/30"
+            className={`floating-particle absolute h-2 w-2 rounded-full ${getParticleColor()}`}
             style={{
               left: `${particle.left}%`,
               top: `${particle.top}%`,
@@ -311,6 +378,7 @@ const LandingPage: React.FC = () => {
         initial="hidden"
         animate={isHeroInView ? 'visible' : 'hidden'}
         className="relative z-20"
+        id="features-section"
       >
         <AppHero />
       </motion.div>
@@ -364,13 +432,13 @@ const LandingPage: React.FC = () => {
 
       {/* Scroll Progress Indicator */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-blue-500 origin-left z-50"
+        className={getScrollProgressClass()}
         style={{ scaleX: scrollYProgress }}
       />
 
       {/* Floating Action Button */}
       <motion.button
-        className="fixed bottom-8 right-8 z-50 h-14 w-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-700 text-white shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 transition-all duration-300"
+        className={getFloatingButtonClass()}
         whileHover={{ scale: 1.1, rotate: 180 }}
         whileTap={{ scale: 0.9 }}
         onClick={handleScrollToTop}

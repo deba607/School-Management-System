@@ -1,299 +1,257 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import Earth from '@/components/ui/globe';
-import { SparklesCore } from '@/components/ui/sparkles';
 import { Label } from '@/components/ui/label';
-import { Check, Loader2, School, Users, BookOpen, Calendar, Award, GraduationCap } from 'lucide-react';
+import { GraduationCap, Mail, Phone, MapPin, Send } from 'lucide-react';
 
 export default function ContactUs1() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [school, setSchool] = useState('');
-  const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
-  const formRef = useRef(null);
-  const isInView = useInView(formRef, { once: true, amount: 0.3 });
+  // Theme management
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem('theme');
+      setIsDarkMode(savedTheme === 'dark' || savedTheme === null);
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    // Initial theme check
+    handleThemeChange();
 
-    try {
-      // Perform form submission logic here
-      console.log('Form submitted:', { name, email, school, phone, message });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setName('');
-      setEmail('');
-      setSchool('');
-      setPhone('');
-      setMessage('');
-      setIsSubmitted(true);
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 5000);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Listen for theme changes
+    window.addEventListener('storage', handleThemeChange);
+    window.addEventListener('themeChanged', handleThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
+  }, []);
+
+  // Theme-based styles
+  const getSectionClass = () => {
+    return isDarkMode 
+      ? "py-24 bg-black"
+      : "py-24 bg-slate-50";
+  };
+
+  const getContainerClass = () => {
+    return isDarkMode 
+      ? "mx-auto max-w-7xl px-6 lg:px-8"
+      : "mx-auto max-w-7xl px-6 lg:px-8";
+  };
+
+  const getTitleClass = () => {
+    return isDarkMode 
+      ? "text-center text-4xl font-bold tracking-tight text-white sm:text-6xl"
+      : "text-center text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl";
+  };
+
+  const getSubtitleClass = () => {
+    return isDarkMode 
+      ? "mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-slate-300"
+      : "mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-600";
+  };
+
+  const getFormClass = () => {
+    return isDarkMode 
+      ? "mx-auto mt-16 max-w-xl sm:mt-20"
+      : "mx-auto mt-16 max-w-xl sm:mt-20";
+  };
+
+  const getInputClass = () => {
+    return isDarkMode 
+      ? "block w-full rounded-lg border-0 bg-black/40 px-4 py-3 text-white shadow-sm ring-1 ring-inset ring-purple-500/30 placeholder:text-slate-300 placeholder:opacity-100 focus:ring-2 focus:ring-inset focus:ring-purple-500 sm:text-sm sm:leading-6"
+      : "block w-full rounded-lg border-0 bg-white px-4 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-500 placeholder:opacity-100 focus:ring-2 focus:ring-inset focus:ring-purple-500 sm:text-sm sm:leading-6";
+  };
+
+  const getTextareaClass = () => {
+    return isDarkMode 
+      ? "block w-full rounded-lg border-0 bg-black/40 px-4 py-3 text-white shadow-sm ring-1 ring-inset ring-purple-500/30 placeholder:text-slate-300 placeholder:opacity-100 focus:ring-2 focus:ring-inset focus:ring-purple-500 sm:text-sm sm:leading-6 resize-none"
+      : "block w-full rounded-lg border-0 bg-white px-4 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-500 placeholder:opacity-100 focus:ring-2 focus:ring-inset focus:ring-purple-500 sm:text-sm sm:leading-6 resize-none";
+  };
+
+  const getLabelClass = () => {
+    return isDarkMode 
+      ? "block text-sm font-medium leading-6 text-slate-300"
+      : "block text-sm font-medium leading-6 text-gray-900";
+  };
+
+  const getVisualClass = () => {
+    return isDarkMode 
+      ? "relative isolate overflow-hidden bg-gradient-to-br from-purple-600/20 via-blue-600/20 to-purple-600/20 px-6 py-24 shadow-2xl sm:px-24 xl:py-32"
+      : "relative isolate overflow-hidden bg-gradient-to-br from-purple-600/10 via-blue-600/10 to-purple-600/10 px-6 py-24 shadow-2xl sm:px-24 xl:py-32";
+  };
+
+  const getVisualTitleClass = () => {
+    return isDarkMode 
+      ? "text-3xl font-bold tracking-tight text-white sm:text-4xl"
+      : "text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl";
+  };
+
+  const getVisualDescriptionClass = () => {
+    return isDarkMode 
+      ? "mt-6 text-lg leading-8 text-slate-300"
+      : "mt-6 text-lg leading-8 text-gray-600";
+  };
+
+  const getContactInfoClass = () => {
+    return isDarkMode 
+      ? "mt-10 text-base leading-7 text-slate-300"
+      : "mt-10 text-base leading-7 text-gray-600";
+  };
+
+  const getContactItemClass = () => {
+    return isDarkMode 
+      ? "flex items-center gap-x-3 text-slate-300"
+      : "flex items-center gap-x-3 text-gray-600";
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-black py-16 md:py-24 text-white">
-      <div className="absolute inset-0 z-0 h-full w-full items-center px-5 py-24 opacity-80 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
-      <div className="absolute inset-0 z-0">
-        {/* Radial gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/30 via-black/70 to-gray-950 blur-3xl"></div>
-
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="h-full w-full bg-[linear-gradient(to_right,rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+    <section className={getSectionClass()}>
+      <div className={getContainerClass()}>
+        <div className="mx-auto max-w-2xl text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className={getTitleClass()}
+          >
+            Get in Touch
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className={getSubtitleClass()}
+          >
+            Ready to transform your school management? Contact us today to learn more about our comprehensive solution.
+          </motion.p>
         </div>
 
-        {/* Enhanced glow spots */}
-        <div className="absolute -left-20 top-20 h-60 w-60 rounded-full bg-purple-600/20 blur-[100px]"></div>
-        <div className="absolute -right-20 bottom-20 h-60 w-60 rounded-full bg-blue-600/20 blur-[100px]"></div>
-        <motion.div
-          animate={{
-            opacity: [0.5, 0.8, 0.5],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute left-1/4 top-1/3 h-40 w-40 rounded-full bg-indigo-500/10 blur-[80px]"
-        ></motion.div>
-        <motion.div
-          animate={{
-            opacity: [0.5, 0.8, 0.5],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute bottom-1/3 right-1/4 h-40 w-40 rounded-full bg-purple-500/10 blur-[80px]"
-        ></motion.div>
-      </div>
-
-      <div className="container relative z-10 mx-auto px-4 md:px-6">
-        <div className="mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-purple-500/30 bg-black/40 shadow-xl backdrop-blur-sm">
-          <div className="grid md:grid-cols-2">
-            <div className="relative p-6 md:p-10" ref={formRef}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={
-                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                }
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="flex w-full gap-2"
-              >
-                <h2 className="mb-2 bg-gradient-to-r from-white/70 via-white to-slate-500/80 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-                  Get In
-                </h2>
-                <span className="relative z-10 w-full text-4xl font-bold italic tracking-tight text-purple-400 md:text-5xl">
-                  Touch
-                </span>
-                <SparklesCore
-                  id="tsparticles"
-                  background="transparent"
-                  minSize={0.6}
-                  maxSize={1.4}
-                  particleDensity={500}
-                  className="absolute inset-0 top-0 h-24 w-full"
-                  particleColor="#a855f7"
-                />
-              </motion.div>
-
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={
-                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }
-                }
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mt-4 text-slate-300/90"
-              >
-                Ready to transform your school management? Contact our team to learn more about how EduManage can help your institution.
-              </motion.p>
-
-              <motion.form
-                initial={{ opacity: 0, y: 20 }}
-                animate={
-                  isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                }
-                transition={{ duration: 0.5, delay: 0.3 }}
-                onSubmit={handleSubmit}
-                className="mt-8 space-y-6"
-              >
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <motion.div
-                    className="space-y-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <Label htmlFor="name" className="text-white">Full Name</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter your full name"
-                      className="bg-black/40 border-purple-500/30 text-white placeholder:text-slate-400 focus:border-purple-500"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    className="space-y-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Label htmlFor="email" className="text-white">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      className="bg-black/40 border-purple-500/30 text-white placeholder:text-slate-400 focus:border-purple-500"
-                      required
-                    />
-                  </motion.div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <motion.div
-                    className="space-y-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <Label htmlFor="school" className="text-white">School/Institution Name</Label>
-                    <Input
-                      id="school"
-                      value={school}
-                      onChange={(e) => setSchool(e.target.value)}
-                      placeholder="Enter your school name"
-                      className="bg-black/40 border-purple-500/30 text-white placeholder:text-slate-400 focus:border-purple-500"
-                      required
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    className="space-y-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
-                  >
-                    <Label htmlFor="phone" className="text-white">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Enter your phone number"
-                      className="bg-black/40 border-purple-500/30 text-white placeholder:text-slate-400 focus:border-purple-500"
-                    />
-                  </motion.div>
-                </div>
-
-                <motion.div
-                  className="space-y-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <Label htmlFor="message" className="text-white">Message</Label>
-                  <Textarea
-                    id="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Tell us about your school management needs..."
-                    className="h-40 resize-none bg-black/40 border-purple-500/30 text-white placeholder:text-slate-400 focus:border-purple-500"
-                    required
+        <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-x-8 gap-y-20 lg:grid-cols-2">
+          {/* Contact Form */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mx-auto w-full max-w-2xl lg:mx-0"
+          >
+            <form action="#" method="POST" className="space-y-6">
+              <div>
+                <Label htmlFor="school-name" className={getLabelClass()}>
+                  School Name
+                </Label>
+                <div className="mt-2.5">
+                  <Input
+                    type="text"
+                    name="school-name"
+                    id="school-name"
+                    autoComplete="organization"
+                    className={getInputClass()}
+                    placeholder="Enter your school name"
                   />
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full"
-                >
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:from-purple-700 hover:to-blue-700"
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Sending...
-                      </span>
-                    ) : isSubmitted ? (
-                      <span className="flex items-center justify-center">
-                        <Check className="mr-2 h-4 w-4" />
-                        Message Sent!
-                      </span>
-                    ) : (
-                      <span>Send Message</span>
-                    )}
-                  </Button>
-                </motion.div>
-              </motion.form>
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="relative my-8 flex items-center justify-center overflow-hidden pr-8"
-            >
-              <div className="flex flex-col items-center justify-center overflow-hidden">
-                <article className="relative mx-auto h-[350px] min-h-60 max-w-[450px] overflow-hidden rounded-3xl border border-purple-500/30 bg-gradient-to-b from-purple-600 to-blue-600 p-6 text-3xl tracking-tight text-white md:h-[450px] md:min-h-80 md:p-8 md:text-4xl md:leading-[1.05] lg:text-5xl">
-                  <div className="flex items-center gap-4 mb-6">
-                    <School className="h-12 w-12 text-white" />
-                    <div>
-                      <h3 className="text-2xl font-bold">EduManage</h3>
-                      <p className="text-sm opacity-90">School Management System</p>
-                    </div>
-                  </div>
-                  <p className="text-lg leading-relaxed">
-                    Transform your educational institution with our comprehensive school management solution.
-                  </p>
-                  <div className="mt-8 grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Users className="h-4 w-4" />
-                      <span>Student Portal</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <BookOpen className="h-4 w-4" />
-                      <span>Course Management</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4" />
-                      <span>Attendance</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Award className="h-4 w-4" />
-                      <span>Grade Management</span>
-                    </div>
-                  </div>
-                </article>
+                </div>
               </div>
-            </motion.div>
-          </div>
+              <div>
+                <Label htmlFor="email" className={getLabelClass()}>
+                  Email address
+                </Label>
+                <div className="mt-2.5">
+                  <Input
+                    type="email"
+                    name="email"
+                    id="email"
+                    autoComplete="email"
+                    className={getInputClass()}
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="phone" className={getLabelClass()}>
+                  Phone number
+                </Label>
+                <div className="mt-2.5">
+                  <Input
+                    type="tel"
+                    name="phone"
+                    id="phone"
+                    autoComplete="tel"
+                    className={getInputClass()}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="message" className={getLabelClass()}>
+                  Message
+                </Label>
+                <div className="mt-2.5">
+                  <Textarea
+                    name="message"
+                    id="message"
+                    rows={9}
+                    className={getTextareaClass()}
+                    placeholder="Tell us about your school's needs"
+                  />
+                </div>
+              </div>
+              <div>
+                <Button
+                  type="submit"
+                  className="w-full rounded-md bg-gradient-to-r from-purple-600 to-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:from-purple-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Message
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+
+          {/* Visual Section */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className={getVisualClass()}
+          >
+            <div className="absolute inset-0 -z-10 opacity-20">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-600 opacity-20"></div>
+            </div>
+            
+            <div className="mx-auto max-w-2xl text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
+                <GraduationCap className="h-8 w-8 text-white" />
+              </div>
+              <h2 className={getVisualTitleClass()}>
+                Ready to Get Started?
+              </h2>
+              <p className={getVisualDescriptionClass()}>
+                Join hundreds of schools already using our platform to streamline their operations and improve educational outcomes.
+              </p>
+              
+              <div className={getContactInfoClass()}>
+                <div className="space-y-4">
+                  <div className={getContactItemClass()}>
+                    <Mail className="h-5 w-5 text-purple-400" />
+                    <span>contact@edumanage.com</span>
+                  </div>
+                  <div className={getContactItemClass()}>
+                    <Phone className="h-5 w-5 text-purple-400" />
+                    <span>+1 (555) 123-4567</span>
+                  </div>
+                  <div className={getContactItemClass()}>
+                    <MapPin className="h-5 w-5 text-purple-400" />
+                    <span>123 Education St, Learning City, LC 12345</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

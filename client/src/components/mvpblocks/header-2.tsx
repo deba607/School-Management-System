@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Menu,
@@ -14,14 +14,50 @@ import {
   Calendar,
   Settings,
   LogOut,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export default function Header2() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // Theme toggle function
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    // You can add more theme logic here
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    }
+    
+    // Dispatch custom event for other components to listen to
+    window.dispatchEvent(new CustomEvent('themeChanged'));
+  };
+
+  // Initialize theme on component mount
+  useEffect(() => {
+    // Check if user has a saved preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark');
+    } else {
+      // Default to dark mode
+      setIsDarkMode(true);
+    }
+  }, []);
+
+  // Save theme preference
+  useEffect(() => {
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   // Smooth scroll to section function
   const scrollToSection = (sectionId: string) => {
@@ -83,6 +119,21 @@ export default function Header2() {
               className="h-9 w-64 rounded-lg border border-purple-500/30 bg-black/40 pl-10 pr-4 text-sm text-white placeholder-slate-400 backdrop-blur-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
             />
           </div>
+
+          {/* Theme Toggle */}
+          <Button
+            onClick={toggleTheme}
+            variant="ghost"
+            size="sm"
+            className="relative h-9 w-9 rounded-lg border border-purple-500/30 bg-black/40 p-0 text-slate-300 hover:bg-purple-500/10 hover:text-purple-400 transition-all duration-200"
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
 
           {/* Notifications */}
           <Button
@@ -158,6 +209,25 @@ export default function Header2() {
 
             {/* Mobile Actions */}
             <div className="mt-6 space-y-3">
+              {/* Mobile Theme Toggle */}
+              <Button
+                onClick={toggleTheme}
+                variant="outline"
+                className="w-full rounded-lg border-purple-500/30 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 hover:text-purple-300"
+              >
+                {isDarkMode ? (
+                  <>
+                    <Sun className="mr-2 h-4 w-4" />
+                    Switch to Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="mr-2 h-4 w-4" />
+                    Switch to Dark Mode
+                  </>
+                )}
+              </Button>
+              
               <Button
                 className="w-full rounded-lg border border-purple-500/30 bg-gradient-to-b from-purple-600 to-blue-700 px-4 py-3 text-white shadow-lg shadow-purple-600/20 transition-all hover:shadow-purple-600/40"
               >

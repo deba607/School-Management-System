@@ -1,306 +1,301 @@
 'use client';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import NumberFlow from '@number-flow/react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { Sparkles, ArrowRight, Check, Star, Zap, Shield, School, Users, BookOpen, Calendar, Award, GraduationCap } from 'lucide-react';
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-
-const plans = [
-  {
-    id: 'basic',
-    name: 'Basic',
-    icon: Star,
-    price: {
-      monthly: 29,
-      yearly: 24,
-    },
-    description:
-      'Perfect for small schools and educational institutions getting started.',
-    features: [
-      'Up to 200 students',
-      'Basic student management',
-      'Attendance tracking',
-      'Grade management',
-      'Email support',
-      'Mobile app access',
-    ],
-    cta: 'Start Free Trial',
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    icon: School,
-    price: {
-      monthly: 79,
-      yearly: 64,
-    },
-    description: 'Comprehensive solution for growing schools and districts.',
-    features: [
-      'Up to 1,000 students',
-      'Advanced student portal',
-      'Teacher dashboard',
-      'Parent communication',
-      'Advanced reporting',
-      'Priority support',
-      'Custom branding',
-      'API access',
-    ],
-    cta: 'Start Free Trial',
-    popular: true,
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    icon: Shield,
-    price: {
-      monthly: 'Custom pricing',
-      yearly: 'Custom pricing',
-    },
-    description: 'Enterprise-grade solution for large districts and institutions.',
-    features: [
-      'Unlimited students',
-      'Multi-campus support',
-      'Advanced analytics',
-      'Custom integrations',
-      'Dedicated support',
-      'SIS integration',
-      'Advanced security',
-      'Custom development',
-    ],
-    cta: 'Contact Sales',
-  },
-];
+import { Button } from '@/components/ui/button';
+import { Check, X } from 'lucide-react';
 
 export default function SimplePricing() {
-  const [frequency, setFrequency] = useState<string>('monthly');
-  const [mounted, setMounted] = useState(false);
+  const [isYearly, setIsYearly] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Theme management
   useEffect(() => {
-    setMounted(true);
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem('theme');
+      setIsDarkMode(savedTheme === 'dark' || savedTheme === null);
+    };
+
+    // Initial theme check
+    handleThemeChange();
+
+    // Listen for theme changes
+    window.addEventListener('storage', handleThemeChange);
+    window.addEventListener('themeChanged', handleThemeChange);
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChanged', handleThemeChange);
+    };
   }, []);
 
-  if (!mounted) return null;
+  const plans = [
+    {
+      name: 'Basic',
+      price: isYearly ? 29 : 39,
+      description: 'Perfect for small schools getting started',
+      features: [
+        'Up to 100 students',
+        'Basic reporting',
+        'Email support',
+        'Mobile app access',
+        'Attendance tracking',
+        'Basic analytics',
+      ],
+      notIncluded: [
+        'Advanced analytics',
+        'Multi-campus support',
+        'Priority support',
+        'Custom integrations',
+      ],
+      popular: false,
+    },
+    {
+      name: 'Professional',
+      price: isYearly ? 79 : 99,
+      description: 'Ideal for growing schools with advanced needs',
+      features: [
+        'Up to 500 students',
+        'Advanced reporting',
+        'Priority support',
+        'Mobile app access',
+        'Attendance tracking',
+        'Advanced analytics',
+        'Multi-campus support',
+        'Custom integrations',
+        'API access',
+        'Data export',
+      ],
+      notIncluded: [
+        'Unlimited students',
+        'White-label solution',
+        'Dedicated account manager',
+      ],
+      popular: true,
+    },
+    {
+      name: 'Enterprise',
+      price: isYearly ? 199 : 249,
+      description: 'For large schools with unlimited requirements',
+      features: [
+        'Unlimited students',
+        'Advanced reporting',
+        'Priority support',
+        'Mobile app access',
+        'Attendance tracking',
+        'Advanced analytics',
+        'Multi-campus support',
+        'Custom integrations',
+        'API access',
+        'Data export',
+        'White-label solution',
+        'Dedicated account manager',
+        'Custom development',
+        'SLA guarantee',
+      ],
+      notIncluded: [],
+      popular: false,
+    },
+  ];
+
+  // Theme-based styles
+  const getSectionClass = () => {
+    return isDarkMode 
+      ? "py-24 bg-black"
+      : "py-24 bg-slate-50";
+  };
+
+  const getContainerClass = () => {
+    return isDarkMode 
+      ? "mx-auto max-w-7xl px-6 lg:px-8"
+      : "mx-auto max-w-7xl px-6 lg:px-8";
+  };
+
+  const getTitleClass = () => {
+    return isDarkMode 
+      ? "text-center text-4xl font-bold tracking-tight text-white sm:text-6xl"
+      : "text-center text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl";
+  };
+
+  const getSubtitleClass = () => {
+    return isDarkMode 
+      ? "mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-slate-300"
+      : "mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-600";
+  };
+
+  const getToggleClass = () => {
+    return isDarkMode 
+      ? "relative inline-flex h-6 w-11 items-center rounded-full bg-purple-600"
+      : "relative inline-flex h-6 w-11 items-center rounded-full bg-purple-600";
+  };
+
+  const getToggleTextClass = () => {
+    return isDarkMode 
+      ? "text-sm font-medium text-slate-300"
+      : "text-sm font-medium text-gray-600";
+  };
+
+  const getCardClass = (popular: boolean) => {
+    const baseClass = "pricing-card relative rounded-3xl p-8 ring-1 ring-gray-200 xl:p-10";
+    const popularClass = isDarkMode 
+      ? "bg-purple-600 ring-purple-500"
+      : "bg-purple-600 ring-purple-500";
+    const regularClass = isDarkMode 
+      ? "bg-black/40 ring-purple-500/20"
+      : "bg-white ring-gray-200 shadow-lg";
+    
+    return popular ? `${baseClass} ${popularClass}` : `${baseClass} ${regularClass}`;
+  };
+
+  const getCardTitleClass = (popular: boolean) => {
+    if (popular) {
+      return "text-white";
+    }
+    return isDarkMode ? "text-white" : "text-gray-900";
+  };
+
+  const getCardDescriptionClass = (popular: boolean) => {
+    if (popular) {
+      return "text-purple-200";
+    }
+    return isDarkMode ? "text-slate-300" : "text-gray-500";
+  };
+
+  const getPriceClass = (popular: boolean) => {
+    if (popular) {
+      return "text-white";
+    }
+    return isDarkMode ? "text-white" : "text-gray-900";
+  };
+
+  const getFeatureClass = (popular: boolean) => {
+    if (popular) {
+      return "text-white";
+    }
+    return isDarkMode ? "text-slate-300" : "text-gray-600";
+  };
+
+  const getNotIncludedClass = () => {
+    return isDarkMode ? "text-slate-400" : "text-gray-400";
+  };
+
+  const getButtonClass = (popular: boolean) => {
+    if (popular) {
+      return "bg-white text-purple-600 hover:bg-purple-50";
+    }
+    return isDarkMode 
+      ? "bg-purple-600 text-white hover:bg-purple-500"
+      : "bg-purple-600 text-white hover:bg-purple-500";
+  };
 
   return (
-    <div className="not-prose relative flex w-full flex-col gap-16 overflow-hidden px-4 py-24 text-center sm:px-8 bg-black text-white">
-      <div className="absolute inset-0 z-0 h-full w-full items-center px-5 py-24 opacity-80 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
-      <div className="absolute inset-0 z-0">
-        {/* Radial gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/30 via-black/70 to-gray-950 blur-3xl"></div>
-
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="h-full w-full bg-[linear-gradient(to_right,rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
-        </div>
-
-        {/* Enhanced glow spots */}
-        <div className="absolute -left-20 top-20 h-60 w-60 rounded-full bg-purple-600/20 blur-[100px]"></div>
-        <div className="absolute -right-20 bottom-20 h-60 w-60 rounded-full bg-blue-600/20 blur-[100px]"></div>
-        <motion.div
-          animate={{
-            opacity: [0.5, 0.8, 0.5],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute left-1/4 top-1/3 h-40 w-40 rounded-full bg-indigo-500/10 blur-[80px]"
-        ></motion.div>
-        <motion.div
-          animate={{
-            opacity: [0.5, 0.8, 0.5],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute bottom-1/3 right-1/4 h-40 w-40 rounded-full bg-purple-500/10 blur-[80px]"
-        ></motion.div>
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center justify-center gap-8">
-        <div className="flex flex-col items-center space-y-2">
-          <Badge
-            variant="outline"
-            className="mb-4 rounded-full border-purple-500/30 bg-purple-500/10 px-4 py-1 text-sm font-medium text-purple-300"
+    <section className={getSectionClass()}>
+      <div className={getContainerClass()}>
+        <div className="mx-auto max-w-2xl text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className={getTitleClass()}
           >
-            <Sparkles className="mr-1 h-3.5 w-3.5 animate-pulse text-purple-400" />
-            Pricing Plans
-          </Badge>
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gradient-to-r from-white/70 via-white to-slate-500/80 bg-clip-text text-4xl font-bold text-transparent sm:text-5xl"
-          >
-            Choose the perfect plan for your school
-          </motion.h1>
+            Simple, Transparent Pricing
+          </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="max-w-md pt-2 text-lg text-slate-300/90"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className={getSubtitleClass()}
           >
-            Simple, transparent pricing that scales with your educational institution. 
-            No hidden fees, no surprises.
+            Choose the perfect plan for your school. All plans include our core features with no hidden fees.
           </motion.p>
+          
+          {/* Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-8 flex items-center justify-center gap-4"
+          >
+            <span className={getToggleTextClass()}>Monthly</span>
+            <button
+              onClick={() => setIsYearly(!isYearly)}
+              className={getToggleClass()}
+            >
+              <span
+                className={`${
+                  isYearly ? 'translate-x-6' : 'translate-x-1'
+                } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+              />
+            </button>
+            <span className={getToggleTextClass()}>
+              Yearly
+              <span className="ml-2 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                Save 20%
+              </span>
+            </span>
+          </motion.div>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="mx-auto mt-16 grid max-w-lg grid-cols-1 gap-y-6 sm:mt-20 sm:max-w-none sm:grid-cols-3"
         >
-          <Tabs
-            defaultValue={frequency}
-            onValueChange={setFrequency}
-            className="inline-block rounded-full bg-black/40 p-1 shadow-sm border border-purple-500/20"
-          >
-            <TabsList className="bg-transparent">
-              <TabsTrigger
-                value="monthly"
-                className="rounded-full transition-all duration-300 data-[state=active]:bg-purple-500/20 data-[state=active]:shadow-sm text-white"
-              >
-                Monthly
-              </TabsTrigger>
-              <TabsTrigger
-                value="yearly"
-                className="rounded-full transition-all duration-300 data-[state=active]:bg-purple-500/20 data-[state=active]:shadow-sm text-white"
-              >
-                Yearly
-                <Badge
-                  variant="secondary"
-                  className="ml-2 bg-purple-500/20 text-purple-300 hover:bg-purple-500/30"
-                >
-                  20% off
-                </Badge>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </motion.div>
-
-        <div className="mt-8 grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
           {plans.map((plan, index) => (
             <motion.div
-              key={plan.id}
+              key={plan.name}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="flex"
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className={getCardClass(plan.popular)}
             >
-              <Card
-                className={cn(
-                  'relative h-full w-full bg-black/40 text-left transition-all duration-300 hover:shadow-lg border-purple-500/20 backdrop-blur-sm',
-                  plan.popular
-                    ? 'shadow-md ring-2 ring-purple-500/50 shadow-purple-600/20'
-                    : 'hover:border-purple-500/30',
-                  plan.popular &&
-                    'bg-gradient-to-b from-purple-500/[0.03] to-transparent',
-                )}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-0 right-0 mx-auto w-fit">
-                    <Badge className="rounded-full bg-purple-600 px-4 py-1 text-white shadow-sm">
-                      <Sparkles className="mr-1 h-3.5 w-3.5" />
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader className={cn('pb-4', plan.popular && 'pt-8')}>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-full',
-                        plan.popular
-                          ? 'bg-purple-500/20 text-purple-400'
-                          : 'bg-gray-800 text-gray-300',
-                      )}
-                    >
-                      <plan.icon className="h-4 w-4" />
-                    </div>
-                    <CardTitle
-                      className={cn(
-                        'text-xl font-bold text-white',
-                        plan.popular && 'text-purple-400',
-                      )}
-                    >
-                      {plan.name}
-                    </CardTitle>
-                  </div>
-                  <CardDescription className="text-slate-300/90">
-                    {plan.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-1">
-                      {typeof plan.price[frequency as keyof typeof plan.price] === 'number' ? (
-                        <>
-                          <span className="text-3xl font-bold text-white">
-                            $
-                          </span>
-                          <NumberFlow
-                            value={plan.price[frequency as keyof typeof plan.price] as number}
-                            className="text-3xl font-bold text-white"
-                          />
-                          <span className="text-slate-300/90">/{frequency === 'monthly' ? 'mo' : 'mo'}</span>
-                        </>
-                      ) : (
-                        <span className="text-2xl font-bold text-white">
-                          {plan.price[frequency as keyof typeof plan.price]}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <motion.li
-                        key={feature}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 + index * 0.1 + featureIndex * 0.05 }}
-                        className="flex items-center gap-2 text-sm text-slate-300/90"
-                      >
-                        <Check className="h-4 w-4 text-green-400" />
-                        {feature}
-                      </motion.li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className={cn(
-                      'w-full',
-                      plan.popular
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700'
-                        : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-600',
-                    )}
-                  >
-                    {plan.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </Card>
+              {plan.popular && (
+                <div className="absolute -top-5 left-0 right-0 mx-auto w-32 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 px-3 py-2 text-center text-sm font-medium text-white">
+                  Most Popular
+                </div>
+              )}
+              
+              <div className="text-center">
+                <h3 className={`text-lg font-semibold leading-8 ${getCardTitleClass(plan.popular)}`}>
+                  {plan.name}
+                </h3>
+                <p className={`mt-4 text-sm leading-6 ${getCardDescriptionClass(plan.popular)}`}>
+                  {plan.description}
+                </p>
+                <p className="mt-6 flex items-baseline justify-center gap-x-1">
+                  <span className={`text-4xl font-bold tracking-tight ${getPriceClass(plan.popular)}`}>
+                    ${plan.price}
+                  </span>
+                  <span className={`text-sm font-semibold leading-6 ${getCardDescriptionClass(plan.popular)}`}>
+                    /month
+                  </span>
+                </p>
+                <Button
+                  className={`mt-6 w-full rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${getButtonClass(plan.popular)}`}
+                >
+                  Get started
+                </Button>
+              </div>
+
+              <ul className="mt-8 space-y-3 text-sm leading-6">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex gap-x-3">
+                    <Check className={`h-6 w-5 flex-none ${plan.popular ? 'text-white' : 'text-purple-600'}`} />
+                    <span className={getFeatureClass(plan.popular)}>{feature}</span>
+                  </li>
+                ))}
+                {plan.notIncluded.map((feature) => (
+                  <li key={feature} className="flex gap-x-3">
+                    <X className="h-6 w-5 flex-none text-gray-400" />
+                    <span className={getNotIncludedClass()}>{feature}</span>
+                  </li>
+                ))}
+              </ul>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 }
