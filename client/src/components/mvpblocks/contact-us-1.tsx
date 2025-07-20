@@ -203,7 +203,7 @@ export default function ContactUs1() {
               <div>
                 <Button
                   type="submit"
-                  className="w-full rounded-md bg-gradient-to-r from-purple-600 to-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:from-purple-500 hover:to-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+                  className="w-full rounded-md bg-gradient-to-r from-purple-600 to-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:from-purple-500 hover:to-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
                 >
                   <Send className="mr-2 h-4 w-4" />
                   Send Message

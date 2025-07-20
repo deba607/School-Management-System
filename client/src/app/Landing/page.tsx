@@ -378,7 +378,6 @@ const LandingPage: React.FC = () => {
         initial="hidden"
         animate={isHeroInView ? 'visible' : 'hidden'}
         className="relative z-20"
-        id="features-section"
       >
         <AppHero />
       </motion.div>
@@ -389,7 +388,7 @@ const LandingPage: React.FC = () => {
         variants={fadeInUpVariants}
         initial="hidden"
         animate={isFeaturesInView ? 'visible' : 'hidden'}
-        className="relative z-20"
+        className="relative z-20 scroll-mt-4"
         id="features-section"
       >
         <FeaturesSection />

@@ -272,7 +272,7 @@ export default function SimplePricing() {
                   </span>
                 </p>
                 <Button
-                  className={`mt-6 w-full rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${getButtonClass(plan.popular)}`}
+                  className={`mt-6 w-full rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 ${getButtonClass(plan.popular)}`}
                 >
                   Get started
                 </Button>
