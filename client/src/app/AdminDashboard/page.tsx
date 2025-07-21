@@ -8,7 +8,7 @@ export default function AdminDashboardPage() {
       <AdminHeader />
       <div className="flex flex-1">
         <AdminSidebar />
-        <main className="flex-1 p-6 md:p-10">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10">
           <AdminHome />
         </main>
       </div>

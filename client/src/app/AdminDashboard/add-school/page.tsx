@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, easeOut } from 'framer-motion';
 import { gsap } from 'gsap';
-// import { Button } from '@/components/ui/button'; // Removed unused import
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -25,12 +24,12 @@ const fileInputStyles = `
     background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
     border: none;
     color: white;
-    padding: 0.625rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    margin-right: 1rem;
+    margin-right: 0.75rem;
     cursor: pointer;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     transition: all 0.3s ease;
   }
   
@@ -44,12 +43,12 @@ const fileInputStyles = `
     background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
     border: none;
     color: white;
-    padding: 0.625rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    margin-right: 1rem;
+    margin-right: 0.75rem;
     cursor: pointer;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     transition: all 0.3s ease;
   }
   
@@ -57,6 +56,18 @@ const fileInputStyles = `
     background: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+  }
+  
+  @media (min-width: 640px) {
+    .file-input-custom::-webkit-file-upload-button {
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .file-input-custom::file-selector-button {
+      padding: 0.625rem 1rem;
+      font-size: 0.875rem;
+    }
   }
 `;
 
@@ -112,187 +123,83 @@ export default function AddSchool() {
     });
 
     return () => {
-      tl.kill();
+      gsap.killTweensOf(containerRef.current);
     };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    console.log('Form field changed:', e.target.name, 'Value:', e.target.value);
-    setForm({ ...form, [e.target.name]: e.target.value });
-    
-    // Animate the field on change
-    gsap.to(e.target, {
-      scale: 1.02,
-      duration: 0.1,
-      yoyo: true,
-      repeat: 1
-    });
+    const { name, value } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    
-    if (files && files.length > 0) {
-      // Validate files
-      const validFiles: File[] = [];
-      const invalidFiles: string[] = [];
-      
-      Array.from(files).forEach(file => {
-        // Check file type
-        if (!file.type.startsWith('image/')) {
-          invalidFiles.push(`${file.name} (not an image)`);
-          return;
-        }
-        
-        // Check file size (5MB limit)
-        if (file.size > 5 * 1024 * 1024) {
-          invalidFiles.push(`${file.name} (too large)`);
-          return;
-        }
-        
-        validFiles.push(file);
-      });
-      
-      // Show error for invalid files
-      if (invalidFiles.length > 0) {
-        setError(`Invalid files: ${invalidFiles.join(', ')}`);
-        setTimeout(() => setError(null), 5000);
+    if (files) {
+      setPictures(files);
+      const fileNames: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        fileNames.push(files[i].name);
       }
-      
-      // Update state with valid files
-      if (validFiles.length > 0) {
-        const dt = new DataTransfer();
-        validFiles.forEach(file => dt.items.add(file));
-        setPictures(dt.files);
-        setSelectedFiles(validFiles.map(file => file.name));
-        
-        // Animate file selection
-        gsap.fromTo('.file-preview', 
-          { scale: 0, opacity: 0 },
-          { scale: 1, opacity: 1, duration: 0.3, stagger: 0.1 }
-        );
-      }
-    } else {
-      setPictures(null);
-      setSelectedFiles([]);
+      setSelectedFiles(fileNames);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(false);
     setLoading(true);
-
-    // Animate form submission
-    gsap.to(formRef.current, {
-      scale: 0.98,
-      duration: 0.2,
-      yoyo: true,
-      repeat: 1
-    });
+    setError(null);
 
     try {
-      let base64Images: Array<{
-        originalName: string;
-        mimeType: string;
-        size: number;
-        base64Data: string;
-      }> = [];
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('address', form.address);
+      formData.append('phone', form.phone);
+      formData.append('city', form.city);
+      formData.append('state', form.state);
+      formData.append('zipCode', form.zipCode);
+      formData.append('country', form.country);
+      formData.append('website', form.website);
+      formData.append('description', form.description);
 
-      // Upload and convert files to base64 if any are selected
-      if (pictures && pictures.length > 0) {
-        try {
-          const uploadFormData = new FormData();
-          Array.from(pictures).forEach((file) => {
-            uploadFormData.append('files', file);
-          });
-
-          console.log('Uploading files:', Array.from(pictures).map(f => f.name));
-
-          const uploadResponse = await fetch('/api/upload', {
-            method: 'POST',
-            body: uploadFormData,
-          });
-
-          console.log('Upload response status:', uploadResponse.status);
-
-          const uploadResult = await uploadResponse.json();
-          console.log('Upload result:', uploadResult);
-
-          if (!uploadResponse.ok) {
-            throw new Error(uploadResult.error || 'Failed to upload images');
-          }
-
-          if (uploadResult.success) {
-            base64Images = uploadResult.data;
-            console.log('Base64 images:', base64Images.length);
-          }
-        } catch (uploadError: any) {
-          console.error('Upload error details:', uploadError);
-          throw new Error(`Upload failed: ${uploadError.message}`);
+      if (pictures) {
+        for (let i = 0; i < pictures.length; i++) {
+          formData.append('pictures', pictures[i]);
         }
       }
 
-      // Prepare form data with base64 image data
-      const formData = {
-        ...form,
-        pictures: base64Images
-      };
-
-      console.log('Submitting form data:', JSON.stringify(formData, null, 2));
-
-      // Submit to backend
       const response = await fetch('/api/schools', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formData,
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        // Handle validation errors specifically
-        if (result.details && Array.isArray(result.details)) {
-          throw new Error(result.details.join(', '));
-        }
         throw new Error(result.error || 'Failed to create school');
       }
 
       if (result.success) {
-      setSuccess(true);
-      setLoading(false);
-        
-        // Success animation
-        gsap.to('.success-message', {
-          scale: 1,
-          duration: 0.6,
-          ease: "back.out(1.7)"
+        setSuccess(true);
+        setForm({
+          name: '',
+          email: '',
+          address: '',
+          phone: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: '',
+          website: '',
+          description: '',
         });
-        
-        // Reset form
-      setForm({
-        name: '',
-        email: '',
-        address: '',
-        phone: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: '',
-        website: '',
-        description: '',
-      });
-      setPictures(null);
+        setPictures(null);
         setSelectedFiles([]);
         
-        // Clear file input
-        const fileInput = document.getElementById('pictures') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-        
-        // Show success message for 3 seconds
+        // Reset form after 3 seconds
         setTimeout(() => {
           setSuccess(false);
         }, 3000);
@@ -302,511 +209,428 @@ export default function AddSchool() {
     } catch (error: any) {
       console.error('Error creating school:', error);
       setError(error.message || 'Failed to create school');
+    } finally {
       setLoading(false);
-      
-      // Animate error
-      gsap.to('.error-message', {
-        x: 0,
-        duration: 0.5,
-        ease: "power2.out"
-      });
     }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0 }
-  };
-
-  const fieldVariants = {
-    hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0 }
-  };
-
-  const buttonVariants = {
-    hover: { 
-      scale: 1.05,
-      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-      transition: { duration: 0.2 }
-    },
-    tap: { scale: 0.95 }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <style dangerouslySetInnerHTML={{ __html: fileInputStyles }} />
+      
       <AdminHeader />
       <div className="flex">
         <AdminSidebar />
-        <main className="flex-1 p-6">
-          <motion.div
-            ref={containerRef}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.8, ease: easeOut }}
-            className="max-w-2xl mx-auto"
-          >
-            <style dangerouslySetInnerHTML={{ __html: fileInputStyles }} />
-            <div className="max-w-2xl mx-auto">
-              {/* Header */}
-    <motion.div
-                initial={{ opacity: 0, y: -30 }}
-      animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-center mb-8"
-              >
-                <h1 
-                  ref={titleRef}
-                  className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-4"
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              ref={containerRef}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative"
+            >
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-red-600/10 rounded-3xl blur-3xl" />
+              
+              <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-4 sm:p-6 lg:p-8 shadow-2xl">
+                {/* Header */}
+                <motion.div
+                  initial={{ opacity: 0, y: -30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
+                  className="text-center mb-6 sm:mb-8"
                 >
-                  Add New School
-                </h1>
-                <p className="text-slate-300 text-lg">
-                  Register a new educational institution in the system
-                </p>
-              </motion.div>
-
-              {/* Form Container */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8"
-              >
-                <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                  <motion.div
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                    className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl mb-4 sm:mb-6 shadow-lg"
+                  >
+                    <Building2 className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                  </motion.div>
                   
-                  {/* School Name */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 0.5 }}
-                    className="form-field"
+                  <h1 
+                    ref={titleRef}
+                    className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-2 sm:mb-4"
                   >
-                    <Label htmlFor="name" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Building2 className="w-4 h-4" />
-                      School Name
-                    </Label>
-                    <div className="relative">
-          <Input
-            type="text"
-            name="name"
-            id="name"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.name}
-            onChange={handleChange}
+                    Add New School
+                  </h1>
+                  
+                  <p className="text-slate-300 text-sm sm:text-base lg:text-lg">
+                    Register a new school in the management system
+                  </p>
+                </motion.div>
+
+                {/* Success Message */}
+                <AnimatePresence>
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                      className="mb-6 bg-green-500/20 border border-green-400/30 rounded-xl p-4 flex items-center gap-3"
+                    >
+                      <CheckCircle2 className="w-6 h-6 text-green-400" />
+                      <div>
+                        <h3 className="text-green-300 font-semibold text-sm sm:text-base">Success!</h3>
+                        <p className="text-green-200 text-xs sm:text-sm">School registered successfully.</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Error Message */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                      className="mb-6 bg-red-500/20 border border-red-400/30 rounded-xl p-4 flex items-center gap-3"
+                    >
+                      <AlertCircle className="w-6 h-6 text-red-400" />
+                      <div>
+                        <h3 className="text-red-300 font-semibold text-sm sm:text-base">Error!</h3>
+                        <p className="text-red-200 text-xs sm:text-sm">{error}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Form */}
+                <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                  {/* Basic Information Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.6 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
+                  >
+                    {/* School Name */}
+                    <motion.div
+                      className="form-field sm:col-span-2"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4, duration: 0.6 }}
+                    >
+                      <Label htmlFor="name" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
+                          <span>School Name</span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        type="text"
+                        value={form.name}
+                        onChange={handleChange}
                         placeholder="Enter school name"
-            required
-          />
-        </div>
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* Email */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
+                    >
+                      <Label htmlFor="email" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-pink-300" />
+                          <span>Email Address</span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="Enter school email"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* Phone */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.6, duration: 0.6 }}
+                    >
+                      <Label htmlFor="phone" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" />
+                          <span>Phone Number</span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={form.phone}
+                        onChange={handleChange}
+                        placeholder="Enter school phone"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
                   </motion.div>
 
-                  {/* Email */}
+                  {/* Address Section */}
                   <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 0.6 }}
-                    className="form-field"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7, duration: 0.6 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
                   >
-                    <Label htmlFor="email" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Mail className="w-4 h-4" />
-                      Official Email
-                    </Label>
-          <Input
-            type="email"
-            name="email"
-            id="email"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.email}
-            onChange={handleChange}
-                      placeholder="school@example.com"
-            required
-          />
+                    {/* Address */}
+                    <motion.div
+                      className="form-field sm:col-span-2"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.8, duration: 0.6 }}
+                    >
+                      <Label htmlFor="address" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-300" />
+                          <span>Address</span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="address"
+                        name="address"
+                        type="text"
+                        value={form.address}
+                        onChange={handleChange}
+                        placeholder="Enter school address"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* City */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.9, duration: 0.6 }}
+                    >
+                      <Label htmlFor="city" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <span>City</span>
+                      </Label>
+                      <Input
+                        id="city"
+                        name="city"
+                        type="text"
+                        value={form.city}
+                        onChange={handleChange}
+                        placeholder="Enter city"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* State */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.0, duration: 0.6 }}
+                    >
+                      <Label htmlFor="state" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <span>State</span>
+                      </Label>
+                      <Input
+                        id="state"
+                        name="state"
+                        type="text"
+                        value={form.state}
+                        onChange={handleChange}
+                        placeholder="Enter state"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* Zip Code */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.1, duration: 0.6 }}
+                    >
+                      <Label htmlFor="zipCode" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <span>Zip Code</span>
+                      </Label>
+                      <Input
+                        id="zipCode"
+                        name="zipCode"
+                        type="text"
+                        value={form.zipCode}
+                        onChange={handleChange}
+                        placeholder="Enter zip code"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* Country */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.2, duration: 0.6 }}
+                    >
+                      <Label htmlFor="country" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <span>Country</span>
+                      </Label>
+                      <Input
+                        id="country"
+                        name="country"
+                        type="text"
+                        value={form.country}
+                        onChange={handleChange}
+                        placeholder="Enter country"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
                   </motion.div>
 
-                  {/* Address */}
+                  {/* Additional Information */}
                   <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 0.7 }}
-                    className="form-field"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.3, duration: 0.6 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
                   >
-                    <Label htmlFor="address" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      Address
-                    </Label>
-          <Textarea
-            name="address"
-            id="address"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 min-h-[80px]"
-            value={form.address}
-            onChange={handleChange}
-                      placeholder="Enter complete address"
-            required
-          />
+                    {/* Website */}
+                    <motion.div
+                      className="form-field"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.4, duration: 0.6 }}
+                    >
+                      <Label htmlFor="website" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <span>Website (Optional)</span>
+                      </Label>
+                      <Input
+                        id="website"
+                        name="website"
+                        type="url"
+                        value={form.website}
+                        onChange={handleChange}
+                        placeholder="Enter school website"
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                      />
+                    </motion.div>
+
+                    {/* Description */}
+                    <motion.div
+                      className="form-field sm:col-span-2"
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.5, duration: 0.6 }}
+                    >
+                      <Label htmlFor="description" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                        <span>Description (Optional)</span>
+                      </Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
+                        placeholder="Enter school description"
+                        rows={3}
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base resize-none"
+                      />
+                    </motion.div>
                   </motion.div>
 
-                  {/* Phone */}
+                  {/* Pictures Section */}
                   <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 0.8 }}
                     className="form-field"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.6, duration: 0.6 }}
                   >
-                    <Label htmlFor="phone" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Phone className="w-4 h-4" />
-                      Phone Number
+                    <Label htmlFor="pictures" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Image className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" />
+                        <span>School Pictures</span>
+                      </div>
                     </Label>
-          <Input
-            type="tel"
-            name="phone"
-            id="phone"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.phone}
-            onChange={handleChange}
-                      placeholder="+1 (555) 123-4567"
-            required
-          />
-                  </motion.div>
-
-                  {/* Pictures */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 0.9 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="pictures" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Image className="w-4 h-4" />
-                      School Pictures
-                    </Label>
-                    <div className="relative">
-          <Input
-            type="file"
-            name="pictures"
-            id="pictures"
-                        className="file-input-custom bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            multiple
-            onChange={handleFileChange}
-            accept="image/*"
-          />
-                      <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
-                    </div>
-                    
-                    {/* File Preview */}
-                    <AnimatePresence>
+                    <div className="space-y-3">
+                      <input
+                        id="pictures"
+                        name="pictures"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="file-input-custom w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 text-sm sm:text-base file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"
+                      />
+                      
+                      {/* Selected Files Display */}
                       {selectedFiles.length > 0 && (
                         <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="mt-4 space-y-3"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white/5 rounded-lg p-3 sm:p-4 border border-white/10"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-slate-300">
-                              {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedFiles([]);
-                                setPictures(null);
-                                const fileInput = document.getElementById('pictures') as HTMLInputElement;
-                                if (fileInput) fileInput.value = '';
-                              }}
-                              className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                            >
-                              Clear all
-                            </button>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <h4 className="text-white font-medium text-sm sm:text-base mb-2">Selected Files:</h4>
+                          <div className="space-y-1">
                             {selectedFiles.map((fileName, index) => (
                               <motion.div
                                 key={index}
-                                initial={{ opacity: 0, x: -20, scale: 0.8 }}
-                                animate={{ opacity: 1, x: 0, scale: 1 }}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="file-preview bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-400/30 rounded-lg p-3 flex items-center justify-between group hover:from-purple-600/30 hover:to-pink-600/30 transition-all duration-300"
+                                className="flex items-center gap-2 text-slate-300 text-xs sm:text-sm"
                               >
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <div className="w-8 h-8 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <Image className="w-4 h-4 text-purple-300" />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-sm text-purple-200 font-medium truncate">
-                                      {fileName}
-                                    </p>
-                                    <p className="text-xs text-purple-300">
-                                      Image file
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const newFiles = selectedFiles.filter((_, i) => i !== index);
-                                    setSelectedFiles(newFiles);
-                                    // Update the actual FileList if needed
-                                    if (pictures) {
-                                      const dt = new DataTransfer();
-                                      Array.from(pictures).forEach((file, i) => {
-                                        if (i !== index) dt.items.add(file);
-                                      });
-                                      setPictures(dt.files);
-                                    }
-                                  }}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-400 hover:text-red-300 p-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
+                                <CheckCircle2 className="w-3 h-3 sm:w-4 h-4 text-green-400" />
+                                {fileName}
                               </motion.div>
                             ))}
                           </div>
-                          
-                          {/* File Upload Tips */}
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-blue-600/10 border border-blue-400/20 rounded-lg p-3"
-                          >
-                            <div className="flex items-start gap-2">
-                              <div className="w-5 h-5 bg-blue-600/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <svg className="w-3 h-3 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                              <div className="text-xs text-blue-300">
-                                <p className="font-medium mb-1">Upload Tips:</p>
-                                <ul className="space-y-1 text-blue-200/80">
-                                  <li>• Supported formats: JPG, PNG, GIF, WebP</li>
-                                  <li>• Maximum file size: 5MB per image</li>
-                                  <li>• You can select multiple images at once</li>
-                                  <li>• Images will be optimized automatically</li>
-                                </ul>
-                              </div>
-        </div>
-                          </motion.div>
                         </motion.div>
                       )}
-                    </AnimatePresence>
+                    </div>
                   </motion.div>
-
-                  {/* City */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.0 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="city" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      City
-                    </Label>
-          <Input
-            type="text"
-            name="city"
-            id="city"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.city}
-            onChange={handleChange}
-                      placeholder="Enter city"
-            required
-          />
-                  </motion.div>
-
-                  {/* State */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.1 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="state" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      State
-                    </Label>
-          <Input
-            type="text"
-            name="state"
-            id="state"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.state}
-            onChange={handleChange}
-                      placeholder="Enter state"
-            required
-          />
-                  </motion.div>
-
-                  {/* ZIP Code */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.2 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="zipCode" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      ZIP Code
-                    </Label>
-          <Input
-            type="text"
-            name="zipCode"
-            id="zipCode"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.zipCode}
-            onChange={handleChange}
-                      placeholder="Enter ZIP code"
-            required
-          />
-                  </motion.div>
-
-                  {/* Country */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.3 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="country" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      Country
-                    </Label>
-          <Input
-            type="text"
-            name="country"
-            id="country"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.country}
-            onChange={handleChange}
-                      placeholder="Enter country"
-            required
-          />
-                  </motion.div>
-
-                  {/* Website */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.4 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="website" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Mail className="w-4 h-4" />
-                      Website
-                    </Label>
-          <Input
-            type="url"
-            name="website"
-            id="website"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300"
-            value={form.website}
-            onChange={handleChange}
-                      placeholder="https://school-website.com"
-          />
-                  </motion.div>
-
-                  {/* Description */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.5 }}
-                    className="form-field"
-                  >
-                    <Label htmlFor="description" className="text-slate-200 flex items-center gap-2 mb-2">
-                      <Building2 className="w-4 h-4" />
-                      Description
-                    </Label>
-          <Textarea
-            name="description"
-            id="description"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 min-h-[80px]"
-            value={form.description}
-            onChange={handleChange}
-                      placeholder="Enter school description"
-          />
-                  </motion.div>
-
-                  {/* Error Message */}
-                  <AnimatePresence>
-                    {error && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="error-message bg-red-500/20 border border-red-400/30 rounded-lg p-3 flex items-center gap-2"
-                      >
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                        <span className="text-red-300">{error}</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Success Message */}
-                  <AnimatePresence>
-                    {success && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="success-message bg-green-500/20 border border-green-400/30 rounded-lg p-3 flex items-center gap-2"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-green-400" />
-                        <span className="text-green-300">School added successfully!</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
 
                   {/* Submit Button */}
-                  <motion.div
-                    variants={fieldVariants}
-                    initial="hidden"
-                    animate="visible"
-                    transition={{ duration: 0.5, ease: easeOut, delay: 1.3 }}
-                    className="form-field"
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    className="submit-btn w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-purple-800 disabled:to-pink-800 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none text-sm sm:text-base lg:text-lg flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <motion.button
-          type="submit"
-                      variants={buttonVariants}
-                      whileHover="hover"
-                      whileTap="tap"
-          disabled={loading}
-                      className="submit-btn w-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      {loading ? (
-                        <>
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                          />
-                          Adding School...
-                        </>
-                      ) : (
-                        <>
-                          <Building2 className="w-5 h-5" />
-                          Add School
-                        </>
-                      )}
-                    </motion.button>
-                  </motion.div>
-      </form>
-    </motion.div>
-            </div>
-          </motion.div>
+                    {loading ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
+                        />
+                        Creating School...
+                      </>
+                    ) : (
+                      <>
+                        <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                        Create School
+                      </>
+                    )}
+                  </motion.button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
         </main>
       </div>
     </div>
