@@ -117,11 +117,11 @@ export default function ViewSchoolPage() {
         <AdminHeader />
         <div className="flex">
           <AdminSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-3 sm:p-4 md:p-6">
             <div className="flex items-center justify-center h-64">
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                 className="w-8 h-8 border-2 border-white border-t-transparent rounded-full"
               />
             </div>
@@ -137,14 +137,14 @@ export default function ViewSchoolPage() {
         <AdminHeader />
         <div className="flex">
           <AdminSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-3 sm:p-4 md:p-6">
             <div className="max-w-2xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/20 border border-red-400/30 rounded-lg p-6 text-center"
+                className="bg-red-500/20 border border-red-400/30 rounded-lg p-4 sm:p-6 text-center"
               >
-                <h2 className="text-xl font-semibold text-red-300 mb-2">Error</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-red-300 mb-2">Error</h2>
                 <p className="text-red-200 mb-4">{error}</p>
                 <button
                   onClick={handleBack}
@@ -166,14 +166,14 @@ export default function ViewSchoolPage() {
         <AdminHeader />
         <div className="flex">
           <AdminSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-3 sm:p-4 md:p-6">
             <div className="max-w-2xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-6 text-center"
+                className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 sm:p-6 text-center"
               >
-                <h2 className="text-xl font-semibold text-yellow-300 mb-2">School Not Found</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-yellow-300 mb-2">School Not Found</h2>
                 <p className="text-yellow-200 mb-4">The school you're looking for doesn't exist.</p>
                 <button
                   onClick={handleBack}
@@ -194,38 +194,37 @@ export default function ViewSchoolPage() {
       <AdminHeader />
       <div className="flex">
         <AdminSidebar />
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-3 sm:p-4 md:p-6">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between mb-8"
+              className="flex flex-col xs:flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-8"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <button
                   onClick={handleBack}
                   className="p-2 text-slate-400 hover:text-white transition-colors"
                 >
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
                 <div>
-                  <h1 className="text-3xl font-bold text-white">{school.name}</h1>
-                  <p className="text-slate-400">School Details</p>
+                  <h1 className="text-lg xs:text-xl sm:text-3xl font-bold text-white break-words max-w-[200px] xs:max-w-none">{school.name}</h1>
+                  <p className="text-slate-400 text-xs xs:text-sm sm:text-base">School Details</p>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 items-stretch sm:items-center w-full sm:w-auto">
                 <button
                   onClick={handleEdit}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors text-xs xs:text-sm sm:text-base w-full sm:w-auto"
                 >
                   <Edit className="w-4 h-4" />
                   Edit
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition-colors text-xs xs:text-sm sm:text-base w-full sm:w-auto"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
@@ -238,42 +237,43 @@ export default function ViewSchoolPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+              className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6"
             >
               {/* Basic Information */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-6">
-                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-3 xs:p-4 sm:p-6">
+                <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-6 flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
                   Basic Information
                 </h2>
                 
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
+                <div className="space-y-2 xs:space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-2 sm:gap-3 break-words">
                     <Mail className="w-4 h-4 text-slate-400" />
                     <div>
-                      <p className="text-sm text-slate-400">Email</p>
-                      <p className="text-white">{school.email}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">Email</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.email}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 break-words">
                     <Phone className="w-4 h-4 text-slate-400" />
                     <div>
-                      <p className="text-sm text-slate-400">Phone</p>
-                      <p className="text-white">{school.phone}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">Phone</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.phone}</p>
                     </div>
                   </div>
                   
                   {school.website && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 break-words overflow-x-auto">
                       <Globe className="w-4 h-4 text-slate-400" />
                       <div>
-                        <p className="text-sm text-slate-400">Website</p>
+                        <p className="text-xs sm:text-sm text-slate-400">Website</p>
                         <a 
                           href={school.website} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-300 transition-colors"
+                          className="text-blue-400 hover:text-blue-300 transition-colors break-all whitespace-pre-wrap text-xs xs:text-sm"
+                          style={{ wordBreak: 'break-all' }}
                         >
                           {school.website}
                         </a>
@@ -284,34 +284,33 @@ export default function ViewSchoolPage() {
               </div>
 
               {/* Location Information */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-6">
-                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-3 xs:p-4 sm:p-6">
+                <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-6 flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
                   Location
                 </h2>
                 
-                <div className="space-y-4">
+                <div className="space-y-2 xs:space-y-3 sm:space-y-4">
                   <div>
-                    <p className="text-sm text-slate-400">Address</p>
-                    <p className="text-white">{school.address}</p>
+                    <p className="text-xs sm:text-sm text-slate-400">Address</p>
+                    <p className="text-white break-all text-xs xs:text-sm">{school.address}</p>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <div>
-                      <p className="text-sm text-slate-400">City</p>
-                      <p className="text-white">{school.city}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">City</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.city}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-400">State</p>
-                      <p className="text-white">{school.state}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">State</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.state}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-400">ZIP Code</p>
-                      <p className="text-white">{school.zipCode}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">ZIP Code</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.zipCode}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-slate-400">Country</p>
-                      <p className="text-white">{school.country}</p>
+                      <p className="text-xs sm:text-sm text-slate-400">Country</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.country}</p>
                     </div>
                   </div>
                 </div>
@@ -324,13 +323,13 @@ export default function ViewSchoolPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mt-8 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-6"
+                className="mt-4 xs:mt-6 sm:mt-8 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-3 xs:p-4 sm:p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Description
                 </h2>
-                <p className="text-slate-300 leading-relaxed">{school.description}</p>
+                <p className="text-slate-300 leading-relaxed text-xs xs:text-sm sm:text-base break-words">{school.description}</p>
               </motion.div>
             )}
 
@@ -340,14 +339,14 @@ export default function ViewSchoolPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mt-8 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-6"
+                className="mt-4 xs:mt-6 sm:mt-8 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-3 xs:p-4 sm:p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-6 flex items-center gap-2">
                   <ImageIcon className="w-5 h-5" />
                   School Images ({school.pictures.length})
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-2 xs:gap-3 sm:gap-4">
                   {school.pictures.map((picture, index) => (
                     <motion.div
                       key={index}
@@ -357,12 +356,12 @@ export default function ViewSchoolPage() {
                       className="relative group"
                     >
                       <img
-                        src={`/api/images/${school._id}/${index}`}
+                        src={`data:${picture.mimeType};base64,${picture.base64Data}`}
                         alt={picture.originalName}
-                        className="w-full h-48 object-cover rounded-lg"
+                        className="w-full h-32 xs:h-40 sm:h-48 object-cover rounded-lg"
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                        <p className="text-white text-sm font-medium">{picture.originalName}</p>
+                        <p className="text-white text-xs sm:text-sm font-medium text-center px-2 break-all">{picture.originalName}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -375,27 +374,27 @@ export default function ViewSchoolPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="mt-8 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-6"
+              className="mt-4 xs:mt-6 sm:mt-8 bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 p-3 xs:p-4 sm:p-6"
             >
-              <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-base xs:text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 Timestamps
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <Calendar className="w-4 h-4 text-slate-400" />
                   <div>
-                    <p className="text-sm text-slate-400">Created</p>
-                    <p className="text-white">{new Date(school.createdAt).toLocaleString()}</p>
+                    <p className="text-xs sm:text-sm text-slate-400">Created</p>
+                    <p className="text-white break-all text-xs xs:text-sm">{new Date(school.createdAt).toLocaleString()}</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <Calendar className="w-4 h-4 text-slate-400" />
                   <div>
-                    <p className="text-sm text-slate-400">Last Updated</p>
-                    <p className="text-white">{new Date(school.updatedAt).toLocaleString()}</p>
+                    <p className="text-xs sm:text-sm text-slate-400">Last Updated</p>
+                    <p className="text-white break-all text-xs xs:text-sm">{new Date(school.updatedAt).toLocaleString()}</p>
                   </div>
                 </div>
               </div>

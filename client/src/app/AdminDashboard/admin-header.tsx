@@ -19,9 +19,11 @@ export default function AdminHeader() {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsLoaded(true);
+    setIsClient(true);
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -97,39 +99,41 @@ export default function AdminHeader() {
           </motion.div>
 
           {/* Center Section - Time & Date */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="hidden lg:flex flex-col items-center"
-          >
+          {isClient && (
             <motion.div
-              animate={{
-                scale: [1, 1.02, 1],
-                opacity: [0.8, 1, 0.8]
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="flex items-center gap-2 text-white mb-1"
-            >
-              <Clock className="w-4 h-4 text-green-400" />
-              <span className="text-sm font-mono font-medium">
-                {formatTime(currentTime)}
-              </span>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 5 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-              className="text-xs text-slate-400 flex items-center gap-1"
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="hidden lg:flex flex-col items-center"
             >
-              <Calendar className="w-3 h-3" />
-              {formatDate(currentTime)}
-            </motion.p>
-          </motion.div>
+              <motion.div
+                animate={{
+                  scale: [1, 1.02, 1],
+                  opacity: [0.8, 1, 0.8]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="flex items-center gap-2 text-white mb-1"
+              >
+                <Clock className="w-4 h-4 text-green-400" />
+                <span className="text-sm font-mono font-medium">
+                  {formatTime(currentTime)}
+                </span>
+              </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className="text-xs text-slate-400 flex items-center gap-1"
+              >
+                <Calendar className="w-3 h-3" />
+                {formatDate(currentTime)}
+              </motion.p>
+            </motion.div>
+          )}
 
           {/* Right Section - Admin Profile */}
           <motion.div
@@ -263,41 +267,43 @@ export default function AdminHeader() {
         </div>
 
         {/* Mobile Time & Date */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.6 }}
-          className="lg:hidden mt-3 flex items-center justify-center gap-4"
-        >
+        {isClient && (
           <motion.div
-            animate={{
-              scale: [1, 1.02, 1],
-              opacity: [0.8, 1, 0.8]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="flex items-center gap-2 text-white"
-          >
-            <Clock className="w-4 h-4 text-green-400" />
-            <span className="text-sm font-mono font-medium">
-              {formatTime(currentTime)}
-            </span>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex items-center gap-1 text-slate-400"
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="lg:hidden mt-3 flex items-center justify-center gap-4"
           >
-            <Calendar className="w-3 h-3" />
-            <span className="text-xs">
-              {formatDate(currentTime)}
-            </span>
+            <motion.div
+              animate={{
+                scale: [1, 1.02, 1],
+                opacity: [0.8, 1, 0.8]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="flex items-center gap-2 text-white"
+            >
+              <Clock className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-mono font-medium">
+                {formatTime(currentTime)}
+              </span>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+              className="flex items-center gap-1 text-slate-400"
+            >
+              <Calendar className="w-3 h-3" />
+              <span className="text-xs">
+                {formatDate(currentTime)}
+              </span>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        )}
       </div>
     </motion.header>
   );
