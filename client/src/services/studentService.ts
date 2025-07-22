@@ -23,4 +23,15 @@ export class StudentService {
       throw error;
     }
   }
+
+  async getAllStudents(): Promise<IStudent[]> {
+    await connectDB();
+    try {
+      const students = await Student.find({}).sort({ createdAt: -1 });
+      return students;
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      throw error;
+    }
+  }
 } 

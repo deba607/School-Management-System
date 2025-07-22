@@ -48,4 +48,20 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    await connectDB();
+    const students = await studentService.getAllStudents();
+    // Remove password from each student object if present
+    const studentsNoPassword = students.map((student: any) => {
+      const obj = student.toObject ? student.toObject() : { ...student };
+      delete obj.password;
+      return obj;
+    });
+    return NextResponse.json({ success: true, data: studentsNoPassword });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: 'Failed to fetch students' }, { status: 500 });
+  }
 } 
