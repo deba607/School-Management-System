@@ -12,7 +12,8 @@ const overviewData = [
 ];
 
 const Home = () => {
-  const cardRefs = useRef([]);
+  // Fix: Specify the type for the ref array
+  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
     cardRefs.current.forEach((ref, idx) => {
@@ -40,7 +41,7 @@ const Home = () => {
         {overviewData.map((item, idx) => (
           <motion.div
             key={item.label}
-            ref={el => (cardRefs.current[idx] = el)}
+            ref={(el: HTMLDivElement | null) => { cardRefs.current[idx] = el; }}
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 * idx, type: "spring", stiffness: 90 }}

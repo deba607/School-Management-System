@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
 const features = [
@@ -21,6 +21,7 @@ const Sidebar = () => {
   const sidebarRef = useRef(null);
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (sidebarRef.current) {
@@ -76,23 +77,29 @@ const Sidebar = () => {
       </div>
       <nav className="flex-1">
         <ul className="space-y-4">
-          {features.map((feature, idx) => (
-            <motion.li
-              key={feature.name}
-              initial={{ x: -30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.1 * idx, type: "spring", stiffness: 100 }}
-            >
-              <Link
-                href={feature.path}
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-lg"
-                style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+          {features.map((feature, idx) => {
+            // Highlight if current path starts with the feature path
+            const isActive = pathname === feature.path || (feature.path !== "/SchoolDashboard" && pathname.startsWith(feature.path));
+            return (
+              <motion.li
+                key={feature.name}
+                initial={{ x: -30, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.1 * idx, type: "spring", stiffness: 100 }}
               >
-                {feature.name}
-              </Link>
-            </motion.li>
-          ))}
+                <Link
+                  href={feature.path}
+                  onClick={() => setOpen(false)}
+                  className={`block px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-lg ${
+                    isActive ? "bg-white/20 text-cyan-200 font-bold shadow-lg ring-2 ring-cyan-300" : ""
+                  }`}
+                  style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                >
+                  {feature.name}
+                </Link>
+              </motion.li>
+            );
+          })}
         </ul>
       </nav>
     </motion.aside>
