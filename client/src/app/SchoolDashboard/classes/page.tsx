@@ -4,10 +4,12 @@ import Sidebar from "../sidebar";
 import Header from "../header";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import { useRouter } from "next/navigation";
 
 export default function ClassesPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     gsap.fromTo(
@@ -47,9 +49,9 @@ export default function ClassesPage() {
             <div className="flex justify-center">
               <button
                 className="px-6 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold shadow-lg transition text-lg"
-                disabled
+                onClick={() => router.push("/SchoolDashboard/classes/add")}
               >
-                + Add New Class
+                + Add New Class Schedule
               </button>
             </div>
           </motion.div>
