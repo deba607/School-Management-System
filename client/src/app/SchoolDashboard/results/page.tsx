@@ -9,33 +9,29 @@ import { useRouter } from "next/navigation";
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
 
-export default function AttendancePage() {
+export default function ResultsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const [attendanceData, setAttendanceData] = useState<any[]>([]);
+  const [resultsData, setResultsData] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchClass, setSearchClass] = useState("");
   const [searchSection, setSearchSection] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [attendanceForm, setAttendanceForm] = useState({
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [teachers, setTeachers] = useState<{ _id: string; name: string; subject: string }[]>([]);
+  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const [resultForm, setResultForm] = useState({
     className: "",
     section: "",
     subject: "",
     teacher: "",
     date: "",
-    students: [
-      { id: "stu1", name: "Alice", status: "Present" },
-      { id: "stu2", name: "Bob", status: "Present" },
-      { id: "stu3", name: "Charlie", status: "Present" },
-    ],
+    students: [] as any[], // { id, name, marks, grade }
   });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [subjects, setSubjects] = useState<string[]>([]);
-  const [teachers, setTeachers] = useState<{ _id: string; name: string; subject: string }[]>([]);
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -52,75 +48,40 @@ export default function AttendancePage() {
     );
   }, []);
 
-  const fetchAttendance = async () => {
+  const fetchResults = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/attendance");
+      const res = await fetch("/api/results");
       const data = await res.json();
       if (data.success) {
-        setAttendanceData(data.data || []);
+        setResultsData(data.data || []);
         setFiltered(data.data || []);
       } else {
-        setError(data.error || "Failed to fetch attendance");
+        setError(data.error || "Failed to fetch results");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to fetch attendance");
+      setError(err.message || "Failed to fetch results");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAttendance();
+    fetchResults();
   }, []);
 
   useEffect(() => {
-    let filteredList = attendanceData;
+    let filteredList = resultsData;
     if (searchClass) {
-      filteredList = filteredList.filter((a) => a.className === searchClass);
+      filteredList = filteredList.filter((r) => r.className === searchClass);
     }
     if (searchSection) {
-      filteredList = filteredList.filter((a) => a.section === searchSection);
+      filteredList = filteredList.filter((r) => r.section === searchSection);
     }
     setFiltered(filteredList);
-  }, [searchClass, searchSection, attendanceData]);
+  }, [searchClass, searchSection, resultsData]);
 
-  // Remove hardcoded summary cards
-  // const summary = [
-  //   { label: "Today's Attendance", value: "92%", color: "from-green-400 to-green-200" },
-  //   { label: "Present", value: 28, color: "from-blue-400 to-blue-200" },
-  //   { label: "Absent", value: 2, color: "from-red-400 to-red-200" },
-  //   { label: "Late", value: 1, color: "from-yellow-400 to-yellow-200" },
-  // ];
-
-  const openModal = () => {
-    if (!searchClass || !searchSection) return; // Prevent opening if not selected
-    setAttendanceForm({
-      className: searchClass,
-      section: searchSection,
-      subject: "",
-      teacher: "",
-      date: new Date().toISOString().slice(0, 10),
-      students: [],
-    });
-    setShowModal(true);
-  };
-  const closeModal = () => {
-    setShowModal(false);
-    setFormError(null);
-  };
-  const handleFormChange = (e: any) => {
-    const { name, value } = e.target;
-    setAttendanceForm((prev) => ({ ...prev, [name]: value }));
-  };
-  const handleStudentStatus = (idx: number, status: string) => {
-    setAttendanceForm((prev) => {
-      const students = [...prev.students];
-      students[idx].status = status;
-      return { ...prev, students };
-    });
-  };
   // Fetch subjects and teachers when modal opens or class/section changes
   useEffect(() => {
     if (!showModal) return;
@@ -140,69 +101,96 @@ export default function AttendancePage() {
       } catch {}
     }
     fetchSubjectsAndTeachers();
-  }, [showModal, attendanceForm.className, attendanceForm.section]);
+  }, [showModal, resultForm.className, resultForm.section]);
 
   // Fetch students for class/section
   useEffect(() => {
-    if (!showModal || !attendanceForm.className || !attendanceForm.section) return;
+    if (!showModal || !resultForm.className || !resultForm.section) return;
     async function fetchStudents() {
       try {
-        const res = await fetch(`/api/students?class=${attendanceForm.className}&section=${attendanceForm.section}`);
+        const res = await fetch(`/api/students?class=${resultForm.className}&section=${resultForm.section}`);
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           setStudents(data.data.map((s: any) => ({ id: s._id, name: s.name })));
-          setAttendanceForm((prev) => ({ ...prev, students: data.data.map((s: any) => ({ id: s._id, name: s.name, status: "Present" })), teacher: prev.teacher || "" }));
+          setResultForm((prev) => ({ ...prev, students: data.data.map((s: any) => ({ id: s._id, name: s.name, marks: "", grade: "" })) }));
         }
       } catch {}
     }
     fetchStudents();
-  }, [showModal, attendanceForm.className, attendanceForm.section]);
+  }, [showModal, resultForm.className, resultForm.section]);
 
   // Filter teachers for selected subject
-  const filteredTeachers = attendanceForm.subject
-    ? teachers.filter(t => t.subject === attendanceForm.subject)
+  const filteredTeachers = resultForm.subject
+    ? teachers.filter(t => t.subject === resultForm.subject)
     : teachers;
 
-  const handleAttendanceSubmit = async (e: any) => {
+  const openModal = () => {
+    if (!searchClass || !searchSection) return;
+    setResultForm({
+      className: searchClass,
+      section: searchSection,
+      subject: "",
+      teacher: "",
+      date: new Date().toISOString().slice(0, 10),
+      students: [],
+    });
+    setShowModal(true);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setFormError(null);
+  };
+  const handleFormChange = (e: any) => {
+    const { name, value } = e.target;
+    setResultForm((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleStudentResult = (idx: number, field: string, value: string) => {
+    setResultForm((prev) => {
+      const students: any[] = [...prev.students];
+      students[idx][field] = value;
+      return { ...prev, students };
+    });
+  };
+  const handleResultSubmit = async (e: any) => {
     e.preventDefault();
     setSaving(true);
     setFormError(null);
     try {
-      const res = await fetch("/api/attendance", {
+      const res = await fetch("/api/results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(attendanceForm),
+        body: JSON.stringify(resultForm),
       });
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to save attendance");
+      if (!data.success) throw new Error(data.error || "Failed to save result");
       setSaving(false);
       setShowModal(false);
-      fetchAttendance();
+      fetchResults();
     } catch (err: any) {
-      setFormError(err.message || "Failed to save attendance");
+      setFormError(err.message || "Failed to save result");
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this attendance record?")) return;
+    if (!confirm("Are you sure you want to delete this result?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/attendance/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/results/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        setAttendanceData(prev => prev.filter(a => a._id !== id));
+        setResultsData(prev => prev.filter(r => r._id !== id));
       } else {
-        alert(data.error || "Failed to delete attendance record");
+        alert(data.error || "Failed to delete result");
       }
     } catch (err: any) {
-      alert(err.message || "Failed to delete attendance record");
+      alert(err.message || "Failed to delete result");
     } finally {
       setDeletingId(null);
     }
   };
   const handleEdit = (id: string) => {
-    router.push(`/SchoolDashboard/attendance/${id}/edit`);
+    router.push(`/SchoolDashboard/results/${id}/edit`);
   };
 
   return (
@@ -222,22 +210,20 @@ export default function AttendancePage() {
               ref={titleRef}
               className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 via-cyan-500 to-green-400 bg-clip-text text-transparent mb-4 sm:mb-8 text-center"
             >
-              Attendance Management
+              Results Management
             </h1>
-            {/* Summary Cards */}
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <button
-                onClick={fetchAttendance}
+                onClick={fetchResults}
                 className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow"
               >
-                Fetch Attendance
+                Fetch Results
               </button>
               <button
                 onClick={openModal}
                 className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition shadow"
               >
-                + Give Attendance
+                + Add Result
               </button>
               <div className="flex gap-2 w-full sm:w-auto">
                 <select
@@ -262,15 +248,14 @@ export default function AttendancePage() {
                 </select>
               </div>
             </div>
-            {/* Calendar */}
             {loading ? (
               <div className="text-center text-blue-700">Loading...</div>
             ) : error ? (
               <div className="text-center text-red-600">{error}</div>
             ) : (!searchClass || !searchSection) ? (
-              <div className="text-center text-blue-700">Please select both a class and section to view attendance records.</div>
+              <div className="text-center text-blue-700">Please select both a class and section to view results.</div>
             ) : filtered.length === 0 ? (
-              <div className="text-center text-blue-700">No attendance records found for the selected class and section.</div>
+              <div className="text-center text-blue-700">No results found for the selected class and section.</div>
             ) : (
               <div className="space-y-4">
                 {filtered.map((record, idx) => (
@@ -294,15 +279,7 @@ export default function AttendancePage() {
                         {record.students && record.students.map((stu: any) => (
                           <li key={stu.id} className="flex items-center gap-2 text-xs">
                             <span className="font-medium text-blue-900">{stu.name}</span>
-                            <span className={
-                              stu.status === "Present"
-                                ? "bg-green-100 text-green-700 px-2 py-0.5 rounded-full"
-                                : stu.status === "Absent"
-                                ? "bg-red-100 text-red-700 px-2 py-0.5 rounded-full"
-                                : "bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full"
-                            }>
-                              {stu.status}
-                            </span>
+                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{stu.marks} {stu.grade && `(${stu.grade})`}</span>
                           </li>
                         ))}
                       </ul>
@@ -352,12 +329,12 @@ export default function AttendancePage() {
                 >
                   &times;
                 </button>
-                <h2 className="text-xl font-bold text-blue-900 mb-4 text-center">Give Attendance</h2>
-                <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+                <h2 className="text-xl font-bold text-blue-900 mb-4 text-center">Add Result</h2>
+                <form onSubmit={handleResultSubmit} className="space-y-4">
                   <div className="flex gap-2">
                     <select
                       name="className"
-                      value={attendanceForm.className}
+                      value={resultForm.className}
                       onChange={handleFormChange}
                       required
                       className="flex-1 px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
@@ -369,7 +346,7 @@ export default function AttendancePage() {
                     </select>
                     <select
                       name="section"
-                      value={attendanceForm.section}
+                      value={resultForm.section}
                       onChange={handleFormChange}
                       required
                       className="flex-1 px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
@@ -382,7 +359,7 @@ export default function AttendancePage() {
                   </div>
                   <select
                     name="subject"
-                    value={attendanceForm.subject}
+                    value={resultForm.subject}
                     onChange={handleFormChange}
                     required
                     className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
@@ -394,7 +371,7 @@ export default function AttendancePage() {
                   </select>
                   <select
                     name="teacher"
-                    value={attendanceForm.teacher || ""}
+                    value={resultForm.teacher || ""}
                     onChange={handleFormChange}
                     required
                     className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
@@ -407,37 +384,44 @@ export default function AttendancePage() {
                   <input
                     type="date"
                     name="date"
-                    value={attendanceForm.date}
+                    value={resultForm.date}
                     onChange={handleFormChange}
                     required
                     className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
                   />
                   <div className="space-y-2">
-                    {attendanceForm.students.length === 0 ? (
+                    {resultForm.students.length === 0 ? (
                       <div className="text-center text-blue-700">No students found for this class and section.</div>
                     ) : (
-                      attendanceForm.students.map((stu, idx) => (
+                      resultForm.students.map((stu: any, idx: number) => (
                         <div key={stu.id} className="flex items-center gap-2">
                           <span className="flex-1 text-blue-900 font-medium">{stu.name}</span>
-                          <select
-                            value={stu.status}
-                            onChange={e => handleStudentStatus(idx, e.target.value)}
-                            className="px-2 py-1 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
-                          >
-                            <option value="Present">Present</option>
-                            <option value="Absent">Absent</option>
-                            <option value="Late">Late</option>
-                          </select>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={stu.marks}
+                            onChange={e => handleStudentResult(idx, "marks", e.target.value)}
+                            placeholder="Marks"
+                            className="w-16 px-2 py-1 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 text-xs"
+                          />
+                          <input
+                            type="text"
+                            value={stu.grade}
+                            onChange={e => handleStudentResult(idx, "grade", e.target.value)}
+                            placeholder="Grade"
+                            className="w-12 px-2 py-1 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 text-xs"
+                          />
                         </div>
                       ))
                     )}
                   </div>
                   <button
                     type="submit"
-                    disabled={saving || attendanceForm.students.length === 0}
+                    disabled={saving || resultForm.students.length === 0}
                     className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-blue-300 disabled:to-cyan-300 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none text-base flex items-center justify-center gap-2"
                   >
-                    {saving ? "Saving..." : "Submit Attendance"}
+                    {saving ? "Saving..." : "Submit Result"}
                   </button>
                   {formError && <div className="text-center text-red-600 text-sm mt-2">{formError}</div>}
                 </form>
