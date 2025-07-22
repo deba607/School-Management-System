@@ -167,7 +167,7 @@ export default function ContactUs1() {
       <div className={getContainerClass()}>
         <div className="mx-auto max-w-2xl text-center">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className={getTitleClass()}
@@ -175,7 +175,7 @@ export default function ContactUs1() {
             Get in Touch
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className={getSubtitleClass()}
@@ -186,7 +186,7 @@ export default function ContactUs1() {
 
         <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-x-8 gap-y-20 lg:grid-cols-2">
           {/* Contact Form */}
-          <motion.div
+                  <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -198,17 +198,17 @@ export default function ContactUs1() {
                   Name
                 </Label>
                 <div className="mt-2.5">
-                  <Input
+                    <Input
                     type="text"
                     name="name"
-                    id="name"
+                      id="name"
                     autoComplete="name"
                     className={getInputClass()}
-                    placeholder="Enter your name"
+                      placeholder="Enter your name"
                     value={form.name}
                     onChange={handleChange}
-                    required
-                  />
+                      required
+                    />
                 </div>
               </div>
               <div>
@@ -216,13 +216,13 @@ export default function ContactUs1() {
                   Email address
                 </Label>
                 <div className="mt-2.5">
-                  <Input
+                    <Input
                     type="email"
                     name="email"
-                    id="email"
+                      id="email"
                     autoComplete="email"
                     className={getInputClass()}
-                    placeholder="Enter your email"
+                      placeholder="Enter your email"
                     value={form.email}
                     onChange={handleChange}
                     required
@@ -243,8 +243,8 @@ export default function ContactUs1() {
                     placeholder="Enter your phone number"
                     value={form.phone}
                     onChange={handleChange}
-                    required
-                  />
+                      required
+                    />
                 </div>
               </div>
               <div>
@@ -267,17 +267,17 @@ export default function ContactUs1() {
               {error && <div className="text-red-500 text-sm">{error}</div>}
               {success && <div className="text-green-500 text-sm">Message sent successfully!</div>}
               <div>
-                <Button
-                  type="submit"
+                  <Button
+                    type="submit"
                   className="w-full rounded-md bg-gradient-to-r from-purple-600 to-blue-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:from-purple-500 hover:to-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
                   disabled={loading}
                 >
                   <Send className="mr-2 h-4 w-4" />
                   {loading ? 'Sending...' : 'Send Message'}
-                </Button>
+                  </Button>
               </div>
             </form>
-          </motion.div>
+                </motion.div>
 
           {/* Visual Section */}
           <motion.div
@@ -289,7 +289,7 @@ export default function ContactUs1() {
             <div className="absolute inset-0 -z-10 opacity-20">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-600 opacity-20"></div>
             </div>
-            
+
             <div className="mx-auto max-w-2xl text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
                 <GraduationCap className="h-8 w-8 text-white" />
@@ -317,8 +317,8 @@ export default function ContactUs1() {
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
         </div>
       </div>
     </section>

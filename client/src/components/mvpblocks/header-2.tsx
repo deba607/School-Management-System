@@ -151,7 +151,7 @@ export default function Header2() {
           >
             Quick Add
           </Button>
-        </div>
+                  </div>
 
         {/* Mobile menu button */}
         <button
@@ -240,7 +240,7 @@ export default function Header2() {
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>
-            </div>
+              </div>
           </div>
         </div>
       )}
