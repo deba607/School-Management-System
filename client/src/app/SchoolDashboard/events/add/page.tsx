@@ -1,16 +1,12 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-import Sidebar from "../sidebar";
-import Header from "../header";
+import Sidebar from "../../sidebar";
+import Header from "../../header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 
-const initialForm = {
-  title: "",
-  description: "",
-  date: "",
-};
+const initialForm = { title: "", description: "", date: "" };
 
 export default function AddEventPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,16 +18,8 @@ export default function AddEventPage() {
   const router = useRouter();
 
   useEffect(() => {
-    gsap.fromTo(
-      containerRef.current,
-      { y: 60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
-    );
-    gsap.fromTo(
-      titleRef.current,
-      { scale: 0.8, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.8, delay: 0.2, ease: "elastic.out(1, 0.5)" }
-    );
+    gsap.fromTo(containerRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
+    gsap.fromTo(titleRef.current, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, delay: 0.2, ease: "elastic.out(1, 0.5)" });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

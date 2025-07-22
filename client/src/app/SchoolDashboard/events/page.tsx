@@ -2,14 +2,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import Sidebar from "../sidebar";
 import Header from "../header";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import gsap from "gsap";
-
-const initialEventForm = {
-  title: "",
-  description: "",
-  date: "",
-};
 
 export default function EventsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,24 +12,13 @@ export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [eventForm, setEventForm] = useState(initialEventForm);
-  const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [success, setSuccess] = useState(false);
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    gsap.fromTo(
-      containerRef.current,
-      { y: 60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
-    );
-    gsap.fromTo(
-      titleRef.current,
-      { scale: 0.8, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.8, delay: 0.2, ease: "elastic.out(1, 0.5)" }
-    );
+    gsap.fromTo(containerRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
+    gsap.fromTo(titleRef.current, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, delay: 0.2, ease: "elastic.out(1, 0.5)" });
   }, []);
 
   const fetchEvents = async () => {
@@ -60,71 +44,32 @@ export default function EventsPage() {
     fetchEvents();
   }, []);
 
-  const openModal = () => {
-    setEventForm({ ...initialEventForm });
-    setShowModal(true);
-    setError(null);
-    setSuccess(false);
-  };
-  const closeModal = () => {
-    setShowModal(false);
-    setEventForm(initialEventForm);
-    setError(null);
-    setSuccess(false);
-  };
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEventForm((prev) => ({ ...prev, [name]: value }));
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    setSuccess(false);
-    try {
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(eventForm),
-      });
-      if (!res.ok) {
-        let errMsg = "Failed to add event";
-        try { const data = await res.json(); errMsg = data.error || errMsg; } catch {}
-        throw new Error(errMsg);
-      }
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed to add event");
-      setSuccess(true);
-      setTimeout(() => {
-        closeModal();
-        fetchEvents();
-      }, 1000);
-    } catch (err: any) {
-      setError(err.message || "Failed to add event");
-    } finally {
-      setSaving(false);
-    }
-  };
+  const filteredEvents = events.filter(
+    (event) =>
+      event.title.toLowerCase().includes(search.toLowerCase()) ||
+      event.description.toLowerCase().includes(search.toLowerCase())
+  );
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
     setDeletingId(id);
     try {
-      // TODO: Replace with real API call
-      // await fetch(`/api/events/${id}`, { method: "DELETE" });
-      setEvents((prev) => prev.filter((e) => e._id !== id));
+      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setEvents(prev => prev.filter(e => e._id !== id));
+      } else {
+        alert(data.error || "Failed to delete event");
+      }
     } catch (err: any) {
       alert(err.message || "Failed to delete event");
     } finally {
       setDeletingId(null);
     }
   };
-
-  // Filter events by search
-  const filteredEvents = events.filter(
-    (event) =>
-      event.title.toLowerCase().includes(search.toLowerCase()) ||
-      event.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleEdit = (id: string) => {
+    router.push(`/SchoolDashboard/events/${id}/edit`);
+  };
 
   return (
     <div className="flex h-screen min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
@@ -153,7 +98,7 @@ export default function EventsPage() {
                 Fetch Events
               </button>
               <button
-                onClick={openModal}
+                onClick={() => router.push("/SchoolDashboard/events/add")}
                 className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition shadow"
               >
                 + Add Event
@@ -189,7 +134,14 @@ export default function EventsPage() {
                         <div className="text-xs text-blue-500">{event.date}</div>
                       </div>
                       <div className="flex gap-2 mt-2 sm:mt-0">
-                        {/* Edit functionality can be added here */}
+                        <motion.button
+                          whileHover={{ scale: 1.07 }}
+                          whileTap={{ scale: 0.97 }}
+                          className="px-3 py-1 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition"
+                          onClick={() => handleEdit(event._id)}
+                        >
+                          Edit
+                        </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.07 }}
                           whileTap={{ scale: 0.97 }}
@@ -206,89 +158,8 @@ export default function EventsPage() {
               </div>
             )}
           </motion.div>
-          <AnimatePresence>
-            {showModal && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-              >
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.9, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative border border-blue-200"
-                >
-                  <button
-                    className="absolute top-2 right-2 text-blue-700 text-xl font-bold"
-                    onClick={closeModal}
-                    aria-label="Close"
-                  >
-                    &times;
-                  </button>
-                  <h2 className="text-xl font-bold text-blue-900 mb-4 text-center">Add New Event</h2>
-                  <form onSubmit={handleSubmit} className="space-y-3">
-                    <input
-                      type="text"
-                      name="title"
-                      value={eventForm.title}
-                      onChange={handleChange}
-                      required
-                      placeholder="Event Title"
-                      className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
-                    />
-                    <textarea
-                      name="description"
-                      value={eventForm.description}
-                      onChange={handleChange}
-                      required
-                      placeholder="Event Description"
-                      className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
-                    />
-                    <input
-                      type="date"
-                      name="date"
-                      value={eventForm.date}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
-                    />
-                    <motion.button
-                      type="submit"
-                      disabled={saving}
-                      className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-blue-300 disabled:to-cyan-300 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none text-base flex items-center justify-center gap-2"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {saving ? "Saving..." : "Add Event"}
-                    </motion.button>
-                    {success && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-3 rounded-lg bg-green-100 text-green-800 text-center font-semibold"
-                      >
-                        Event added successfully!
-                      </motion.div>
-                    )}
-                    {error && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 p-3 rounded-lg bg-red-100 text-red-800 text-center font-semibold"
-                      >
-                        {error}
-                      </motion.div>
-                    )}
-                  </form>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </main>
       </div>
     </div>
   );
-} 
+}

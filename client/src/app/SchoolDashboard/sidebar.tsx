@@ -13,7 +13,6 @@ const features = [
   { name: "Attendance", path: "/SchoolDashboard/attendance" },
   { name: "Results", path: "/SchoolDashboard/results" },
   { name: "Events", path: "/SchoolDashboard/events" },
-  { name: "Settings", path: "/SchoolDashboard/settings" },
   { name: "Logout", path: "/logout" },
 ];
 
