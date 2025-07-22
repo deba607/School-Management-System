@@ -90,16 +90,19 @@ export default function AddClassSchedule() {
     setError(null);
     setSuccess(false);
     try {
-      // TODO: Implement POST to /api/class-schedules
-      // const res = await fetch("/api/class-schedules", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      // const data = await res.json();
-      // if (!data.success) throw new Error(data.error || "Failed to add class schedule");
-      setTimeout(() => {
-        setSuccess(true);
-        setLoading(false);
-        setForm(initialForm);
-        setTimeout(() => router.push("/SchoolDashboard/classes"), 1200);
-      }, 1000);
+      const res = await fetch("/api/class-schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to add class schedule");
+      }
+      setSuccess(true);
+      setLoading(false);
+      setForm(initialForm);
+      setTimeout(() => router.push("/SchoolDashboard/classes"), 1200);
     } catch (err: any) {
       setError(err.message || "Failed to add class schedule");
       setLoading(false);

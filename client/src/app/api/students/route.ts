@@ -53,7 +53,15 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const students = await studentService.getAllStudents();
+    const { searchParams } = new URL(request.url);
+    const className = searchParams.get('class');
+    const section = searchParams.get('section');
+    let students;
+    if (className && section) {
+      students = await studentService.getStudentsByClassAndSection(className, section);
+    } else {
+      students = await studentService.getAllStudents();
+    }
     // Remove password from each student object if present
     const studentsNoPassword = students.map((student: any) => {
       const obj = student.toObject ? student.toObject() : { ...student };
