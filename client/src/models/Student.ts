@@ -13,6 +13,8 @@ export interface IStudent extends Document {
     size: number;
     base64Data: string;
   }>;
+  otp: string;
+  otpExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +39,8 @@ const StudentSchema: Schema = new Schema({
     required: [true, 'Password is required'],
     select: false
   },
+  otp: { type: String },
+  otpExpiry: { type: Date },
   class: {
     type: String,
     required: [true, 'Class is required'],
@@ -61,7 +65,5 @@ const StudentSchema: Schema = new Schema({
 }, {
   timestamps: true
 });
-
-StudentSchema.index({ email: 1 });
 
 export const Student = mongoose.models.Student || mongoose.model<IStudent>('Student', StudentSchema); 

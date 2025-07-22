@@ -17,10 +17,12 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 export default function Header2() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const router = useRouter();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -148,8 +150,9 @@ export default function Header2() {
           {/* Quick Actions */}
           <Button
             className="rounded-lg border border-purple-500/30 bg-gradient-to-b from-purple-600 to-blue-700 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-purple-600/20 transition-all hover:shadow-purple-600/40"
+            onClick={() => router.push("/Login")}
           >
-            Quick Add
+            Login
           </Button>
                   </div>
 
@@ -230,8 +233,9 @@ export default function Header2() {
               
               <Button
                 className="w-full rounded-lg border border-purple-500/30 bg-gradient-to-b from-purple-600 to-blue-700 px-4 py-3 text-white shadow-lg shadow-purple-600/20 transition-all hover:shadow-purple-600/40"
+                onClick={() => { setIsMenuOpen(false); router.push("/Login"); }}
               >
-                Quick Add
+                Login
               </Button>
               <Button
                 variant="outline"
