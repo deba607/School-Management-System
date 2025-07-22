@@ -26,6 +26,10 @@ export const TeacherSchema = z.object({
     .min(2, 'Subject must be at least 2 characters')
     .max(100, 'Subject cannot exceed 100 characters')
     .trim(),
+  address: z.string()
+    .min(5, 'Address must be at least 5 characters')
+    .max(200, 'Address cannot exceed 200 characters')
+    .trim(),
   password: z.string()
     .min(6, 'Password must be at least 6 characters'),
   pictures: z.array(PictureSchema).optional().default([])

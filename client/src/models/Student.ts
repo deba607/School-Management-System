@@ -6,6 +6,7 @@ export interface IStudent extends Document {
   password: string;
   class: string;
   sec: string;
+  address: string;
   pictures: Array<{
     originalName: string;
     mimeType: string;
@@ -44,6 +45,11 @@ const StudentSchema: Schema = new Schema({
   sec: {
     type: String,
     required: [true, 'Section is required'],
+    trim: true
+  },
+  address: {
+    type: String,
+    required: [true, 'Address is required'],
     trim: true
   },
   pictures: [{

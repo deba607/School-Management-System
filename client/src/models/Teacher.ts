@@ -5,6 +5,7 @@ export interface ITeacher extends Document {
   email: string;
   phone: string;
   subject: string;
+  address: string;
   password: string;
   pictures: Array<{
     originalName: string;
@@ -41,6 +42,11 @@ const TeacherSchema: Schema = new Schema({
     required: [true, 'Subject is required'],
     trim: true
   },
+  address: {
+    type: String,
+    required: [true, 'Address is required'],
+    trim: true
+  },
   password: {
     type: String,
     required: [true, 'Password is required'],
@@ -55,7 +61,5 @@ const TeacherSchema: Schema = new Schema({
 }, {
   timestamps: true
 });
-
-TeacherSchema.index({ email: 1 });
 
 export const Teacher = mongoose.models.Teacher || mongoose.model<ITeacher>('Teacher', TeacherSchema); 

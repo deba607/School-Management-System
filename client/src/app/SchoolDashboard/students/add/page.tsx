@@ -13,6 +13,7 @@ const initialForm = {
   confirmPassword: "",
   class: "",
   sec: "",
+  address: "",
 };
 
 export default function AddStudent() {
@@ -247,6 +248,19 @@ export default function AddStudent() {
                     <option key={sec} value={sec}>{sec}</option>
                   ))}
                 </select>
+              </motion.div>
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.68, duration: 0.6 }}>
+                <label htmlFor="address" className="block text-blue-900 font-medium mb-2">Address</label>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Enter address"
+                  required
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
+                />
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 0.6 }}>
                 <label htmlFor="pictures" className="block text-blue-900 font-medium mb-2">Profile Photo</label>

@@ -28,6 +28,10 @@ export const StudentSchema = z.object({
     .min(1, 'Section is required')
     .max(10, 'Section cannot exceed 10 characters')
     .trim(),
+  address: z.string()
+    .min(5, 'Address must be at least 5 characters')
+    .max(200, 'Address cannot exceed 200 characters')
+    .trim(),
   pictures: z.array(PictureSchema).optional().default([])
 });
 
