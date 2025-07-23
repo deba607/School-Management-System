@@ -8,6 +8,7 @@ const classScheduleService = new ClassScheduleService();
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+    // Ignore schoolId query param, always return all class schedules
     const schedules = await classScheduleService.getAllClassSchedules();
     // Format teacher name for frontend
     const data = schedules.map(s => {

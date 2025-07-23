@@ -10,6 +10,7 @@ const teacherService = new TeacherService();
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+    // Ignore schoolId query param, always return all teachers
     const teachers = await Teacher.find().select('-password');
     return NextResponse.json({ success: true, data: teachers });
   } catch (error) {

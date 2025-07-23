@@ -9,17 +9,17 @@ import {
   Clock,
   Calendar
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
+import { Student } from '@/models/Student';
 
 export default function AdminHeader() {
-  const [currentAdmin] = useState({
-    name: "John Administrator",
-    email: "admin@schoolsystem.com",
-    picture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-  });
-
+  const [currentAdmin, setCurrentAdmin] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoaded, setIsLoaded] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsLoaded(true);
@@ -27,9 +27,48 @@ export default function AdminHeader() {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    async function fetchAdmin() {
+      setLoading(true);
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) {
+          router.push('/Login');
+          return;
+        }
+        let decoded: any;
+        try {
+          decoded = jwtDecode(token);
+        } catch {
+          localStorage.removeItem('token');
+          router.push('/Login');
+          return;
+        }
+        if (!decoded || decoded.role !== 'Admin' || !decoded.userId) {
+          localStorage.removeItem('token');
+          router.push('/Login');
+          return;
+        }
+        const res = await fetch(`/api/admins/${decoded.userId}`);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          localStorage.removeItem('token');
+          router.push('/Login');
+          return;
+        }
+        setCurrentAdmin(data.data);
+      } catch {
+        localStorage.removeItem('token');
+        router.push('/Login');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAdmin();
+  }, [router]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
@@ -48,6 +87,13 @@ export default function AdminHeader() {
       day: 'numeric'
     });
   };
+
+  if (loading || !currentAdmin) {
+    return <div className="text-center text-white py-4">Loading admin info...</div>;
+  }
+  const adminPic = currentAdmin.pictures && currentAdmin.pictures[0] && currentAdmin.pictures[0].base64Data
+    ? currentAdmin.pictures[0].base64Data
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentAdmin.name)}`;
 
   return (
     <motion.header
@@ -159,7 +205,7 @@ export default function AdminHeader() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 200 }}
-                    src={currentAdmin.picture}
+                    src={adminPic}
                     alt={currentAdmin.name}
                     className="w-full h-full object-cover"
                   />
@@ -229,7 +275,7 @@ export default function AdminHeader() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.8, duration: 0.5, type: "spring", stiffness: 200 }}
-                    src={currentAdmin.picture}
+                    src={adminPic}
                     alt={currentAdmin.name}
                     className="w-full h-full object-cover"
                   />

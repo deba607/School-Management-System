@@ -17,6 +17,7 @@ export interface IStudent extends Document {
   otpExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
+  schoolId: mongoose.Schema.Types.ObjectId;
 }
 
 const StudentSchema: Schema = new Schema({
@@ -62,6 +63,11 @@ const StudentSchema: Schema = new Schema({
     size: { type: Number, required: true },
     base64Data: { type: String, required: true }
   }],
+  schoolId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    required: true
+  },
 }, {
   timestamps: true
 });

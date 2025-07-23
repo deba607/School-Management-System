@@ -39,4 +39,9 @@ export class StudentService {
     await connectDB();
     return await Student.find({ class: className, sec: section }).sort({ name: 1 });
   }
+
+  async getStudentsByClassAndSectionAndSchool(className: string, section: string, schoolId: string): Promise<IStudent[]> {
+    await connectDB();
+    return await Student.find({ class: className, sec: section, schoolId }).sort({ name: 1 });
+  }
 } 

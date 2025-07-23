@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { Eye, EyeOff } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 
 const roles = ["Admin", "Student", "School"];
 
@@ -39,6 +40,11 @@ export default function LoginPage() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
   const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState("");
+  const [resendError, setResendError] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
+  const [redirectRole, setRedirectRole] = useState<string | null>(null);
 
   useEffect(() => {
     gsap.fromTo(containerRef.current, { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
@@ -50,6 +56,26 @@ export default function LoginPage() {
       gsap.fromTo(forgotModalRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power2.out" });
     }
   }, [showForgot]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendTimer]);
+
+  useEffect(() => {
+    if (otpSuccess && redirectRole) {
+      console.log('Redirecting to dashboard for role:', redirectRole);
+      const timeout = setTimeout(() => {
+        if (redirectRole === "Admin") router.push("/AdminDashboard");
+        else if (redirectRole === "Student") router.push("/StudentDashboard");
+        else if (redirectRole === "School") router.push("/SchoolDashboard");
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [otpSuccess, redirectRole, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +93,7 @@ export default function LoginPage() {
         setOtpStep(true);
         setUserId(data.userId);
       } else {
-        if (role === "Admin") router.push("/SchoolDashboard");
+        if (role === "Admin") router.push("/AdminDashboard");
         else if (role === "Student") router.push("/StudentDashboard");
         else if (role === "School") router.push("/SchoolDashboard");
       }
@@ -93,11 +119,11 @@ export default function LoginPage() {
       if (!res.ok || !data.success) throw new Error(data.error || "OTP verification failed");
       setOtpSuccess(true);
       localStorage.setItem("token", data.token);
-      setTimeout(() => {
-        if (role === "Admin") router.push("/SchoolDashboard");
-        else if (role === "Student") router.push("/StudentDashboard");
-        else if (role === "School") router.push("/SchoolDashboard");
-      }, 1000);
+      // Remove cookie-based token storage
+      // document.cookie = `token=${data.token}; path=/;`;
+      const decoded: any = jwtDecode(data.token);
+      console.log('OTP Success:', { token: data.token, decoded });
+      setRedirectRole(decoded.role);
     } catch (err: any) {
       setOtpError(err.message || "OTP verification failed");
     } finally {
@@ -166,6 +192,27 @@ export default function LoginPage() {
       setResetError(err.message || "Failed to reset password");
     } finally {
       setResetLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    setResendSuccess("");
+    setResendError("");
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, role }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || "Failed to resend OTP");
+      setResendSuccess("OTP resent to your email. Please check your inbox.");
+      setResendTimer(30);
+    } catch (err: any) {
+      setResendError(err.message || "Failed to resend OTP");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -294,6 +341,34 @@ export default function LoginPage() {
               >
                 {otpLoading ? "Verifying..." : "Verify OTP"}
               </motion.button>
+              <motion.button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={resendLoading || resendTimer > 0}
+                className="w-full mt-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 disabled:from-cyan-300 disabled:to-blue-300 text-white font-semibold py-2 px-6 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg disabled:shadow-none text-base flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {resendLoading ? "Resending..." : resendTimer > 0 ? `Resend OTP (${resendTimer}s)` : "Resend OTP"}
+              </motion.button>
+              {resendSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 p-2 rounded-lg bg-green-100 text-green-800 text-center font-semibold"
+                >
+                  {resendSuccess}
+                </motion.div>
+              )}
+              {resendError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 p-2 rounded-lg bg-red-100 text-red-800 text-center font-semibold"
+                >
+                  {resendError}
+                </motion.div>
+              )}
               {otpSuccess && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}

@@ -13,6 +13,7 @@ export interface IAttendance extends Document {
   teacher: string;
   date: string;
   students: IAttendanceStudent[];
+  schoolId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,6 +31,11 @@ const AttendanceSchema: Schema = new Schema({
       status: { type: String, enum: ['Present', 'Absent', 'Late'], required: true },
     },
   ],
+  schoolId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    required: true
+  },
 }, { timestamps: true });
 
 export const Attendance = mongoose.models.Attendance || mongoose.model<IAttendance>('Attendance', AttendanceSchema); 

@@ -4,8 +4,32 @@ import StudentSidebar from "./student-sidebar";
 import StudentHeader from "./student-header";
 import StudentHome from "./student-home";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const StudentDashboardPage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      router.push('/Login');
+      return;
+    }
+    let decoded;
+    try {
+      decoded = jwtDecode(token);
+    } catch {
+      localStorage.removeItem('token');
+      router.push('/Login');
+      return;
+    }
+    if (!decoded || (decoded as any).role !== 'Student') {
+      localStorage.removeItem('token');
+      router.push('/Login');
+      return;
+    }
+  }, [router]);
   return (
     <motion.div
       initial={{ opacity: 0 }}

@@ -16,7 +16,7 @@ export async function verifyOTP(userId: string, role: string, otp: string) {
   let user = null;
   if (role === "Admin") user = await Admin.findById(userId);
   else if (role === "Student") user = await Student.findById(userId);
-  else if (role === "Teacher") user = await Teacher.findById(userId);
+  else if (role === "School") user = await Teacher.findById(userId);
   if (!user || !user.otp || !user.otpExpiry) return false;
   if (user.otp !== otp) return false;
   if (user.otpExpiry < new Date()) return false;

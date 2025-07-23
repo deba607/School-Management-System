@@ -14,4 +14,11 @@ export class ClassScheduleService {
       .populate('teacher', 'name')
       .sort({ className: 1, section: 1 });
   }
+
+  async getClassSchedulesBySchool(schoolId: string): Promise<IClassSchedule[]> {
+    await connectDB();
+    return await ClassSchedule.find({ schoolId })
+      .populate('teacher', 'name')
+      .sort({ className: 1, section: 1 });
+  }
 } 

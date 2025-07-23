@@ -12,4 +12,9 @@ export class AttendanceService {
     await connectDB();
     return await Attendance.find({}).sort({ date: -1 });
   }
+
+  async getAttendanceBySchool(schoolId: string): Promise<IAttendance[]> {
+    await connectDB();
+    return await Attendance.find({ schoolId }).sort({ date: -1 });
+  }
 } 

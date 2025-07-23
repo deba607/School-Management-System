@@ -1,17 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-
-const teacher = {
-  name: "Mr. John Doe",
-  subject: "Mathematics",
-  profilePic: "https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff",
-};
+import { jwtDecode } from "jwt-decode";
 
 const Header = () => {
   const imgRef = useRef(null);
+  const [teacher, setTeacher] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     gsap.fromTo(
@@ -20,6 +17,32 @@ const Header = () => {
       { rotate: 0, scale: 1, duration: 1, ease: "elastic.out(1, 0.5)" }
     );
   }, []);
+
+  useEffect(() => {
+    async function fetchTeacher() {
+      setLoading(true);
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) return;
+        const decoded: any = jwtDecode(token);
+        const teacherId = decoded.userId;
+        const res = await fetch(`/api/teachers/${teacherId}`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setTeacher(data.data);
+        }
+      } catch {}
+      setLoading(false);
+    }
+    fetchTeacher();
+  }, []);
+
+  if (loading || !teacher) {
+    return <div className="text-center text-blue-900 py-4">Loading teacher info...</div>;
+  }
+  const teacherPic = teacher.pictures && teacher.pictures[0] && teacher.pictures[0].base64Data
+    ? teacher.pictures[0].base64Data
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}`;
 
   return (
     <motion.header
@@ -36,7 +59,7 @@ const Header = () => {
       <div className="flex items-center justify-center">
         <motion.img
           ref={imgRef}
-          src={teacher.profilePic}
+          src={teacherPic}
           alt="Profile"
           className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-4 border-blue-400 shadow-lg"
           initial={{ scale: 0.7, opacity: 0 }}

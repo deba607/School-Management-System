@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StudentService } from '@/services/studentService';
 import { validateStudent } from '@/validators/StudentValidators';
 import { connectDB } from '@/lib/mongoose';
+import { Student } from '@/models/Student';
 
 const studentService = new StudentService();
 
@@ -53,15 +54,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const { searchParams } = new URL(request.url);
-    const className = searchParams.get('class');
-    const section = searchParams.get('section');
-    let students;
-    if (className && section) {
-      students = await studentService.getStudentsByClassAndSection(className, section);
-    } else {
-      students = await studentService.getAllStudents();
-    }
+    // Ignore schoolId query param, always return all students
+    const students = await studentService.getAllStudents();
     // Remove password from each student object if present
     const studentsNoPassword = students.map((student: any) => {
       const obj = student.toObject ? student.toObject() : { ...student };

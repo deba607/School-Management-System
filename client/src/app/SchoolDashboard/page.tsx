@@ -5,8 +5,32 @@ import Sidebar from "./sidebar";
 import Header from "./header";
 import Home from "./home";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const SchoolDashboardPage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      router.push('/Login');
+      return;
+    }
+    let decoded;
+    try {
+      decoded = jwtDecode(token);
+    } catch {
+      localStorage.removeItem('token');
+      router.push('/Login');
+      return;
+    }
+    if (!decoded || decoded.role !== 'School') {
+      localStorage.removeItem('token');
+      router.push('/Login');
+      return;
+    }
+  }, [router]);
   return (
     <motion.div
       initial={{ opacity: 0 }}

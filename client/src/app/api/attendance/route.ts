@@ -8,6 +8,7 @@ const attendanceService = new AttendanceService();
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+    // Ignore schoolId query param, always return all attendance
     const attendance = await attendanceService.getAllAttendance();
     return NextResponse.json({ success: true, data: attendance });
   } catch (error) {
