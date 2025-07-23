@@ -9,8 +9,33 @@ const adminService = new AdminService();
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-
-    const body = await request.json();
+    let body: any;
+    let isFormData = false;
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      isFormData = true;
+      const formData = await request.formData();
+      body = {};
+      for (const [key, value] of formData.entries()) {
+        if (key === 'pictures' && value instanceof File) {
+          // Handle file uploads (base64 encode for now)
+          if (!body.pictures) body.pictures = [];
+          const file = value as File;
+          const arrayBuffer = await file.arrayBuffer();
+          const base64Data = Buffer.from(arrayBuffer).toString('base64');
+          body.pictures.push({
+            originalName: file.name,
+            mimeType: file.type,
+            size: file.size,
+            base64Data,
+          });
+        } else {
+          body[key] = String(value);
+        }
+      }
+    } else {
+      body = await request.json();
+    }
     console.log('Received admin data:', JSON.stringify(body, null, 2));
     
     const validation = validateAdmin(body);
@@ -31,11 +56,12 @@ export async function POST(request: NextRequest) {
     try {
       const admin = await adminService.createAdmin(validation.data!);
       console.log('Admin created:', admin._id);
-      
+      const adminObj = admin.toObject();
+      delete adminObj.password;
       return NextResponse.json(
         { 
           success: true, 
-          data: admin, 
+          data: adminObj, 
           message: 'Admin created successfully' 
         },
         { status: 201 }

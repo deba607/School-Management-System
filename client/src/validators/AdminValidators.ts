@@ -26,7 +26,12 @@ export const AdminSchema = z.object({
     .max(20, 'Phone number cannot exceed 20 digits')
     .trim(),
   
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Confirm Password must be at least 6 characters'),
   pictures: z.array(PictureSchema).optional().default([])
+}).refine(data => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
 });
 
 export const AdminUpdateSchema = AdminSchema.partial();
@@ -36,7 +41,7 @@ export function validateAdmin(data: any) {
     console.log('Validating admin data:', data);
     
     // Ensure all required fields are present
-    const requiredFields = ['name', 'email', 'phone'];
+    const requiredFields = ['name', 'email', 'phone', 'password', 'confirmPassword'];
     const missingFields = requiredFields.filter(field => !data[field]);
     
     if (missingFields.length > 0) {

@@ -14,7 +14,9 @@ import {
   Upload,
   Shield,
   Sparkles,
-  Crown
+  Crown,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import AdminHeader from '../admin-header';
 import AdminSidebar from '../admin-sidebar';
@@ -77,12 +79,16 @@ export default function AddAdmin() {
     name: '',
     email: '',
     phone: '',
+    password: '',
+    confirmPassword: '',
   });
   const [pictures, setPictures] = useState<FileList | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -146,11 +152,19 @@ export default function AddAdmin() {
     setLoading(true);
     setError(null);
 
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('name', form.name);
       formData.append('email', form.email);
       formData.append('phone', form.phone);
+      formData.append('password', form.password);
+      formData.append('confirmPassword', form.confirmPassword);
 
       if (pictures) {
         for (let i = 0; i < pictures.length; i++) {
@@ -171,7 +185,7 @@ export default function AddAdmin() {
 
       if (result.success) {
         setSuccess(true);
-        setForm({ name: '', email: '', phone: '' });
+        setForm({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
         setPictures(null);
         setSelectedFiles([]);
         
@@ -347,6 +361,78 @@ export default function AddAdmin() {
                       required
                       className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                     />
+                  </motion.div>
+                  {/* Password Field */}
+                  <motion.div
+                    className="form-field"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.52, duration: 0.6 }}
+                  >
+                    <Label htmlFor="password" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
+                        <span>Password</span>
+                      </div>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Enter password"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                      />
+                      <motion.button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 bg-white rounded p-1 shadow-sm focus:outline-none"
+                        onClick={() => setShowPassword(v => !v)}
+                        whileTap={{ scale: 0.85 }}
+                        tabIndex={-1}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                  {/* Confirm Password Field */}
+                  <motion.div
+                    className="form-field"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.54, duration: 0.6 }}
+                  >
+                    <Label htmlFor="confirmPassword" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-pink-300" />
+                        <span>Confirm Password</span>
+                      </div>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                      />
+                      <motion.button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-pink-400 bg-white rounded p-1 shadow-sm focus:outline-none"
+                        onClick={() => setShowConfirmPassword(v => !v)}
+                        whileTap={{ scale: 0.85 }}
+                        tabIndex={-1}
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </motion.button>
+                    </div>
                   </motion.div>
 
                   {/* Pictures Field */}
