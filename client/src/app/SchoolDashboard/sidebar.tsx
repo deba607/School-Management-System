@@ -21,6 +21,23 @@ const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch (e) {
+      // Optionally handle error, but still proceed with logout
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+    setTimeout(() => {
+      setLoggingOut(false);
+      router.push("/Login");
+    }, 500);
+  };
 
   useEffect(() => {
     if (sidebarRef.current) {
@@ -79,6 +96,24 @@ const Sidebar = () => {
           {features.map((feature, idx) => {
             // Highlight if current path starts with the feature path
             const isActive = pathname === feature.path || (feature.path !== "/SchoolDashboard" && pathname.startsWith(feature.path));
+            if (feature.name === "Logout") {
+              return (
+                <motion.li
+                  key={feature.name}
+                  initial={{ x: -30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 * idx, type: "spring", stiffness: 100 }}
+                >
+                  <button
+                    onClick={handleLogout}
+                    className={`block w-full px-4 py-2 rounded-lg font-medium transition-colors duration-200 hover:shadow-lg bg-red-500 text-white font-bold ${loggingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    disabled={loggingOut}
+                  >
+                    {loggingOut ? 'Logging out...' : feature.name}
+                  </button>
+                </motion.li>
+              );
+            }
             return (
               <motion.li
                 key={feature.name}
