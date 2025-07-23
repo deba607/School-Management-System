@@ -91,9 +91,11 @@ export default function AdminHeader() {
   if (loading || !currentAdmin) {
     return <div className="text-center text-white py-4">Loading admin info...</div>;
   }
-  const adminPic = currentAdmin.pictures && currentAdmin.pictures[0] && currentAdmin.pictures[0].base64Data
-    ? currentAdmin.pictures[0].base64Data
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentAdmin.name)}`;
+  let adminPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentAdmin.name)}`;
+  if (currentAdmin.pictures && currentAdmin.pictures[0] && currentAdmin.pictures[0].base64Data) {
+    const pic = currentAdmin.pictures[0];
+    adminPic = `data:${pic.mimeType};base64,${pic.base64Data}`;
+  }
 
   return (
     <motion.header

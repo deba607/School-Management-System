@@ -6,13 +6,10 @@ import { connectDB } from '@/lib/mongoose';
 const adminService = new AdminService();
 
 // GET - Get a specific admin by ID
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-
+    const params = await context.params;
     const { id } = params;
     
     if (!id) {
@@ -62,13 +59,10 @@ export async function GET(
 }
 
 // PUT - Update a specific admin
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-
+    const params = await context.params;
     const { id } = params;
     const body = await request.json();
     
@@ -150,13 +144,10 @@ export async function PUT(
 }
 
 // DELETE - Delete a specific admin
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-
+    const params = await context.params;
     const { id } = params;
     
     if (!id) {

@@ -12,6 +12,7 @@ export default function LoginPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [role, setRole] = useState(roles[0]);
+  const [schoolId, setSchoolId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotRole, setForgotRole] = useState(roles[0]);
+  const [forgotSchoolId, setForgotSchoolId] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotError, setForgotError] = useState("");
@@ -65,15 +67,12 @@ export default function LoginPage() {
     return () => clearTimeout(timer);
   }, [resendTimer]);
 
+  // Redirect after OTP success and token is set
   useEffect(() => {
     if (otpSuccess && redirectRole) {
-      console.log('Redirecting to dashboard for role:', redirectRole);
-      const timeout = setTimeout(() => {
-        if (redirectRole === "Admin") router.push("/AdminDashboard");
-        else if (redirectRole === "Student") router.push("/StudentDashboard");
-        else if (redirectRole === "School") router.push("/SchoolDashboard");
-      }, 1000);
-      return () => clearTimeout(timeout);
+      if (redirectRole === "Admin") router.push("/AdminDashboard");
+      else if (redirectRole === "Student") router.push("/StudentDashboard");
+      else if (redirectRole === "School") router.push("/SchoolDashboard");
     }
   }, [otpSuccess, redirectRole, router]);
 
@@ -82,10 +81,14 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
+      const loginBody: any = { role, email, password };
+      if (role === "School" || role === "Student") {
+        loginBody.schoolId = schoolId;
+      }
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, email, password }),
+        body: JSON.stringify(loginBody),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Login failed");
@@ -117,13 +120,11 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "OTP verification failed");
-      setOtpSuccess(true);
       localStorage.setItem("token", data.token);
-      // Remove cookie-based token storage
-      // document.cookie = `token=${data.token}; path=/;`;
       const decoded: any = jwtDecode(data.token);
-      console.log('OTP Success:', { token: data.token, decoded });
+      setOtpSuccess(true);
       setRedirectRole(decoded.role);
+      console.log('OTP Success:', { token: data.token, decoded });
     } catch (err: any) {
       setOtpError(err.message || "OTP verification failed");
     } finally {
@@ -137,10 +138,14 @@ export default function LoginPage() {
     setForgotSuccess("");
     setForgotError("");
     try {
+      const forgotBody: any = { email: forgotEmail, role: forgotRole };
+      if (forgotRole === "School" || forgotRole === "Student") {
+        forgotBody.schoolId = forgotSchoolId;
+      }
       const res = await fetch("/api/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail, role: forgotRole }),
+        body: JSON.stringify(forgotBody),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Failed to send OTP");
@@ -166,15 +171,19 @@ export default function LoginPage() {
       return;
     }
     try {
+      const resetBody: any = {
+        email: forgotEmail,
+        role: forgotRole,
+        otp: forgotOtp,
+        newPassword: forgotNewPassword
+      };
+      if (forgotRole === "School" || forgotRole === "Student") {
+        resetBody.schoolId = forgotSchoolId;
+      }
       const res = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: forgotEmail,
-          role: forgotRole,
-          otp: forgotOtp,
-          newPassword: forgotNewPassword
-        }),
+        body: JSON.stringify(resetBody),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Failed to reset password");
@@ -200,10 +209,14 @@ export default function LoginPage() {
     setResendSuccess("");
     setResendError("");
     try {
+      const resendBody: any = { email, role };
+      if (role === "School" || role === "Student") {
+        resendBody.schoolId = schoolId;
+      }
       const res = await fetch("/api/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role }),
+        body: JSON.stringify(resendBody),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Failed to resend OTP");
@@ -256,6 +269,17 @@ export default function LoginPage() {
                   <option key={r} value={r}>{r}</option>
                 ))}
               </motion.select>
+              {(role === "School" || role === "Student") && (
+                <motion.input
+                  type="text"
+                  value={schoolId}
+                  onChange={e => setSchoolId(e.target.value)}
+                  required
+                  placeholder="School ID"
+                  className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 shadow-sm"
+                  whileFocus={{ scale: 1.03 }}
+                />
+              )}
               <motion.input
                 type="email"
                 value={email}
@@ -452,6 +476,16 @@ export default function LoginPage() {
                             <option key={r} value={r}>{r}</option>
                           ))}
                         </select>
+                        {(forgotRole === "School" || forgotRole === "Student") && (
+                          <input
+                            type="text"
+                            value={forgotSchoolId}
+                            onChange={e => setForgotSchoolId(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 mt-2"
+                            placeholder="School ID"
+                          />
+                        )}
                       </motion.div>
                       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
                         <label className="block text-blue-900 font-medium mb-1">Email</label>

@@ -54,7 +54,10 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const admin = await adminService.createAdmin(validation.data!);
+      if (!validation.data) throw new Error('Validation failed');
+      const { confirmPassword, ...adminData } = validation.data;
+      // Cast to any to satisfy the type, since AdminService handles the rest
+      const admin = await adminService.createAdmin(adminData as any);
       console.log('Admin created:', admin._id);
       const adminObj = admin.toObject();
       delete adminObj.password;

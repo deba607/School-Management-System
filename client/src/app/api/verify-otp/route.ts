@@ -7,7 +7,9 @@ const JWT_SECRET = process.env.JWT_SECRET || "changeme";
 export async function POST(req: NextRequest) {
   try {
     const { userId, role, otp } = await req.json();
+    console.log('OTP Verification Request:', { userId, role, otp });
     const valid = await verifyOTP(userId, role, otp);
+    console.log('OTP Verification Result:', valid);
     if (!valid) {
       return NextResponse.json({ success: false, error: "Invalid or expired OTP" }, { status: 400 });
     }

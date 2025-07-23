@@ -17,11 +17,23 @@ export interface ISchool extends Document {
     size: number;
     base64Data: string;
   }>;
+  schoolId: string;
+  password: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const SchoolSchema: Schema = new Schema({
+  schoolId: {
+    type: String,
+    required: [true, 'School ID is required'],
+    unique: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required']
+  },
   name: {
     type: String,
     required: [true, 'School name is required'],

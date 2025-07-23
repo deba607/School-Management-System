@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "../../header";
 import Sidebar from "../../sidebar";
 import { Eye, EyeOff } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 
 const initialForm = {
   name: "",
@@ -67,8 +68,23 @@ export default function AddTeacher() {
     }
     setLoading(true);
     try {
+      // Get schoolId from JWT token
+      let schoolId = '';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (token) {
+        try {
+          const decoded: any = jwtDecode(token);
+          schoolId = decoded.schoolId || '';
+        } catch {}
+      }
+      if (!schoolId) {
+        setError('School ID not found in token. Please re-login.');
+        setLoading(false);
+        return;
+      }
       const formData: any = {
         ...form,
+        schoolId,
         pictures: [],
       };
       if (pictures) {

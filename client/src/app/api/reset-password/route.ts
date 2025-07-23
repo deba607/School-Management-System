@@ -3,19 +3,26 @@ import connectDB from "../../../lib/mongodb";
 import { Admin } from "../../../models/Admin";
 import { Student } from "../../../models/Student";
 import { Teacher } from "../../../models/Teacher";
+import { School } from "../../../models/School";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   await connectDB();
   try {
-    const { email, role, otp, newPassword } = await req.json();
+    const { email, role, otp, newPassword, schoolId } = await req.json();
     let user = null;
     if (role === "Admin") {
       user = await Admin.findOne({ email });
     } else if (role === "Student") {
-      user = await Student.findOne({ email });
+      if (!schoolId) {
+        return NextResponse.json({ success: false, error: "School ID is required for students" }, { status: 400 });
+      }
+      user = await Student.findOne({ email, schoolId });
     } else if (role === "School") {
-      user = await Teacher.findOne({ email });
+      if (!schoolId) {
+        return NextResponse.json({ success: false, error: "School ID is required for schools" }, { status: 400 });
+      }
+      user = await School.findOne({ email, schoolId });
     } else {
       return NextResponse.json({ success: false, error: "Invalid role" }, { status: 400 });
     }
