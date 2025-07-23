@@ -18,9 +18,19 @@ export async function verifyOTP(userId: string, role: string, otp: string) {
   if (role === "Admin") user = await Admin.findById(userId);
   else if (role === "Student") user = await Student.findById(userId);
   else if (role === "School") user = await School.findById(userId);
-  if (!user || !user.otp || !user.otpExpiry) return false;
-  if (user.otp !== otp) return false;
-  if (user.otpExpiry < new Date()) return false;
+  console.log('User found for OTP:', user);
+  if (!user || !user.otp || !user.otpExpiry) {
+    console.log('OTP or expiry missing:', { otp: user?.otp, otpExpiry: user?.otpExpiry });
+    return false;
+  }
+  if (user.otp !== otp) {
+    console.log('OTP mismatch:', { expected: user.otp, received: otp });
+    return false;
+  }
+  if (user.otpExpiry < new Date()) {
+    console.log('OTP expired:', { otpExpiry: user.otpExpiry, now: new Date() });
+    return false;
+  }
   user.otp = undefined;
   user.otpExpiry = undefined;
   await user.save();
