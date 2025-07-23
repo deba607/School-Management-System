@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
+import { Eye, EyeOff } from "lucide-react";
 
 const roles = ["Admin", "Student", "School"];
 
@@ -35,6 +36,9 @@ export default function LoginPage() {
   const [resetError, setResetError] = useState('');
   const router = useRouter();
   const forgotModalRef = useRef<HTMLDivElement>(null);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false);
 
   useEffect(() => {
     gsap.fromTo(containerRef.current, { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
@@ -214,15 +218,27 @@ export default function LoginPage() {
                 className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 shadow-sm"
                 whileFocus={{ scale: 1.03 }}
               />
-              <motion.input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                placeholder="Password"
-                className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 shadow-sm"
-                whileFocus={{ scale: 1.03 }}
-              />
+              <div className="relative">
+                <motion.input
+                  type={showLoginPassword ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  placeholder="Password"
+                  className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 shadow-sm pr-12"
+                  whileFocus={{ scale: 1.03 }}
+                />
+                <motion.button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                  onClick={() => setShowLoginPassword(v => !v)}
+                  whileTap={{ scale: 0.85 }}
+                  tabIndex={-1}
+                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </motion.button>
+              </div>
               <motion.button
                 type="submit"
                 disabled={loading}
@@ -424,25 +440,49 @@ export default function LoginPage() {
                       </motion.div>
                       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
                         <label className="block text-blue-900 font-medium mb-1">New Password</label>
-                        <input
-                          type="password"
-                          value={forgotNewPassword}
-                          onChange={e => setForgotNewPassword(e.target.value)}
-                          required
-                          className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
-                          placeholder="Enter new password"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showForgotNewPassword ? "text" : "password"}
+                            value={forgotNewPassword}
+                            onChange={e => setForgotNewPassword(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 pr-12"
+                            placeholder="Enter new password"
+                          />
+                          <motion.button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                            onClick={() => setShowForgotNewPassword(v => !v)}
+                            whileTap={{ scale: 0.85 }}
+                            tabIndex={-1}
+                            aria-label={showForgotNewPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showForgotNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          </motion.button>
+                        </div>
                       </motion.div>
                       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
                         <label className="block text-blue-900 font-medium mb-1">Confirm Password</label>
-                        <input
-                          type="password"
-                          value={forgotConfirmPassword}
-                          onChange={e => setForgotConfirmPassword(e.target.value)}
-                          required
-                          className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
-                          placeholder="Confirm new password"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showForgotConfirmPassword ? "text" : "password"}
+                            value={forgotConfirmPassword}
+                            onChange={e => setForgotConfirmPassword(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 pr-12"
+                            placeholder="Confirm new password"
+                          />
+                          <motion.button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                            onClick={() => setShowForgotConfirmPassword(v => !v)}
+                            whileTap={{ scale: 0.85 }}
+                            tabIndex={-1}
+                            aria-label={showForgotConfirmPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showForgotConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          </motion.button>
+                        </div>
                       </motion.div>
                       <motion.button
                         type="submit"
