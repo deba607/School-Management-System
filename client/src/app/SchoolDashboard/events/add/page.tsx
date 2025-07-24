@@ -5,6 +5,7 @@ import Header from "../../header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import { jwtDecode } from "jwt-decode";
 
 const initialForm = { title: "", description: "", date: "" };
 
@@ -16,10 +17,22 @@ export default function AddEventPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [schoolId, setSchoolId] = useState('');
 
   useEffect(() => {
     gsap.fromTo(containerRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
     gsap.fromTo(titleRef.current, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, delay: 0.2, ease: "elastic.out(1, 0.5)" });
+  }, []);
+
+  useEffect(() => {
+    // Set schoolId from JWT
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        setSchoolId(decoded.schoolId || '');
+      } catch {}
+    }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -33,10 +46,14 @@ export default function AddEventPage() {
     setError(null);
     setSuccess(false);
     try {
+      const formData: any = {
+        ...form,
+        schoolId,
+      };
       const res = await fetch("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formData),
       });
       if (!res.ok) {
         let errMsg = "Failed to add event";
@@ -73,7 +90,18 @@ export default function AddEventPage() {
             >
               Add New Event
             </h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+                <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                <input
+                  id="schoolId"
+                  name="schoolId"
+                  type="text"
+                  value={schoolId}
+                  disabled
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                />
+              </motion.div>
               <input
                 type="text"
                 name="title"

@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AttendanceService } from '@/services/attendanceService';
 import { validateAttendance } from '@/validators/AttendanceValidators';
 import { connectDB } from '@/lib/mongoose';
+import { Attendance } from '@/models/Attendance';
 
 const attendanceService = new AttendanceService();
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    // Ignore schoolId query param, always return all attendance
-    const attendance = await attendanceService.getAllAttendance();
+    const { searchParams } = new URL(request.url);
+    const schoolId = searchParams.get('schoolId');
+    let attendance;
+    if (schoolId) {
+      attendance = await Attendance.find({ schoolId });
+    } else {
+      attendance = await attendanceService.getAllAttendance();
+    }
     return NextResponse.json({ success: true, data: attendance });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to fetch attendance' }, { status: 500 });

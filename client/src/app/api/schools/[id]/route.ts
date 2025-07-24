@@ -7,13 +7,10 @@ import bcrypt from 'bcryptjs';
 const schoolService = new SchoolService();
 
 // GET - Get a specific school by ID
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-
+    const { params } = await Promise.resolve(context);
     const { id } = params;
     
     if (!id) {
@@ -63,13 +60,10 @@ export async function GET(
 }
 
 // PUT - Update a specific school
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-
+    const { params } = await Promise.resolve(context);
     const { id } = params;
     const body = await request.json();
     
@@ -173,13 +167,10 @@ export async function PUT(
 }
 
 // DELETE - Delete a specific school
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-
+    const { params } = await Promise.resolve(context);
     const { id } = params;
     
     if (!id) {

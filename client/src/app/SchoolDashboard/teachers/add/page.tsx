@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import Header from "../../header";
 import Sidebar from "../../sidebar";
 import { Eye, EyeOff } from "lucide-react";
+import { getSchoolIdFromToken } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../../school-context";
 
 const initialForm = {
   name: "",
@@ -27,10 +29,12 @@ export default function AddTeacher() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [schoolId, setSchoolId] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
+  const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
     // GSAP animations on mount
@@ -62,28 +66,39 @@ export default function AddTeacher() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    // Log current state for debugging
+    console.log('Form submission - schoolId:', schoolId);
+    console.log('Form data:', form);
+    
+    // Validate schoolId is present
+    if (!schoolId) {
+      console.error('School ID is missing in form submission');
+      setError("School ID is missing. Please try refreshing the page.");
+      return;
+    }
+    
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+    
+    // Validate address is present
+    if (!form.address || form.address.trim().length < 5) {
+      setError("Please enter a valid address (at least 5 characters)");
+      return;
+    }
+    
     setLoading(true);
     try {
-      // Get schoolId from JWT token
-      let schoolId = '';
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (token) {
-        try {
-          const decoded: any = jwtDecode(token);
-          schoolId = decoded.schoolId || '';
-        } catch {}
-      }
-      if (!schoolId) {
-        setError('School ID not found in token. Please re-login.');
-        setLoading(false);
-        return;
-      }
+      // Create form data with all required fields explicitly included
       const formData: any = {
-        ...form,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        address: form.address, // Explicitly include address
+        password: form.password,
         schoolId,
         pictures: [],
       };
@@ -99,6 +114,7 @@ export default function AddTeacher() {
           });
         }
       }
+      console.log('Sending form data to API:', formData);
       const response = await fetch("/api/teachers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -184,6 +200,17 @@ export default function AddTeacher() {
               </motion.div>
             )}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+                <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                <input
+                  id="schoolId"
+                  name="schoolId"
+                  type="text"
+                  value={schoolId}
+                  disabled
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                />
+              </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                 <label htmlFor="name" className="block text-blue-900 font-medium mb-2">Full Name</label>
                 <input

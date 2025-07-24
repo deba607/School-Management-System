@@ -28,17 +28,24 @@ export async function POST(request: NextRequest) {
     if ('confirmPassword' in body) {
       delete body.confirmPassword;
     }
+    // Log the received body for debugging
+    console.log('Request body:', JSON.stringify(body, null, 2));
+    
     // Ensure address is included in the body
-    const validation = validateTeacher(body);
-    console.log('Validation result:', validation);
-    if (!validation.success || !validation.data?.address) {
-      console.error('Address missing or empty:', validation.data?.address);
+    if (!body.address || body.address.trim().length < 5) {
+      console.error('Address validation failed - missing or too short:', body.address);
       return NextResponse.json(
-        { success: false, error: 'Address is missing or empty after validation', details: validation.errors },
+        { success: false, error: 'Address is required and must be at least 5 characters long' },
         { status: 400 }
       );
     }
+    
+    // Validate the teacher data
+    const validation = validateTeacher(body);
+    console.log('Validation result:', validation);
+    
     if (!validation.success) {
+      console.error('Validation failed:', validation.errors);
       return NextResponse.json(
         { success: false, error: 'Validation failed', details: validation.errors },
         { status: 400 }

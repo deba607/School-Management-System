@@ -2,13 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ResultService } from '@/services/resultService';
 import { validateResult } from '@/validators/ResultValidators';
 import { connectDB } from '@/lib/mongoose';
+import { Result } from '@/models/Result';
 
 const resultService = new ResultService();
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
-    const results = await resultService.getAllResults();
+    const { searchParams } = new URL(request.url);
+    const schoolId = searchParams.get('schoolId');
+    let results;
+    if (schoolId) {
+      results = await Result.find({ schoolId });
+    } else {
+      results = await resultService.getAllResults();
+    }
     return NextResponse.json({ success: true, data: results });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to fetch results' }, { status: 500 });

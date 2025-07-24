@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { School } from '@/models/School';
 import { connectDB } from '@/lib/mongoose';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { schoolId: string; imageIndex: string } }
-) {
+export async function GET(request: NextRequest, context: { params: { schoolId: string; imageIndex: string } }) {
   try {
     await connectDB();
-
+    const { params } = await Promise.resolve(context);
     const { schoolId, imageIndex } = params;
+
     const index = parseInt(imageIndex);
 
     if (isNaN(index) || index < 0) {

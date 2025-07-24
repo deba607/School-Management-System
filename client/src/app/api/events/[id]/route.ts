@@ -4,8 +4,9 @@ import { EventSchema } from "../../../../validators/EventValidators";
 import connectDB from "../../../../lib/mongodb";
 import mongoose from "mongoose";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: { id: string } }) {
   await connectDB();
+  const { params } = await Promise.resolve(context);
   try {
     const event = await Event.findById(params.id);
     if (!event) return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });
@@ -15,8 +16,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: { id: string } }) {
   await connectDB();
+  const { params } = await Promise.resolve(context);
   try {
     const body = await req.json();
     const parsed = EventSchema.safeParse(body);
@@ -31,8 +33,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, context: { params: { id: string } }) {
   await connectDB();
+  const { params } = await Promise.resolve(context);
   try {
     const event = await Event.findByIdAndDelete(params.id);
     if (!event) return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });

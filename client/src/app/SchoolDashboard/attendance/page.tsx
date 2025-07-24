@@ -5,6 +5,8 @@ import Header from "../header";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../school-context";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
@@ -38,6 +40,7 @@ export default function AttendancePage() {
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
+  const { schoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
     gsap.fromTo(
@@ -168,10 +171,11 @@ export default function AttendancePage() {
     setSaving(true);
     setFormError(null);
     try {
+      const formData = { ...attendanceForm, schoolId };
       const res = await fetch("/api/attendance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(attendanceForm),
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "Failed to save attendance");
@@ -354,6 +358,17 @@ export default function AttendancePage() {
                 </button>
                 <h2 className="text-xl font-bold text-blue-900 mb-4 text-center">Give Attendance</h2>
                 <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+                  <div className="form-field">
+                    <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                    <input
+                      id="schoolId"
+                      name="schoolId"
+                      type="text"
+                      value={schoolId}
+                      disabled
+                      className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                    />
+                  </div>
                   <div className="flex gap-2">
                     <select
                       name="className"

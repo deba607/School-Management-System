@@ -3,6 +3,7 @@ import { StudentService } from '@/services/studentService';
 import { validateStudent } from '@/validators/StudentValidators';
 import { connectDB } from '@/lib/mongoose';
 import { Student } from '@/models/Student';
+import { School } from '@/models/School';
 
 const studentService = new StudentService();
 
@@ -14,6 +15,15 @@ export async function POST(request: NextRequest) {
     // Remove confirmPassword before validation and saving
     if ('confirmPassword' in body) {
       delete body.confirmPassword;
+    }
+    // Convert schoolId string to ObjectId if needed
+    if (body.schoolId && typeof body.schoolId === 'string' && body.schoolId.length < 24) {
+      // Look up School by schoolId string
+      const schoolDoc = await School.findOne({ schoolId: body.schoolId });
+      if (!schoolDoc) {
+        return NextResponse.json({ success: false, error: 'School not found for provided schoolId' }, { status: 400 });
+      }
+      body.schoolId = schoolDoc._id;
     }
     const validation = validateStudent(body);
     if (!validation.success) {

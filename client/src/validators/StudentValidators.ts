@@ -32,6 +32,7 @@ export const StudentSchema = z.object({
     .min(5, 'Address must be at least 5 characters')
     .max(200, 'Address cannot exceed 200 characters')
     .trim(),
+  schoolId: z.string().min(6, 'School ID is required'),
   pictures: z.array(PictureSchema).optional().default([])
 });
 
@@ -40,6 +41,6 @@ export function validateStudent(data: any) {
   if (result.success) {
     return { success: true, data: result.data };
   } else {
-    return { success: false, errors: result.error.errors };
+    return { success: false, errors: result.error.issues };
   }
 } 

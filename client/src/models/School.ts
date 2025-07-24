@@ -19,6 +19,8 @@ export interface ISchool extends Document {
   }>;
   schoolId: string;
   password: string;
+  otp?: string;
+  otpExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +36,8 @@ const SchoolSchema: Schema = new Schema({
     type: String,
     required: [true, 'Password is required']
   },
+  otp: { type: String },
+  otpExpiry: { type: Date },
   name: {
     type: String,
     required: [true, 'School name is required'],

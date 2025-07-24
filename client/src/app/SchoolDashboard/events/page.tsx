@@ -5,6 +5,8 @@ import Header from "../header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../school-context";
 
 export default function EventsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,6 +17,7 @@ export default function EventsPage() {
   const [search, setSearch] = useState("");
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { schoolId } = useSchool();
 
   useEffect(() => {
     gsap.fromTo(containerRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
@@ -25,7 +28,9 @@ export default function EventsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/events");
+      // Pass schoolId as a query param if available
+      const url = schoolId ? `/api/events?schoolId=${encodeURIComponent(schoolId)}` : "/api/events";
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch events");
       const data = await res.json();
       if (data.success) {

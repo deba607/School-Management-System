@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { createEvent, getAllEvents } from "@/services/eventService";
 import { EventSchema } from "@/validators/EventValidators";
 import connectDB from "@/lib/mongodb";
+import Event from "@/models/Event";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   await connectDB();
   try {
-    const events = await getAllEvents();
+    const { searchParams } = new URL(request.url);
+    const schoolId = searchParams.get('schoolId');
+    let events;
+    if (schoolId) {
+      events = await Event.find({ schoolId });
+    } else {
+      events = await getAllEvents();
+    }
     return NextResponse.json({ success: true, data: events });
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as any).message }, { status: 500 });

@@ -42,6 +42,6 @@ export function validateTeacher(data: any) {
   if (result.success) {
     return { success: true, data: result.data };
   } else {
-    return { success: false, errors: result.error.errors };
+    return { success: false, errors: result.error.issues };
   }
 } 

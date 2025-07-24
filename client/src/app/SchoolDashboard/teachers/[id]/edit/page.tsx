@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import Header from "../../../header";
 import Sidebar from "../../../sidebar";
-import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../../school-context";
 
 const initialForm = {
   name: "",
@@ -27,6 +27,7 @@ export default function EditTeacher() {
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
+  const { schoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
     // GSAP animations on mount
@@ -89,19 +90,8 @@ export default function EditTeacher() {
     setLoading(true);
     setError(null);
     try {
-      // Get schoolId from JWT token
-      let schoolId = '';
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (token) {
-        try {
-          const decoded: any = jwtDecode(token);
-          schoolId = decoded.schoolId || '';
-        } catch {}
-      }
       if (!schoolId) {
-        setError('School ID not found in token. Please re-login.');
-        setLoading(false);
-        return;
+        throw new Error('No schoolId found');
       }
       const formData: any = {
         ...form,

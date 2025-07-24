@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "../../header";
 import Sidebar from "../../sidebar";
 import { Eye, EyeOff } from "lucide-react";
+import { useSchool } from "../../school-context";
 
 const initialForm = {
   name: "",
@@ -26,10 +27,16 @@ export default function AddStudent() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [schoolId, setSchoolId] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
+  const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
+
+  useEffect(() => {
+    setSchoolId(contextSchoolId);
+  }, [contextSchoolId]);
 
   useEffect(() => {
     // GSAP animations on mount
@@ -69,6 +76,7 @@ export default function AddStudent() {
     try {
       const formData: any = {
         ...form,
+        schoolId,
         pictures: [],
       };
       if (pictures) {
@@ -168,6 +176,17 @@ export default function AddStudent() {
               </motion.div>
             )}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+                <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                <input
+                  id="schoolId"
+                  name="schoolId"
+                  type="text"
+                  value={schoolId}
+                  disabled
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                />
+              </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                 <label htmlFor="name" className="block text-blue-900 font-medium mb-2">Full Name</label>
                 <input
@@ -250,7 +269,7 @@ export default function AddStudent() {
                   id="class"
                   name="class"
                   value={form.class}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e)}
                   required
                   className="w-full bg-white/60 border border-blue-200 text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
                 >
@@ -266,7 +285,7 @@ export default function AddStudent() {
                   id="sec"
                   name="sec"
                   value={form.sec}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e)}
                   required
                   className="w-full bg-white/60 border border-blue-200 text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
                 >

@@ -9,7 +9,7 @@ const adminService = new AdminService();
 export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-    const params = await context.params;
+    const { params } = await Promise.resolve(context);
     const { id } = params;
     
     if (!id) {
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest, context: { params: { id: string 
 export async function PUT(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-    const params = await context.params;
+    const { params } = await Promise.resolve(context);
     const { id } = params;
     const body = await request.json();
     
@@ -147,7 +147,7 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
 export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
   try {
     await connectDB();
-    const params = await context.params;
+    const { params } = await Promise.resolve(context);
     const { id } = params;
     
     if (!id) {

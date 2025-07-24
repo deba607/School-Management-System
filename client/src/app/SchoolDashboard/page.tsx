@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { SchoolProvider } from "./school-context";
 
 const SchoolDashboardPage = () => {
   const router = useRouter();
@@ -25,7 +26,7 @@ const SchoolDashboardPage = () => {
       router.push('/Login');
       return;
     }
-    if (!decoded || decoded.role !== 'School') {
+    if (!decoded || (decoded as any).role !== 'School') {
       localStorage.removeItem('token');
       router.push('/Login');
       return;
