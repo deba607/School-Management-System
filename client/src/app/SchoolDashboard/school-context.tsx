@@ -8,6 +8,12 @@ interface School {
   schoolId: string;
   name?: string;
   email?: string;
+  pictures?: Array<{
+    originalName: string;
+    mimeType: string;
+    size: number;
+    base64Data: string;
+  }>;
   // Add other fields as needed
 }
 

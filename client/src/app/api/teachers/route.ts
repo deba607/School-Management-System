@@ -4,6 +4,7 @@ import { validateTeacher } from '@/validators/TeacherValidators';
 import { connectDB } from '@/lib/mongoose';
 import { Teacher } from '@/models/Teacher';
 import { ApiResponse } from '@/lib/apiResponse';
+import { getServerUser } from '@/utils/serverAuth';
  // Add this import, adjust path if needed
 
 const teacherService = new TeacherService();
@@ -22,6 +23,14 @@ export async function GET(request: NextRequest) {
 
 // POST - Create a new teacher
 export async function POST(request: NextRequest) {
+  // Auth check
+  const user = getServerUser(request);
+  if (!user) {
+    return ApiResponse.unauthorized('You must be logged in to perform this action');
+  }
+  if (user.role !== 'admin') {
+    return ApiResponse.forbidden('You do not have permission to perform this action');
+  }
   try {
     await connectDB();
     const body = await request.json();

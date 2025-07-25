@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { jwtDecode } from "jwt-decode";
 import { useSchool } from "./school-context";
 
 const Header = () => {
@@ -25,14 +24,20 @@ const Header = () => {
     return <div className="text-center text-red-600 py-4">{error || "Failed to load school info"}</div>;
   }
 
-  let displayName = school.name;
-  let displayEmail = school.email;
-  let displaySchoolId = schoolId;
-  let displayPic = '';
-  if (school.pictures && school.pictures[0] && school.pictures[0].base64Data && school.pictures[0].mimeType) {
+  let displayName = school.name || "School";
+  let displayEmail = school.email || "";
+  let displaySchoolId = schoolId || "";
+  let displayPic = "";
+
+  if (
+    Array.isArray(school.pictures) &&
+    school.pictures[0] &&
+    school.pictures[0].base64Data &&
+    school.pictures[0].mimeType
+  ) {
     displayPic = `data:${school.pictures[0].mimeType};base64,${school.pictures[0].base64Data}`;
   } else {
-    displayPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(school.name)}`;
+    displayPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}`;
   }
 
   return (

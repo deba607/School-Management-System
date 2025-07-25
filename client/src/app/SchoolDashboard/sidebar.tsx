@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { useSchool } from "./school-context";
 
 const features = [
   { name: "Overview", path: "/SchoolDashboard" },
@@ -22,6 +23,7 @@ const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
+  const { school, schoolId, loading, error } = useSchool();
 
   const handleLogout = async () => {
     setLoggingOut(true);

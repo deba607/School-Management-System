@@ -3,10 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { jwtDecode } from "jwt-decode";
+import { useSchool } from "./school-context";
 
 const Home = () => {
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const { school, schoolId, loading: schoolLoading, error: schoolError } = useSchool();
   const [stats, setStats] = useState({
     teachers: 0,
     students: 0,
@@ -39,15 +40,12 @@ const Home = () => {
     async function fetchStats() {
       setStats(s => ({ ...s, loading: true, error: null }));
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        if (!token) throw new Error('No token');
-        // No need to decode schoolId or fetch teacher for schoolId
-        // Fetch all in parallel without schoolId
+        // Use window.authFetch for authenticated requests
         const [teachersRes, studentsRes, classesRes, attendanceRes] = await Promise.all([
-          fetch(`/api/teachers`),
-          fetch(`/api/students`),
-          fetch(`/api/class-schedules`),
-          fetch(`/api/attendance`),
+          window.authFetch(`/api/teachers`),
+          window.authFetch(`/api/students`),
+          window.authFetch(`/api/class-schedules`),
+          window.authFetch(`/api/attendance`),
         ]);
         const teachersData = await teachersRes.json();
         const studentsData = await studentsRes.json();

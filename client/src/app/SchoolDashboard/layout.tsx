@@ -1,10 +1,22 @@
+'use client';
+
 import React from "react";
 import { SchoolProvider } from "./school-context";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-export default function SchoolDashboardLayout({ children }: { children: React.ReactNode }) {
+export default function SchoolDashboardLayout({ 
+  children 
+}: { 
+  children: React.ReactNode 
+}) {
   return (
-    <SchoolProvider>
-      {children}
-    </SchoolProvider>
+    <AuthProvider>
+      <SchoolProvider>
+        <ProtectedRoute requiredRole="School">
+          {children}
+        </ProtectedRoute>
+      </SchoolProvider>
+    </AuthProvider>
   );
-} 
+}

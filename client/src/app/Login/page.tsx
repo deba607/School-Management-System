@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { Eye, EyeOff } from "lucide-react";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "@/contexts/AuthContext";
 
 const roles = ["Admin", "Student", "School"];
 
@@ -76,6 +76,8 @@ export default function LoginPage() {
     }
   }, [otpSuccess, redirectRole, router]);
 
+  const { login } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -85,23 +87,31 @@ export default function LoginPage() {
       if (role === "School" || role === "Student") {
         loginBody.schoolId = schoolId;
       }
+      
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginBody),
       });
+      
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || "Login failed");
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Login failed");
+      }
+      
       if (data.otpSent) {
         setOtpStep(true);
         setUserId(data.userId);
-      } else {
+      } else if (data.token) {
+        // Handle direct login without OTP if needed
+        login(data.token);
         if (role === "Admin") router.push("/AdminDashboard");
         else if (role === "Student") router.push("/StudentDashboard");
         else if (role === "School") router.push("/SchoolDashboard");
       }
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      console.error('Login error:', err);
+      setError(err.message || "Login failed. Please check your credentials and try again.");
     } finally {
       setLoading(false);
     }
@@ -112,21 +122,35 @@ export default function LoginPage() {
     setOtpLoading(true);
     setOtpError(null);
     setOtpSuccess(false);
+    
     try {
       const res = await fetch("/api/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, role, otp }),
       });
+      
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || "OTP verification failed");
-      localStorage.setItem("token", data.token);
-      const decoded: any = jwtDecode(data.token);
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "OTP verification failed");
+      }
+      
+      if (!data.token) {
+        throw new Error("Authentication token not received");
+      }
+      
+      // Store the token using our auth context
+      login(data.token);
+      
+      // Set success state and redirect
       setOtpSuccess(true);
-      setRedirectRole(decoded.role);
-      console.log('OTP Success:', { token: data.token, decoded });
+      setRedirectRole(role);
+      
+      // The useEffect will handle the actual redirect
+      
     } catch (err: any) {
-      setOtpError(err.message || "OTP verification failed");
+      console.error('OTP verification error:', err);
+      setOtpError(err.message || "Failed to verify OTP. Please try again.");
     } finally {
       setOtpLoading(false);
     }
