@@ -5,6 +5,10 @@ import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import Header from "../../header";
 import Sidebar from "../../sidebar";
+import { Eye, EyeOff } from "lucide-react";
+import { getSchoolIdFromToken } from "@/utils/auth";
+import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../../school-context";
 
 const initialForm = {
   name: "",
@@ -23,10 +27,20 @@ export default function AddTeacher() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [schoolId, setSchoolId] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
+  const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
+
+  useEffect(() => {
+    if (contextSchoolId) {
+      setSchoolId(contextSchoolId);
+    }
+  }, [contextSchoolId]);
 
   useEffect(() => {
     // GSAP animations on mount
@@ -38,7 +52,7 @@ export default function AddTeacher() {
     return () => { gsap.killTweensOf(containerRef.current); };
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -58,14 +72,40 @@ export default function AddTeacher() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    // Log current state for debugging
+    console.log('Form submission - schoolId:', schoolId);
+    console.log('Form data:', form);
+    
+    // Validate schoolId is present
+    if (!schoolId) {
+      console.error('School ID is missing in form submission');
+      setError("School ID is missing. Please try refreshing the page.");
+      return;
+    }
+    
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+    
+    // Validate address is present
+    if (!form.address || form.address.trim().length < 5) {
+      setError("Please enter a valid address (at least 5 characters)");
+      return;
+    }
+    
     setLoading(true);
     try {
+      // Create form data with all required fields explicitly included
       const formData: any = {
-        ...form,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        subject: form.subject,
+        address: form.address, // Explicitly include address
+        password: form.password,
+        schoolId,
         pictures: [],
       };
       if (pictures) {
@@ -80,6 +120,7 @@ export default function AddTeacher() {
           });
         }
       }
+      console.log('Sending form data to API:', formData);
       const response = await fetch("/api/teachers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -165,6 +206,17 @@ export default function AddTeacher() {
               </motion.div>
             )}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+                <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                <input
+                  id="schoolId"
+                  name="schoolId"
+                  type="text"
+                  value={schoolId}
+                  disabled
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                />
+              </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                 <label htmlFor="name" className="block text-blue-900 font-medium mb-2">Full Name</label>
                 <input
@@ -219,29 +271,53 @@ export default function AddTeacher() {
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 0.6 }}>
                 <label htmlFor="password" className="block text-blue-900 font-medium mb-2">Password</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Enter password"
+                    required
+                    className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                  />
+                  <motion.button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                    onClick={() => setShowPassword(v => !v)}
+                    whileTap={{ scale: 0.85 }}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </motion.button>
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.75, duration: 0.6 }}>
                 <label htmlFor="confirmPassword" className="block text-blue-900 font-medium mb-2">Confirm Password</label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm password"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm password"
+                    required
+                    className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                  />
+                  <motion.button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                    onClick={() => setShowConfirmPassword(v => !v)}
+                    whileTap={{ scale: 0.85 }}
+                    tabIndex={-1}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </motion.button>
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.62, duration: 0.6 }}>
                 <label htmlFor="address" className="block text-blue-900 font-medium mb-2">Address</label>

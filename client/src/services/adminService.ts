@@ -1,5 +1,6 @@
 import { Admin, IAdmin } from '@/models/Admin';
 import { connectDB } from '@/lib/mongoose';
+import bcrypt from 'bcryptjs';
 
 export class AdminService {
   async createAdmin(adminData: Omit<IAdmin, 'id' | 'createdAt' | 'updatedAt'>): Promise<IAdmin> {
@@ -11,7 +12,13 @@ export class AdminService {
       if (existingAdmin) {
         throw new Error('Admin with this email already exists');
       }
-
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(adminData.password, 10);
+      adminData.password = hashedPassword;
+      // Remove confirmPassword if present
+      if ('confirmPassword' in adminData) {
+        delete (adminData as any).confirmPassword;
+      }
       // Create new admin
       const admin = new Admin(adminData);
       const savedAdmin = await admin.save();

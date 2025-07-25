@@ -78,7 +78,7 @@ export default function Footer4col() {
   const navigation = {
     solutions: [
       { name: 'Student Management', href: '#' },
-      { name: 'Teacher Dashboard', href: '#' },
+      { name: 'School Dashboard', href: '#' },
       { name: 'Attendance Tracking', href: '#' },
       { name: 'Performance Analytics', href: '#' },
       { name: 'Communication Hub', href: '#' },

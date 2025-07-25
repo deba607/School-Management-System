@@ -17,7 +17,9 @@ import {
   Upload,
   ArrowLeft,
   Save,
-  X
+  X,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import AdminHeader from '../../../admin-header';
 import AdminSidebar from '../../../admin-sidebar';
@@ -89,6 +91,9 @@ export default function EditSchoolPage() {
   const params = useParams();
   const router = useRouter();
   const [form, setForm] = useState({
+    schoolId: '',
+    password: '',
+    confirmPassword: '',
     name: '',
     email: '',
     address: '',
@@ -112,6 +117,8 @@ export default function EditSchoolPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -130,6 +137,9 @@ export default function EditSchoolPage() {
         if (result.success) {
           const school = result.data;
           setForm({
+            schoolId: school.schoolId || '',
+            password: '',
+            confirmPassword: '',
             name: school.name,
             email: school.email,
             address: school.address,
@@ -312,6 +322,9 @@ export default function EditSchoolPage() {
         ...form,
         pictures: base64Images
       };
+      // If password is empty, remove password and confirmPassword from formData
+      if (!formData.password) delete formData.password;
+      if (!formData.confirmPassword) delete formData.confirmPassword;
 
       console.log('Submitting updated form data:', JSON.stringify(formData, null, 2));
 
@@ -494,6 +507,74 @@ export default function EditSchoolPage() {
               >
                 <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                   
+                  {/* Password */}
+                  <motion.div
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 0.5, ease: easeOut, delay: 0.52 }}
+                    className="form-field"
+                  >
+                    <Label htmlFor="password" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <Building2 className="w-4 h-4" />
+                      Password (leave blank to keep unchanged)
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        id="password"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 pr-12"
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Enter new password"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 bg-white/10 rounded p-1 shadow-sm focus:outline-none"
+                        onClick={() => setShowPassword(v => !v)}
+                        tabIndex={-1}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
+
+                  {/* Confirm Password */}
+                  <motion.div
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 0.5, ease: easeOut, delay: 0.53 }}
+                    className="form-field"
+                  >
+                    <Label htmlFor="confirmPassword" className="text-slate-200 flex items-center gap-2 mb-2">
+                      <Building2 className="w-4 h-4" />
+                      Confirm Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        id="confirmPassword"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-purple-400 focus:ring-purple-400 transition-all duration-300 pr-12"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm new password"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 bg-white/10 rounded p-1 shadow-sm focus:outline-none"
+                        onClick={() => setShowConfirmPassword(v => !v)}
+                        tabIndex={-1}
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
+
                   {/* School Name */}
                   <motion.div
                     variants={fieldVariants}

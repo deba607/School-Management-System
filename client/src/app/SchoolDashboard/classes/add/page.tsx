@@ -5,6 +5,8 @@ import Header from "../../header";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../../school-context";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
@@ -29,9 +31,11 @@ export default function AddClassSchedule() {
   const [subjects, setSubjects] = useState<string[]>([]);
   const [teachers, setTeachers] = useState<{ _id: string; name: string }[]>([]);
   const [dropdownLoading, setDropdownLoading] = useState(true);
+  const [schoolId, setSchoolId] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
+  const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
     gsap.fromTo(
@@ -90,16 +94,23 @@ export default function AddClassSchedule() {
     setError(null);
     setSuccess(false);
     try {
-      // TODO: Implement POST to /api/class-schedules
-      // const res = await fetch("/api/class-schedules", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      // const data = await res.json();
-      // if (!data.success) throw new Error(data.error || "Failed to add class schedule");
-      setTimeout(() => {
-        setSuccess(true);
-        setLoading(false);
-        setForm(initialForm);
-        setTimeout(() => router.push("/SchoolDashboard/classes"), 1200);
-      }, 1000);
+      const formData: any = {
+        ...form,
+        schoolId,
+      };
+      const res = await fetch("/api/class-schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to add class schedule");
+      }
+      setSuccess(true);
+      setLoading(false);
+      setForm(initialForm);
+      setTimeout(() => router.push("/SchoolDashboard/classes"), 1200);
     } catch (err: any) {
       setError(err.message || "Failed to add class schedule");
       setLoading(false);
@@ -125,7 +136,18 @@ export default function AddClassSchedule() {
             >
               Add New Class Schedule
             </h1>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+                <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                <input
+                  id="schoolId"
+                  name="schoolId"
+                  type="text"
+                  value={schoolId}
+                  disabled
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                />
+              </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                 <label htmlFor="className" className="block text-blue-900 font-medium mb-2">Class Name</label>
                 <select

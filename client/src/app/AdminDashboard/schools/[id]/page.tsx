@@ -39,6 +39,7 @@ interface School {
   }>;
   createdAt: string;
   updatedAt: string;
+  schoolId: string;
 }
 
 export default function ViewSchoolPage() {
@@ -280,6 +281,13 @@ export default function ViewSchoolPage() {
                       </div>
                     </div>
                   )}
+                  <div className="flex items-center gap-2 sm:gap-3 break-words">
+                    <Building2 className="w-4 h-4 text-slate-400" />
+                    <div>
+                      <p className="text-xs sm:text-sm text-slate-400">School ID</p>
+                      <p className="text-white break-all text-xs xs:text-sm">{school.schoolId}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 

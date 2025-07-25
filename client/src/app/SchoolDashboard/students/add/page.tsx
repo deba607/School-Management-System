@@ -5,6 +5,8 @@ import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import Header from "../../header";
 import Sidebar from "../../sidebar";
+import { Eye, EyeOff } from "lucide-react";
+import { useSchool } from "../../school-context";
 
 const initialForm = {
   name: "",
@@ -23,10 +25,20 @@ export default function AddStudent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [schoolId, setSchoolId] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const router = useRouter();
+  const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
+
+  useEffect(() => {
+    if (contextSchoolId) {
+      setSchoolId(contextSchoolId);
+    }
+  }, [contextSchoolId]);
 
   useEffect(() => {
     // GSAP animations on mount
@@ -38,7 +50,7 @@ export default function AddStudent() {
     return () => { gsap.killTweensOf(containerRef.current); };
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -55,40 +67,119 @@ export default function AddStudent() {
     }
   };
 
+  const checkIfUserExists = async (email: string) => {
+    try {
+      const response = await fetch(`/api/students/check-email?email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+      return data.exists || false;
+    } catch (error) {
+      console.error('Error checking if user exists:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    // Validate form data
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+
+    // Check if all required fields are filled
+    if (!form.name || !form.email || !form.password || !form.class || !form.sec || !form.address) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password strength
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setLoading(true);
+    
     try {
-      const formData: any = {
-        ...form,
-        pictures: [],
+      // First check if user with this email already exists
+      const userExists = await checkIfUserExists(form.email);
+      if (userExists) {
+        setError("A student with this email already exists");
+        setLoading(false);
+        return;
+      }
+
+      // Create the student data object with required fields
+      const studentData = {
+        name: form.name.trim(),
+        email: form.email.toLowerCase().trim(),
+        password: form.password, // This will be hashed on the server
+        class: form.class.trim(),
+        sec: form.sec.trim(),
+        address: form.address.trim(),
+        schoolId: schoolId,
+        pictures: [] as Array<{
+          originalName: string;
+          mimeType: string;
+          size: number;
+          base64Data: string;
+        }>,
       };
-      if (pictures) {
+
+      // Process pictures if any
+      if (pictures && pictures.length > 0) {
         for (let i = 0; i < pictures.length; i++) {
           const file = pictures[i];
           const base64 = await toBase64(file);
-          formData.pictures.push({
+          studentData.pictures.push({
             originalName: file.name,
             mimeType: file.type,
             size: file.size,
-            base64Data: base64,
+            base64Data: base64.split(',')[1], // Remove the data URL prefix
           });
         }
       }
+
+      // Submit the student data
       const response = await fetch("/api/students", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(studentData),
       });
+
       const result = await response.json();
+      
       if (!response.ok) {
-        throw new Error(result.error || "Failed to create student");
+        // Handle validation errors
+        if (response.status === 400 && result.details) {
+          // Format validation errors into a user-friendly message
+          const errorMessages = result.details.map((error: any) => 
+            `- ${error.path}: ${error.message}`
+          ).join('\n');
+          
+          throw new Error(`Validation failed:\n${errorMessages}`);
+        } 
+        // Handle duplicate email error
+        else if (response.status === 409) {
+          throw new Error("A student with this email already exists");
+        } 
+        // Handle other errors
+        else {
+          throw new Error(result.error || "Failed to create student. Please try again.");
+        }
       }
+
       if (result.success) {
         setSuccess(true);
         setForm(initialForm);
@@ -99,10 +190,13 @@ export default function AddStudent() {
           router.push("/SchoolDashboard/students");
         }, 2000);
       } else {
-        throw new Error(result.error || "Failed to create student");
+        throw new Error(result.error || "Failed to create student. Please try again.");
       }
     } catch (error: any) {
-      setError(error.message || "Failed to create student");
+      // Handle network errors or other issues
+      console.error('Error creating student:', error);
+      const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -165,6 +259,17 @@ export default function AddStudent() {
               </motion.div>
             )}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+                <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
+                <input
+                  id="schoolId"
+                  name="schoolId"
+                  type="text"
+                  value={schoolId}
+                  disabled
+                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
+                />
+              </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                 <label htmlFor="name" className="block text-blue-900 font-medium mb-2">Full Name</label>
                 <input
@@ -193,29 +298,53 @@ export default function AddStudent() {
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
                 <label htmlFor="password" className="block text-blue-900 font-medium mb-2">Password</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter password"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Enter password"
+                    required
+                    className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                  />
+                  <motion.button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                    onClick={() => setShowPassword(v => !v)}
+                    whileTap={{ scale: 0.85 }}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </motion.button>
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55, duration: 0.6 }}>
                 <label htmlFor="confirmPassword" className="block text-blue-900 font-medium mb-2">Confirm Password</label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm password"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm password"
+                    required
+                    className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                  />
+                  <motion.button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
+                    onClick={() => setShowConfirmPassword(v => !v)}
+                    whileTap={{ scale: 0.85 }}
+                    tabIndex={-1}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </motion.button>
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.6 }}>
                 <label htmlFor="class" className="block text-blue-900 font-medium mb-2">Class</label>
@@ -223,7 +352,7 @@ export default function AddStudent() {
                   id="class"
                   name="class"
                   value={form.class}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e)}
                   required
                   className="w-full bg-white/60 border border-blue-200 text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
                 >
@@ -239,7 +368,7 @@ export default function AddStudent() {
                   id="sec"
                   name="sec"
                   value={form.sec}
-                  onChange={handleChange}
+                  onChange={(e) => handleChange(e)}
                   required
                   className="w-full bg-white/60 border border-blue-200 text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
                 >

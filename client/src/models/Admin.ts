@@ -10,6 +10,9 @@ export interface IAdmin extends Document {
     size: number;
     base64Data: string;
   }>;
+  password: string;
+  otp: string;
+  otpExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +37,13 @@ const AdminSchema: Schema = new Schema({
     required: [true, 'Phone number is required'],
     trim: true
   },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    select: false
+  },
+  otp: { type: String },
+  otpExpiry: { type: Date },
   pictures: [{
     originalName: {
       type: String,
@@ -57,7 +67,6 @@ const AdminSchema: Schema = new Schema({
 });
 
 // Create indexes for better query performance
-AdminSchema.index({ email: 1 });
 AdminSchema.index({ name: 1 });
 
 export const Admin = mongoose.models.Admin || mongoose.model<IAdmin>('Admin', AdminSchema); 

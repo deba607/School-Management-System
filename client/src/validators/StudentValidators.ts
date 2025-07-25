@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import mongoose from 'mongoose';
+import { IStudent } from '@/models/Student';
 
 const PictureSchema = z.object({
   originalName: z.string(),
@@ -7,7 +9,8 @@ const PictureSchema = z.object({
   base64Data: z.string()
 });
 
-export const StudentSchema = z.object({
+// Base schema for student input (what comes from the client)
+export const StudentInputSchema = z.object({
   name: z.string()
     .min(2, 'Student name must be at least 2 characters')
     .max(100, 'Student name cannot exceed 100 characters')
@@ -32,14 +35,78 @@ export const StudentSchema = z.object({
     .min(5, 'Address must be at least 5 characters')
     .max(200, 'Address cannot exceed 200 characters')
     .trim(),
+  schoolId: z.string()
+    .min(1, 'School ID is required')
+    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
+      message: 'Invalid school ID format'
+    }),
   pictures: z.array(PictureSchema).optional().default([])
 });
 
-export function validateStudent(data: any) {
-  const result = StudentSchema.safeParse(data);
-  if (result.success) {
-    return { success: true, data: result.data };
-  } else {
-    return { success: false, errors: result.error.errors };
+// Type for the input data
+export type StudentInput = z.infer<typeof StudentInputSchema>;
+
+// Type for the database model (extends the input type with Mongoose document fields)
+export type StudentDocument = StudentInput & {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  otp?: string;
+  otpExpiry?: Date;
+};
+
+type ValidationSuccess<T> = {
+  success: true;
+  data: T;
+};
+
+type ValidationError = {
+  success: false;
+  errors: z.ZodIssue[];
+};
+
+type ValidationResult<T = StudentInput> = ValidationSuccess<T> | ValidationError;
+
+// Define a type for the student input data that doesn't include Mongoose document methods
+type StudentInputData = {
+  name: string;
+  email: string;
+  password: string;
+  class: string;
+  sec: string;
+  address: string;
+  schoolId: mongoose.Types.ObjectId;
+  pictures: Array<{
+    originalName: string;
+    mimeType: string;
+    size: number;
+    base64Data: string;
+  }>;
+  otp?: string;
+  otpExpiry?: Date;
+};
+
+// Validation result with proper typing for the data
+type StudentValidationResult = ValidationResult<StudentInputData>;
+
+export const validateStudent = (data: unknown): StudentValidationResult => {
+  const result = StudentInputSchema.safeParse(data);
+  if (!result.success) {
+    return { 
+      success: false, 
+      errors: result.error.issues 
+    };
   }
-} 
+  
+  // Create the validated data with proper types
+  const validatedData: StudentInputData = {
+    ...result.data,
+    schoolId: new mongoose.Types.ObjectId(result.data.schoolId),
+    pictures: result.data.pictures || []
+  };
+  
+  return { 
+    success: true, 
+    data: validatedData
+  };
+};

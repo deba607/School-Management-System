@@ -9,6 +9,12 @@ const PictureSchema = z.object({
 });
 
 export const SchoolSchema = z.object({
+  schoolId: z.string()
+    .min(3, 'School ID must be at least 3 characters')
+    .max(50, 'School ID cannot exceed 50 characters')
+    .trim(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Confirm Password must be at least 6 characters'),
   name: z.string()
     .min(2, 'School name must be at least 2 characters')
     .max(100, 'School name cannot exceed 100 characters')
@@ -59,6 +65,9 @@ export const SchoolSchema = z.object({
     .or(z.literal('')),
   
   pictures: z.array(PictureSchema).optional().default([])
+}).refine(data => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
 });
 
 export const SchoolUpdateSchema = SchoolSchema.partial();
@@ -68,7 +77,7 @@ export function validateSchool(data: any) {
     console.log('Validating data:', data);
     
     // Ensure all required fields are present
-    const requiredFields = ['name', 'email', 'address', 'phone', 'city', 'state', 'zipCode', 'country'];
+    const requiredFields = ['schoolId', 'password', 'confirmPassword', 'name', 'email', 'address', 'phone', 'city', 'state', 'zipCode', 'country'];
     const missingFields = requiredFields.filter(field => !data[field]);
     
     if (missingFields.length > 0) {

@@ -13,7 +13,9 @@ import {
   Image, 
   CheckCircle2, 
   AlertCircle,
-  Upload
+  Upload,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import AdminHeader from '../admin-header';
 import AdminSidebar from '../admin-sidebar';
@@ -73,6 +75,9 @@ const fileInputStyles = `
 
 export default function AddSchool() {
   const [form, setForm] = useState({
+    schoolId: '',
+    password: '',
+    confirmPassword: '',
     name: '',
     email: '',
     address: '',
@@ -89,6 +94,8 @@ export default function AddSchool() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -154,6 +161,9 @@ export default function AddSchool() {
 
     try {
       const formData = new FormData();
+      formData.append('schoolId', form.schoolId);
+      formData.append('password', form.password);
+      formData.append('confirmPassword', form.confirmPassword);
       formData.append('name', form.name);
       formData.append('email', form.email);
       formData.append('address', form.address);
@@ -185,6 +195,9 @@ export default function AddSchool() {
       if (result.success) {
         setSuccess(true);
         setForm({
+          schoolId: '',
+          password: '',
+          confirmPassword: '',
           name: '',
           email: '',
           address: '',
@@ -550,6 +563,94 @@ export default function AddSchool() {
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base resize-none"
                       />
                     </motion.div>
+                  </motion.div>
+
+                  {/* School ID */}
+                  <motion.div
+                    className="form-field"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.35, duration: 0.6 }}
+                  >
+                    <Label htmlFor="schoolId" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                      <span>School ID</span>
+                    </Label>
+                    <Input
+                      id="schoolId"
+                      name="schoolId"
+                      type="text"
+                      value={form.schoolId}
+                      onChange={handleChange}
+                      placeholder="Enter unique school ID"
+                      required
+                      className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
+                    />
+                  </motion.div>
+
+                  {/* Password */}
+                  <motion.div
+                    className="form-field"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.36, duration: 0.6 }}
+                  >
+                    <Label htmlFor="password" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                      <span>Password</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="Enter password"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base pr-12"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 bg-white/10 rounded p-1 shadow-sm focus:outline-none"
+                        onClick={() => setShowPassword(v => !v)}
+                        tabIndex={-1}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
+
+                  {/* Confirm Password */}
+                  <motion.div
+                    className="form-field"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.37, duration: 0.6 }}
+                  >
+                    <Label htmlFor="confirmPassword" className="text-white text-sm sm:text-base font-medium mb-2 block">
+                      <span>Confirm Password</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                        required
+                        className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base pr-12"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 bg-white/10 rounded p-1 shadow-sm focus:outline-none"
+                        onClick={() => setShowConfirmPassword(v => !v)}
+                        tabIndex={-1}
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                   </motion.div>
 
                   {/* Pictures Section */}

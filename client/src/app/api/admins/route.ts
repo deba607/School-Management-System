@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AdminService } from '@/services/adminService';
 import { validateAdmin } from '@/validators/AdminValidators';
 import { connectDB } from '@/lib/mongoose';
+import { ApiResponse } from '@/lib/apiResponse';
 
 const adminService = new AdminService();
 
@@ -9,8 +10,33 @@ const adminService = new AdminService();
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-
-    const body = await request.json();
+    let body: any;
+    let isFormData = false;
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('multipart/form-data')) {
+      isFormData = true;
+      const formData = await request.formData();
+      body = {};
+      for (const [key, value] of formData.entries()) {
+        if (key === 'pictures' && value instanceof File) {
+          // Handle file uploads (base64 encode for now)
+          if (!body.pictures) body.pictures = [];
+          const file = value as File;
+          const arrayBuffer = await file.arrayBuffer();
+          const base64Data = Buffer.from(arrayBuffer).toString('base64');
+          body.pictures.push({
+            originalName: file.name,
+            mimeType: file.type,
+            size: file.size,
+            base64Data,
+          });
+        } else {
+          body[key] = String(value);
+        }
+      }
+    } else {
+      body = await request.json();
+    }
     console.log('Received admin data:', JSON.stringify(body, null, 2));
     
     const validation = validateAdmin(body);
@@ -18,60 +44,32 @@ export async function POST(request: NextRequest) {
     
     if (!validation.success) {
       console.log('Validation errors:', validation.errors);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Validation failed', 
-          details: validation.errors 
-        },
-        { status: 400 }
-      );
+      return ApiResponse.validationError(validation.errors);
     }
 
     try {
-      const admin = await adminService.createAdmin(validation.data!);
+      if (!validation.data) throw new Error('Validation failed');
+      const { confirmPassword, ...adminData } = validation.data;
+      // Cast to any to satisfy the type, since AdminService handles the rest
+      const admin = await adminService.createAdmin(adminData as any);
       console.log('Admin created:', admin._id);
-      
-      return NextResponse.json(
-        { 
-          success: true, 
-          data: admin, 
-          message: 'Admin created successfully' 
-        },
-        { status: 201 }
-      );
+      const adminObj = admin.toObject();
+      delete adminObj.password;
+      return ApiResponse.success({ data: adminObj, message: 'Admin created successfully', status: 201 });
     } catch (error: any) {
       console.error('AdminService error:', error);
       
       // Handle specific errors
       if (error.message.includes('already exists')) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: error.message 
-          },
-          { status: 409 }
-        );
+        return ApiResponse.error({ error: error.message, status: 409, code: 'DUPLICATE_EMAIL' });
       }
       
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Internal server error' 
-        },
-        { status: 500 }
-      );
+      return ApiResponse.serverError(error);
     }
   } catch (error: unknown) {
     console.error('AdminRoute POST error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return ApiResponse.serverError(error);
   }
 }
 
@@ -103,37 +101,18 @@ export async function GET(request: NextRequest) {
       const endIndex = startIndex + limit;
       const paginatedAdmins = filteredAdmins.slice(startIndex, endIndex);
 
-      return NextResponse.json(
-        { 
-          success: true, 
-          data: paginatedAdmins,
-          pagination: {
-            currentPage: page,
-            totalPages: Math.ceil(filteredAdmins.length / limit),
-            totalItems: filteredAdmins.length,
-            itemsPerPage: limit
-          }
-        },
-        { status: 200 }
-      );
+      return ApiResponse.success({
+        data: paginatedAdmins,
+        message: undefined,
+        status: 200,
+        headers: undefined,
+      });
     } catch (error: any) {
       console.error('AdminService GET error:', error);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Internal server error' 
-        },
-        { status: 500 }
-      );
+      return ApiResponse.serverError(error);
     }
   } catch (error: unknown) {
     console.error('AdminRoute GET error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return ApiResponse.serverError(error);
   }
 } 

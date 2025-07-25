@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Building2, UserPlus, Users, Plus, Menu, X } from 'lucide-react';
+import { Home, Building2, UserPlus, Users, Plus, Menu, X, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { icon: Home, label: 'Dashboard', href: '/AdminDashboard' },
@@ -16,6 +17,8 @@ const navLinks = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -23,6 +26,20 @@ export default function AdminSidebar() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch (e) {}
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+    setTimeout(() => {
+      setLoggingOut(false);
+      router.push("/Login");
+    }, 500);
   };
 
   return (
@@ -92,6 +109,20 @@ export default function AdminSidebar() {
               </motion.div>
             );
           })}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + navLinks.length * 0.1, duration: 0.6 }}
+          >
+            <button
+              onClick={handleLogout}
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 w-full text-slate-200 transition-all duration-300 bg-gradient-to-r from-red-500 to-pink-500 font-semibold mt-4 ${loggingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
+              disabled={loggingOut}
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              {loggingOut ? 'Logging out...' : 'Log Out'}
+            </button>
+          </motion.div>
         </nav>
 
         {/* Footer Section */}
@@ -177,6 +208,20 @@ export default function AdminSidebar() {
                       );
                     })}
                   </div>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + navLinks.length * 0.1, duration: 0.6 }}
+                  >
+                    <button
+                      onClick={() => { handleLogout(); closeMobileMenu(); }}
+                      className={`flex items-center gap-3 rounded-xl px-4 py-4 w-full text-slate-200 transition-all duration-300 bg-gradient-to-r from-red-500 to-pink-500 font-semibold mt-4 ${loggingOut ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      disabled={loggingOut}
+                    >
+                      <LogOut className="h-5 w-5 flex-shrink-0" />
+                      {loggingOut ? 'Logging out...' : 'Log Out'}
+                    </button>
+                  </motion.div>
                 </nav>
 
                 {/* Mobile Footer */}

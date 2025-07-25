@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { SchoolService } from '@/services/schoolService';
 import { validateSchool } from '@/validators/SchoolValidators';
 import { connectDB } from '@/lib/mongoose';
+import bcrypt from 'bcryptjs';
 
 const schoolService = new SchoolService();
 
@@ -10,54 +11,79 @@ export async function POST(request: Request) {
   try {
     await connectDB();
 
-    const body = await request.json();
+    const formData = await request.formData();
+    const body: any = {};
+    for (const [key, value] of formData.entries()) {
+      if (key === 'pictures' && value instanceof File) {
+        if (!body.pictures) body.pictures = [];
+        const buffer = Buffer.from(await value.arrayBuffer());
+        body.pictures.push({
+          originalName: value.name,
+          mimeType: value.type,
+          size: value.size,
+          base64Data: buffer.toString('base64'),
+        });
+      } else {
+        body[key] = value;
+      }
+    }
     console.log('Received school data:', JSON.stringify(body, null, 2));
-    
+    // Extra validation and logging for schoolId
+    if (!body.schoolId || typeof body.schoolId !== 'string' || !body.schoolId.trim()) {
+      console.error('Missing or empty schoolId in request');
+      return NextResponse.json({ success: false, error: 'School ID is required and must not be empty.' }, { status: 400 });
+    }
+    console.log('schoolId received:', body.schoolId);
+
     const validation = validateSchool(body);
     console.log('Validation result:', validation);
-    
+
     if (!validation.success) {
       console.log('Validation errors:', validation.errors);
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Validation failed', 
-          details: validation.errors 
+        {
+          success: false,
+          error: 'Validation failed',
+          details: validation.errors
         },
         { status: 400 }
       );
     }
 
     try {
-      const school = await schoolService.createSchool(validation.data!);
+      if (!validation.data) throw new Error('Validation failed');
+      const { confirmPassword, password, ...rest } = validation.data;
+      const schoolData = { ...rest, password: await bcrypt.hash(password, 10) };
+      // Attach pictures if present
+      if (body.pictures) {
+        schoolData.pictures = body.pictures;
+      }
+      const school = await schoolService.createSchool(schoolData as any);
       console.log('School created:', school._id);
-      
       return NextResponse.json(
-        { 
-          success: true, 
-          data: school, 
-          message: 'School created successfully' 
+        {
+          success: true,
+          data: school,
+          message: 'School created successfully'
         },
         { status: 201 }
       );
     } catch (error: any) {
       console.error('SchoolService error:', error);
-      
       // Handle specific errors
-      if (error.message.includes('already exists')) {
+      if (error.message && error.message.includes('already exists')) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: error.message 
+          {
+            success: false,
+            error: error.message
           },
           { status: 409 }
         );
       }
-      
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Internal server error' 
+        {
+          success: false,
+          error: 'Internal server error'
         },
         { status: 500 }
       );

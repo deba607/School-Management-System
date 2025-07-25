@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { ApiResponse } from '@/lib/apiResponse';
 import { ContactService } from '@/services/contactService';
 import { validateContact } from '@/validators/ContactValidators';
 import { connectDB } from '@/lib/mongoose';
@@ -19,10 +19,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validation = validateContact(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.errors },
-        { status: 400 }
-      );
+      return ApiResponse.validationError(validation.errors);
     }
 
     // Debug log validation data
@@ -31,22 +28,13 @@ export async function POST(request: Request) {
     try {
       const contact = await contactService.createContact(validation.data!);
       console.log('Contact created:', contact);
-      return NextResponse.json(
-        { success: true, data: contact, message: 'Contact created successfully' },
-        { status: 201 }
-      );
+      return ApiResponse.success({ data: contact, message: 'Contact created successfully', status: 201 });
     } catch (error) {
       console.error('ContactService error:', error);
-      return NextResponse.json(
-        { success: false, error: 'Internal server error' },
-        { status: 500 }
-      );
+      return ApiResponse.serverError(error);
     }
   } catch (error) {
     console.error('ContactRoute error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiResponse.serverError(error);
   }
 }
