@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validation = validateResult(body);
     if (!validation.success) {
-      return ApiResponse.validationError(validation.errors);
+      return ApiResponse.validationError(validation.errors || []);
     }
-    const result = await resultService.createResult(validation.data!);
+    const result = await resultService.createResult(validation.data! as any);
     return ApiResponse.success({ data: result, message: 'Result saved successfully', status: 201 });
   } catch (error) {
     return ApiResponse.serverError(error);

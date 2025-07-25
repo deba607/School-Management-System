@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json({ success: false, error: 'Validation failed', details: validation.errors }, { status: 400 });
     }
-    const attendance = await attendanceService.createAttendance(validation.data!);
+    const attendance = await attendanceService.createAttendance(validation.data! as any);
     return NextResponse.json({ success: true, data: attendance, message: 'Attendance saved successfully' }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save attendance' }, { status: 500 });

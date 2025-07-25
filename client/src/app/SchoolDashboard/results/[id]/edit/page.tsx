@@ -9,7 +9,16 @@ import { useRouter, useParams } from "next/navigation";
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
 
-const initialForm = {
+interface ResultForm {
+  className: string;
+  section: string;
+  subject: string;
+  teacher: string;
+  date: string;
+  students: { id: string; name: string; marks?: string; grade?: string }[];
+}
+
+const initialForm: ResultForm = {
   className: "",
   section: "",
   subject: "",
@@ -20,7 +29,7 @@ const initialForm = {
 
 export default function EditResult() {
   const { id } = useParams();
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState<ResultForm>(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -117,7 +126,7 @@ export default function EditResult() {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
-  const handleStudentResult = (idx: number, field: string, value: string) => {
+  const handleStudentResult = (idx: number, field: 'marks' | 'grade', value: string) => {
     setForm(prev => {
       const students = [...prev.students];
       students[idx][field] = value;

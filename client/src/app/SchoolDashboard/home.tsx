@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useSchool } from "./school-context";
+import { initializeAuthFetch } from "@/utils/authFetch";
 
 const Home = () => {
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -37,6 +38,9 @@ const Home = () => {
   }, [stats]);
 
   useEffect(() => {
+    // Initialize authFetch function
+    initializeAuthFetch();
+
     async function fetchStats() {
       setStats(s => ({ ...s, loading: true, error: null }));
       try {

@@ -1,5 +1,6 @@
-import { jwtDecode } from "jwt-decode";
 "use client";
+
+import { jwtDecode } from "jwt-decode";
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -7,6 +8,7 @@ import gsap from "gsap";
 import Header from "../../../header";
 import Sidebar from "../../../sidebar";
 import { useSchool } from "../../../school-context";
+import { initializeAuthFetch } from "@/utils/authFetch";
 
 const initialForm = {
   name: "",
@@ -42,6 +44,9 @@ export default function EditTeacher() {
   const { schoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
+    // Initialize authFetch function
+    initializeAuthFetch();
+
     // GSAP animations on mount
     const tl = gsap.timeline();
     tl.fromTo(titleRef.current, { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" })

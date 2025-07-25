@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     
     if (!validation.success) {
       console.log('Validation errors:', validation.errors);
-      return ApiResponse.validationError(validation.errors);
+      return ApiResponse.validationError(validation.errors || []);
     }
 
     try {

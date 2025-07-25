@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -9,6 +10,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { getSchoolIdFromToken } from "@/utils/auth";
 import { jwtDecode } from "jwt-decode";
 import { useSchool } from "../../school-context";
+import { initializeAuthFetch } from "@/utils/authFetch";
 
 const initialForm = {
   name: "",
@@ -43,6 +45,9 @@ export default function AddTeacher() {
   }, [contextSchoolId]);
 
   useEffect(() => {
+    // Initialize authFetch function
+    initializeAuthFetch();
+
     // GSAP animations on mount
     const tl = gsap.timeline();
     tl.fromTo(titleRef.current, { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" })

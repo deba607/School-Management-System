@@ -318,7 +318,7 @@ export default function EditSchoolPage() {
       }
 
       // Prepare form data with base64 image data
-      const formData = {
+      const formData: any = {
         ...form,
         pictures: base64Images
       };

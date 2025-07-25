@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (!validation.success) {
       return NextResponse.json({ success: false, error: 'Validation failed', details: validation.errors }, { status: 400 });
     }
-    const schedule = await classScheduleService.createClassSchedule(validation.data!);
+    const schedule = await classScheduleService.createClassSchedule(validation.data! as any);
     return NextResponse.json({ success: true, data: schedule, message: 'Class schedule created successfully' }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to create class schedule' }, { status: 500 });

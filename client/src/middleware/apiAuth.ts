@@ -31,7 +31,7 @@ export function withApiAuth(
 
     // Check token expiration
     const currentTime = Math.floor(Date.now() / 1000);
-    if (token.exp && token.exp < currentTime) {
+    if (token.exp && typeof token.exp === 'number' && token.exp < currentTime) {
       return NextResponse.json(
         { success: false, error: 'Token expired' },
         { status: 401 }
@@ -41,7 +41,7 @@ export function withApiAuth(
     // Check if user has required role
     if (options.roles && options.roles.length > 0) {
       const userRole = token.role;
-      if (!userRole || !options.roles.includes(userRole)) {
+      if (!userRole || typeof userRole !== 'string' || !options.roles.includes(userRole)) {
         return NextResponse.json(
           { success: false, error: 'Insufficient permissions' },
           { status: 403 }
