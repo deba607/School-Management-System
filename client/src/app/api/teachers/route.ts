@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { TeacherService } from '@/services/teacherService';
 import { validateTeacher } from '@/validators/TeacherValidators';
 import { connectDB } from '@/lib/mongoose';
 import { Teacher } from '@/models/Teacher';
+import { ApiResponse } from '@/lib/apiResponse';
+ // Add this import, adjust path if needed
 
 const teacherService = new TeacherService();
 
@@ -12,9 +14,9 @@ export async function GET(request: NextRequest) {
     await connectDB();
     // Ignore schoolId query param, always return all teachers
     const teachers = await Teacher.find().select('-password');
-    return NextResponse.json({ success: true, data: teachers });
+    return ApiResponse.success({ data: teachers });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to fetch teachers' }, { status: 500 });
+    return ApiResponse.serverError(error);
   }
 }
 
@@ -24,58 +26,53 @@ export async function POST(request: NextRequest) {
     await connectDB();
     const body = await request.json();
     console.log('Received teacher data:', JSON.stringify(body, null, 2));
+    
     // Remove confirmPassword before validation and saving
     if ('confirmPassword' in body) {
       delete body.confirmPassword;
     }
-    // Log the received body for debugging
-    console.log('Request body:', JSON.stringify(body, null, 2));
     
-    // Ensure address is included in the body
-    if (!body.address || body.address.trim().length < 5) {
-      console.error('Address validation failed - missing or too short:', body.address);
-      return NextResponse.json(
-        { success: false, error: 'Address is required and must be at least 5 characters long' },
-        { status: 400 }
-      );
+    // Ensure schoolId is provided
+    const schoolId = request.headers.get('x-school-id');
+    if (!schoolId) {
+      return ApiResponse.error({ error: 'School ID is required in headers', status: 400 });
     }
     
+    // Add schoolId to the teacher data
+    const teacherData = {
+      ...body,
+      schoolId: schoolId
+    };
+    
+    console.log('Processed teacher data:', JSON.stringify(teacherData, null, 2));
+    
     // Validate the teacher data
-    const validation = validateTeacher(body);
+    const validation = validateTeacher(teacherData);
     console.log('Validation result:', validation);
     
     if (!validation.success) {
       console.error('Validation failed:', validation.errors);
-      return NextResponse.json(
-        { success: false, error: 'Validation failed', details: validation.errors },
-        { status: 400 }
-      );
+      return ApiResponse.validationError(validation.errors.map((e) => ({
+        path: e.path?.join('.') || '',
+        message: e.message
+      })));
     }
+    
     try {
-      const teacher = await teacherService.createTeacher(validation.data!);
+      // At this point, TypeScript knows validation is successful and data exists
+      const teacher = await teacherService.createTeacher(validation.data);
       // Do not return password in response
       const teacherObj = teacher.toObject();
       delete teacherObj.password;
-      return NextResponse.json(
-        { success: true, data: teacherObj, message: 'Teacher created successfully' },
-        { status: 201 }
-      );
+      return ApiResponse.success({ data: teacherObj, message: 'Teacher created successfully', status: 201 });
     } catch (error: any) {
+      console.error('Error creating teacher:', error);
       if (error.message.includes('already exists')) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 409 }
-        );
+        return ApiResponse.error({ error: 'A teacher with this email already exists', status: 409, code: 'DUPLICATE_EMAIL' });
       }
-      return NextResponse.json(
-        { success: false, error: 'Internal server error' },
-        { status: 500 }
-      );
+      return ApiResponse.error({ error: 'Failed to create teacher', details: process.env.NODE_ENV === 'development' ? error.message : undefined, status: 500 });
     }
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiResponse.serverError(error);
   }
 } 

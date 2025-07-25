@@ -89,7 +89,7 @@ export default function AddStudent() {
     }
 
     // Check if all required fields are filled
-    if (!form.name || !form.email || !form.class || !form.sec || !form.address) {
+    if (!form.name || !form.email || !form.password || !form.class || !form.sec || !form.address) {
       setError("Please fill in all required fields");
       return;
     }
@@ -98,6 +98,12 @@ export default function AddStudent() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
       setError("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password strength
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long");
       return;
     }
 
@@ -112,10 +118,21 @@ export default function AddStudent() {
         return;
       }
 
-      const formData: any = {
-        ...form,
-        schoolId,
-        pictures: [],
+      // Create the student data object with required fields
+      const studentData = {
+        name: form.name.trim(),
+        email: form.email.toLowerCase().trim(),
+        password: form.password, // This will be hashed on the server
+        class: form.class.trim(),
+        sec: form.sec.trim(),
+        address: form.address.trim(),
+        schoolId: schoolId,
+        pictures: [] as Array<{
+          originalName: string;
+          mimeType: string;
+          size: number;
+          base64Data: string;
+        }>,
       };
 
       // Process pictures if any
@@ -123,31 +140,42 @@ export default function AddStudent() {
         for (let i = 0; i < pictures.length; i++) {
           const file = pictures[i];
           const base64 = await toBase64(file);
-          formData.pictures.push({
+          studentData.pictures.push({
             originalName: file.name,
             mimeType: file.type,
             size: file.size,
-            base64Data: base64,
+            base64Data: base64.split(',')[1], // Remove the data URL prefix
           });
         }
       }
 
-      // Submit the form data
+      // Submit the student data
       const response = await fetch("/api/students", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(studentData),
       });
 
       const result = await response.json();
       
       if (!response.ok) {
-        // Handle specific error cases
-        if (response.status === 409) {
+        // Handle validation errors
+        if (response.status === 400 && result.details) {
+          // Format validation errors into a user-friendly message
+          const errorMessages = result.details.map((error: any) => 
+            `- ${error.path}: ${error.message}`
+          ).join('\n');
+          
+          throw new Error(`Validation failed:\n${errorMessages}`);
+        } 
+        // Handle duplicate email error
+        else if (response.status === 409) {
           throw new Error("A student with this email already exists");
-        } else if (response.status === 400) {
-          throw new Error(result.error || "Invalid data provided");
-        } else {
+        } 
+        // Handle other errors
+        else {
           throw new Error(result.error || "Failed to create student. Please try again.");
         }
       }

@@ -13,11 +13,11 @@ export interface IStudent extends Document {
     size: number;
     base64Data: string;
   }>;
-  otp: string;
-  otpExpiry: Date;
+  otp?: string;
+  otpExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
-  schoolId: mongoose.Schema.Types.ObjectId;
+  schoolId: mongoose.Types.ObjectId;
 }
 
 const StudentSchema: Schema = new Schema({

@@ -36,12 +36,26 @@ export const TeacherSchema = z.object({
   pictures: z.array(PictureSchema).optional().default([])
 });
 
-export function validateTeacher(data: any) {
-  // Only validate password, not confirmPassword
+type ValidationSuccess = {
+  success: true;
+  data: z.infer<typeof TeacherSchema>;
+};
+
+type ValidationError = {
+  success: false;
+  errors: z.ZodIssue[];
+};
+
+type ValidationResult = ValidationSuccess | ValidationError;
+
+export function validateTeacher(data: unknown): ValidationResult {
   const result = TeacherSchema.safeParse(data);
   if (result.success) {
     return { success: true, data: result.data };
   } else {
-    return { success: false, errors: result.error.issues };
+    return { 
+      success: false, 
+      errors: result.error.issues 
+    };
   }
-} 
+}

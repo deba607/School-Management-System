@@ -3,7 +3,18 @@ import { connectDB } from '@/lib/mongoose';
 import bcrypt from 'bcryptjs';
 
 export class TeacherService {
-  async createTeacher(teacherData: Omit<ITeacher, 'id' | 'createdAt' | 'updatedAt'>): Promise<ITeacher> {
+  async createTeacher(teacherData: {
+    name: string;
+    email: string;
+    phone: string;
+    subject: string;
+    address: string;
+    password: string;
+    pictures: any[];
+    schoolId: string | import('mongoose').Types.ObjectId;
+    otp?: string;
+    otpExpiry?: Date;
+  }): Promise<ITeacher> {
     await connectDB();
     try {
       // Check if teacher with same email already exists

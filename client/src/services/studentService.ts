@@ -1,9 +1,21 @@
 import { Student, IStudent } from '@/models/Student';
 import { connectDB } from '@/lib/mongoose';
 import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose'; // added import statement for mongoose
 
 export class StudentService {
-  async createStudent(studentData: Omit<IStudent, 'id' | 'createdAt' | 'updatedAt'>): Promise<IStudent> {
+  async createStudent(studentData: {
+    name: string;
+    email: string;
+    password: string;
+    class: string;
+    sec: string;
+    address: string;
+    pictures: any[];
+    schoolId: string | mongoose.Types.ObjectId;
+    otp?: string;
+    otpExpiry?: Date;
+  }): Promise<IStudent> {
     await connectDB();
     try {
       // Check if student with same email already exists
@@ -11,13 +23,22 @@ export class StudentService {
       if (existingStudent) {
         throw new Error('Student with this email already exists');
       }
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(studentData.password, 10);
-      studentData.password = hashedPassword;
-      // Create new student
-      const student = new Student(studentData);
-      const savedStudent = await student.save();
-      return savedStudent;
+      
+      // Ensure schoolId is an ObjectId
+      const schoolId = typeof studentData.schoolId === 'string' 
+        ? new mongoose.Types.ObjectId(studentData.schoolId)
+        : studentData.schoolId;
+      
+      // Create student data with proper types
+      const studentDataToSave = {
+        ...studentData,
+        schoolId,
+        password: await bcrypt.hash(studentData.password, 10)
+      };
+      
+      // Create and save the student
+      const student = new Student(studentDataToSave);
+      return await student.save();
     } catch (error) {
       console.error('Error creating student:', error);
       throw error;
