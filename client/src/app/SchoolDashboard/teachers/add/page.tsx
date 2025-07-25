@@ -37,6 +37,12 @@ export default function AddTeacher() {
   const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
+    if (contextSchoolId) {
+      setSchoolId(contextSchoolId);
+    }
+  }, [contextSchoolId]);
+
+  useEffect(() => {
     // GSAP animations on mount
     const tl = gsap.timeline();
     tl.fromTo(titleRef.current, { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" })
@@ -46,7 +52,7 @@ export default function AddTeacher() {
     return () => { gsap.killTweensOf(containerRef.current); };
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };

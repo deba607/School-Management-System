@@ -35,7 +35,9 @@ export default function AddStudent() {
   const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
-    setSchoolId(contextSchoolId);
+    if (contextSchoolId) {
+      setSchoolId(contextSchoolId);
+    }
   }, [contextSchoolId]);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function AddStudent() {
     return () => { gsap.killTweensOf(containerRef.current); };
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -65,21 +67,59 @@ export default function AddStudent() {
     }
   };
 
+  const checkIfUserExists = async (email: string) => {
+    try {
+      const response = await fetch(`/api/students/check-email?email=${encodeURIComponent(email)}`);
+      const data = await response.json();
+      return data.exists || false;
+    } catch (error) {
+      console.error('Error checking if user exists:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    
+    // Validate form data
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
+
+    // Check if all required fields are filled
+    if (!form.name || !form.email || !form.class || !form.sec || !form.address) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     setLoading(true);
+    
     try {
+      // First check if user with this email already exists
+      const userExists = await checkIfUserExists(form.email);
+      if (userExists) {
+        setError("A student with this email already exists");
+        setLoading(false);
+        return;
+      }
+
       const formData: any = {
         ...form,
         schoolId,
         pictures: [],
       };
-      if (pictures) {
+
+      // Process pictures if any
+      if (pictures && pictures.length > 0) {
         for (let i = 0; i < pictures.length; i++) {
           const file = pictures[i];
           const base64 = await toBase64(file);
@@ -91,15 +131,27 @@ export default function AddStudent() {
           });
         }
       }
+
+      // Submit the form data
       const response = await fetch("/api/students", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
       const result = await response.json();
+      
       if (!response.ok) {
-        throw new Error(result.error || "Failed to create student");
+        // Handle specific error cases
+        if (response.status === 409) {
+          throw new Error("A student with this email already exists");
+        } else if (response.status === 400) {
+          throw new Error(result.error || "Invalid data provided");
+        } else {
+          throw new Error(result.error || "Failed to create student. Please try again.");
+        }
       }
+
       if (result.success) {
         setSuccess(true);
         setForm(initialForm);
@@ -110,10 +162,13 @@ export default function AddStudent() {
           router.push("/SchoolDashboard/students");
         }, 2000);
       } else {
-        throw new Error(result.error || "Failed to create student");
+        throw new Error(result.error || "Failed to create student. Please try again.");
       }
     } catch (error: any) {
-      setError(error.message || "Failed to create student");
+      // Handle network errors or other issues
+      console.error('Error creating student:', error);
+      const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

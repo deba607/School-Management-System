@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import Header from "../../../header";
 import Sidebar from "../../../sidebar";
-import { useSchool } from "../../school-context";
+import { useSchool } from "../../../school-context";
 
 const initialForm = {
   name: "",
