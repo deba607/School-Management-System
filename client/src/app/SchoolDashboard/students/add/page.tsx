@@ -8,6 +8,8 @@ import Sidebar from "../../sidebar";
 import { Eye, EyeOff } from "lucide-react";
 import { useSchool } from "../../school-context";
 
+type FormField = keyof typeof initialForm;
+
 const initialForm = {
   name: "",
   email: "",
@@ -28,6 +30,8 @@ export default function AddStudent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [schoolId, setSchoolId] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -53,6 +57,26 @@ export default function AddStudent() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    
+    // Clear the error for the current field when user types
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name as keyof typeof newErrors];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const fieldName = name as FormField;
+    setForm(prev => ({ ...prev, [fieldName]: value }));
+    
+    // Validate the field when it changes
+    if (fieldErrors[fieldName]) {
+      validateField(fieldName, value);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,45 +102,154 @@ export default function AddStudent() {
     }
   };
 
-  const validateForm = () => {
-    // Check if all required fields are filled
-    const requiredFields = ['name', 'email', 'password', 'class', 'sec', 'address'];
-    const missingFields = requiredFields.filter(field => {
-      const value = form[field as keyof typeof form];
-      return value === undefined || value === null || value === '';
-    });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateField = (name: keyof typeof form, value: string) => {
+    const newErrors = { ...fieldErrors };
     
-    if (missingFields.length > 0) {
-      const fieldNames = missingFields.map(field => {
-        if (field === 'sec') return 'section';
-        return field;
-      });
-      return `Please fill in all required fields: ${fieldNames.join(', ')}`;
+    switch (name) {
+      case 'name':
+        if (!value.trim()) newErrors.name = 'Full name is required';
+        else if (value.length < 2) newErrors.name = 'Name is too short (minimum 2 characters)';
+        else delete newErrors.name;
+        break;
+        
+      case 'email': {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) newErrors.email = 'Email is required';
+        else if (!emailRegex.test(value)) newErrors.email = 'Please enter a valid email';
+        else delete newErrors.email;
+        break;
+      }
+      
+      case 'password':
+        if (!value) newErrors.password = 'Password is required';
+        else if (value.length < 6) newErrors.password = 'Password must be at least 6 characters';
+        else if (form.confirmPassword && value !== form.confirmPassword) {
+          newErrors.confirmPassword = 'Passwords do not match';
+        } else {
+          delete newErrors.password;
+          if (form.confirmPassword) {
+            if (value === form.confirmPassword) {
+              delete newErrors.confirmPassword;
+            }
+          }
+        }
+        break;
+        
+      case 'confirmPassword':
+        if (!value) newErrors.confirmPassword = 'Please confirm your password';
+        else if (value !== form.password) newErrors.confirmPassword = 'Passwords do not match';
+        else delete newErrors.confirmPassword;
+        break;
+        
+      case 'class':
+        if (!value) newErrors.class = 'Class is required';
+        else delete newErrors.class;
+        break;
+        
+      case 'sec':
+        if (!value) newErrors.sec = 'Section is required';
+        else delete newErrors.sec;
+        break;
+        
+      case 'address':
+        if (!value.trim()) newErrors.address = 'Address is required';
+        else if (value.length < 10) newErrors.address = 'Address is too short (minimum 10 characters)';
+        else delete newErrors.address;
+        break;
+    }
+    
+    setFieldErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    // Name validation
+    if (!form.name.trim()) {
+      newErrors.name = 'Full name is required';
+      isValid = false;
+    } else if (form.name.length < 2) {
+      newErrors.name = 'Name is too short (minimum 2 characters)';
+      isValid = false;
     }
 
-    // Validate email format
+    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      return "Please enter a valid email address";
+    if (!form.email) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = 'Please enter a valid email';
+      isValid = false;
     }
 
-    // Validate password strength
-    if (form.password.length < 6) {
-      return "Password must be at least 6 characters long";
+    // Password validation
+    if (!form.password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (form.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      isValid = false;
     }
 
-    // Check password match if confirmPassword exists in the form
-    if ('confirmPassword' in form && form.password !== form.confirmPassword) {
-      return "Passwords do not match";
+    // Confirm Password validation
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+      isValid = false;
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+      isValid = false;
     }
 
-    return null; // No validation errors
+    // Class validation
+    if (!form.class) {
+      newErrors.class = 'Class is required';
+      isValid = false;
+    }
+
+    // Section validation
+    if (!form.sec) {
+      newErrors.sec = 'Section is required';
+      isValid = false;
+    }
+
+    // Address validation
+    if (!form.address.trim()) {
+      newErrors.address = 'Address is required';
+      isValid = false;
+    } else if (form.address.length < 10) {
+      newErrors.address = 'Address is too short (minimum 10 characters)';
+      isValid = false;
+    }
+
+    // Update field errors state
+    setFieldErrors(newErrors);
+    
+    // Log validation result for debugging
+    if (!isValid) {
+      console.log('Form validation failed with errors:', newErrors);
+    } else {
+      console.log('Form validation passed');
+    }
+    
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    
+    // Validate all fields before submission
+    if (!validateForm()) {
+      setLoading(false);
+      setError('Please fix the errors in the form before submitting.');
+      return;
+    }
     
     try {
       // Log form data for debugging
@@ -126,72 +259,54 @@ export default function AddStudent() {
         confirmPassword: '***'
       });
       
-      // Validate form
-      const validationError = validateForm();
-      if (validationError) {
-        console.error('Client-side validation failed:', validationError);
-        setError(validationError);
-        setLoading(false);
-        return;
-      }
-
       // First check if user with this email already exists
       const userExists = await checkIfUserExists(form.email);
       if (userExists) {
-        setError("A student with this email already exists");
-        setLoading(false);
-        return;
+        throw new Error("A student with this email already exists");
       }
 
-      // Create the student data object with required fields
-      const studentData = {
-        name: form.name.trim(),
-        email: form.email.toLowerCase().trim(),
-        password: form.password, // This will be hashed on the server
-        class: form.class.trim(),
-        sec: form.sec.trim(),
-        address: form.address.trim(),
-        schoolId: schoolId,
-        pictures: [] as Array<{
-          originalName: string;
-          mimeType: string;
-          size: number;
-          base64Data: string;
-        }>,
-      };
-
-      // Process pictures if any
-      if (pictures && pictures.length > 0) {
-        for (let i = 0; i < pictures.length; i++) {
-          const file = pictures[i];
-          const base64 = await toBase64(file);
-          studentData.pictures.push({
-            originalName: file.name,
-            mimeType: file.type,
-            size: file.size,
-            base64Data: base64.split(',')[1], // Remove the data URL prefix
-          });
-        }
-      }
-
-      // Get authentication token
+      // Get authentication token first
       const token = localStorage.getItem('school_management_token');
       if (!token) {
         throw new Error('Authentication required. Please log in again.');
       }
 
-      // Submit the student data
+      // Create FormData for the request
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('password', form.password);
+      formData.append('class', form.class);
+      formData.append('sec', form.sec);
+      formData.append('address', form.address);
+      formData.append('schoolId', schoolId);
+
+      // Handle file uploads if any
+      if (pictures && pictures.length > 0) {
+        Array.from(pictures).forEach((file) => {
+          formData.append('pictures', file);
+        });
+      }
+
       console.log('Submitting student data to API...');
       const response = await fetch("/api/students", {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
+          // Don't set Content-Type header when using FormData
+          // The browser will set it automatically with the correct boundary
         },
-        body: JSON.stringify(studentData),
+        body: formData,
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        console.error('Error parsing JSON response:', jsonError);
+        throw new Error('Invalid response from server. Please try again.');
+      }
+      
       console.log('API Response:', {
         status: response.status,
         ok: response.ok,
@@ -201,27 +316,20 @@ export default function AddStudent() {
       if (!response.ok) {
         // Handle validation errors
         if (response.status === 400 && result.details) {
-          // Format validation errors into a user-friendly message
-          const errorMessages = result.details.map((error: any) => {
-            // Format field names to be more user-friendly
-            const fieldName = error.path[0] === 'sec' ? 'section' : error.path[0];
-            return `- ${fieldName}: ${error.message}`;
-          }).join('\n');
+          const errorMessages = Array.isArray(result.details) 
+            ? result.details.map((error: any) => {
+                const fieldName = error.path?.[0] === 'sec' ? 'section' : error.path?.[0] || 'field';
+                return `- ${fieldName}: ${error.message || 'Invalid value'}`;
+              }).join('\n')
+            : result.message || 'Validation failed';
           
           throw new Error(`Validation failed:\n${errorMessages}`);
         } 
-        // Handle duplicate email error
-        else if (response.status === 409) {
-          throw new Error("A student with this email already exists");
-        } 
-        // Handle unauthorized/forbidden
-        else if (response.status === 401 || response.status === 403) {
-          throw new Error("You don't have permission to perform this action. Please log in again.");
-        }
-        // Handle other errors
-        else {
-          throw new Error(result.error || `Failed to create student (${response.status}). Please try again.`);
-        }
+        // Handle other error cases
+        throw new Error(
+          result.message || 
+          `Failed to create student. Status: ${response.status} ${response.statusText}`
+        );
       }
 
       if (result.success) {
@@ -237,23 +345,47 @@ export default function AddStudent() {
         throw new Error(result.error || "Failed to create student. Please try again.");
       }
     } catch (error) {
-      // Type-safe error handling
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : typeof error === 'object' && error !== null && 'message' in error
-          ? String(error.message)
-          : 'An error occurred while submitting the form';
-          
-      console.error('Error in form submission:', {
-        error,
-        errorString: String(error),
-        errorName: error instanceof Error ? error.name : 'UnknownError',
-        errorMessage,
-        errorStack: error instanceof Error ? error.stack : undefined
-      });
+      // Enhanced error handling with more detailed logging
+      let errorMessage = 'An unknown error occurred while submitting the form';
       
+      // Log the raw error first
+      console.error('Raw error object:', error);
+      
+      // Try to extract meaningful error information
+      if (error instanceof Error) {
+        errorMessage = error.message || 'An error occurred';
+        console.error('Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+      } else if (typeof error === 'object' && error !== null) {
+        // Handle error-like objects
+        const errorObj = error as Record<string, unknown>;
+        errorMessage = String(
+          errorObj.message || 
+          errorObj.error || 
+          JSON.stringify(error)
+        );
+        console.error('Error object details:', errorObj);
+      } else {
+        // Handle non-object errors (strings, numbers, etc.)
+        errorMessage = String(error);
+      }
+      
+      // Log the final error message
+      console.error('Final error message:', errorMessage);
+      
+      // Set the error state with the most specific message we could find
       setError(errorMessage);
       setLoading(false);
+      
+      // For debugging: Log the current form state
+      console.log('Current form state:', {
+        ...form,
+        password: '***',
+        confirmPassword: '***'
+      });
     }
   };
 
@@ -341,29 +473,41 @@ export default function AddStudent() {
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                 <label htmlFor="name" className="block text-blue-900 font-medium mb-2">Full Name</label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Enter student's full name"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={form.name}
+                    onChange={handleChange}
+                    onBlur={(e) => validateField('name', e.target.value)}
+                    placeholder="Enter student's full name"
+                    required
+                    className={`w-full bg-white/60 border ${fieldErrors.name ? 'border-red-400' : 'border-blue-200'} text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base`}
+                  />
+                  {fieldErrors.name && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
+                  )}
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
                 <label htmlFor="email" className="block text-blue-900 font-medium mb-2">Email Address</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Enter student's email address"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    onBlur={(e) => validateField('email', e.target.value)}
+                    placeholder="Enter student's email address"
+                    required
+                    className={`w-full bg-white/60 border ${fieldErrors.email ? 'border-red-400' : 'border-blue-200'} text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base`}
+                  />
+                  {fieldErrors.email && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                  )}
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
                 <label htmlFor="password" className="block text-blue-900 font-medium mb-2">Password</label>
@@ -374,10 +518,14 @@ export default function AddStudent() {
                     type={showPassword ? "text" : "password"}
                     value={form.password}
                     onChange={handleChange}
+                    onBlur={(e) => validateField('password', e.target.value)}
                     placeholder="Enter password"
                     required
-                    className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                    className={`w-full bg-white/60 border ${fieldErrors.password ? 'border-red-400' : 'border-blue-200'} text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base`}
                   />
+                  {fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
+                  )}
                   <motion.button
                     type="button"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
@@ -399,10 +547,14 @@ export default function AddStudent() {
                     type={showConfirmPassword ? "text" : "password"}
                     value={form.confirmPassword}
                     onChange={handleChange}
+                    onBlur={(e) => validateField('confirmPassword', e.target.value)}
                     placeholder="Confirm password"
                     required
-                    className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base"
+                    className={`w-full bg-white/60 border ${fieldErrors.confirmPassword ? 'border-red-400' : 'border-blue-200'} text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 pr-12 text-sm sm:text-base`}
                   />
+                  {fieldErrors.confirmPassword && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
+                  )}
                   <motion.button
                     type="button"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
@@ -417,48 +569,66 @@ export default function AddStudent() {
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.6 }}>
                 <label htmlFor="class" className="block text-blue-900 font-medium mb-2">Class</label>
-                <select
-                  id="class"
-                  name="class"
-                  value={form.class}
-                  onChange={(e) => handleChange(e)}
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                >
-                  <option value="">Select class</option>
-                  {[...Array(10)].map((_, i) => (
-                    <option key={i + 1} value={String(i + 1)}>{i + 1}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="class"
+                    name="class"
+                    value={form.class}
+                    onChange={handleChange}
+                    onBlur={(e) => validateField('class', e.target.value)}
+                    required
+                    className={`w-full bg-white/60 border ${fieldErrors.class ? 'border-red-400' : 'border-blue-200'} text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base`}
+                  >
+                    <option value="">Select class</option>
+                    {[...Array(10)].map((_, i) => (
+                      <option key={i + 1} value={String(i + 1)}>{i + 1}</option>
+                    ))}
+                  </select>
+                  {fieldErrors.class && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.class}</p>
+                  )}
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.65, duration: 0.6 }}>
                 <label htmlFor="sec" className="block text-blue-900 font-medium mb-2">Section</label>
-                <select
-                  id="sec"
-                  name="sec"
-                  value={form.sec}
-                  onChange={(e) => handleChange(e)}
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                >
-                  <option value="">Select section</option>
-                  {["A", "B", "C", "D"].map((sec) => (
-                    <option key={sec} value={sec}>{sec}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="sec"
+                    name="sec"
+                    value={form.sec}
+                    onChange={handleChange}
+                    onBlur={(e) => validateField('sec', e.target.value)}
+                    required
+                    className={`w-full bg-white/60 border ${fieldErrors.sec ? 'border-red-400' : 'border-blue-200'} text-blue-900 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base`}
+                  >
+                    <option value="">Select section</option>
+                    {["A", "B", "C", "D"].map((sec) => (
+                      <option key={sec} value={sec}>{sec}</option>
+                    ))}
+                  </select>
+                  {fieldErrors.sec && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.sec}</p>
+                  )}
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.68, duration: 0.6 }}>
                 <label htmlFor="address" className="block text-blue-900 font-medium mb-2">Address</label>
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  value={form.address}
-                  onChange={handleChange}
-                  placeholder="Enter address"
-                  required
-                  className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base"
-                />
+                <div className="relative">
+                  <textarea
+                    id="address"
+                    name="address"
+                    value={form.address}
+                    onChange={handleTextareaChange}
+                    onBlur={(e) => validateField('address', e.target.value)}
+                    placeholder="Enter address"
+                    rows={3}
+                    required
+                    className={`w-full bg-white/60 border ${fieldErrors.address ? 'border-red-400' : 'border-blue-200'} text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base`}
+                  />
+                  {fieldErrors.address && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.address}</p>
+                  )}
+                </div>
               </motion.div>
               <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 0.6 }}>
                 <label htmlFor="pictures" className="block text-blue-900 font-medium mb-2">Profile Photo</label>

@@ -6,14 +6,14 @@ import { securityHeaders, sanitizeInput } from '@/middleware/security';
 import { ApiResponse } from '@/lib/apiResponse';
 
 // Apply rate limiting (10 requests per minute per IP)
-const limiter = publicRateLimiter;
+const limiter = publicRateLimiter; // Use the rate limiter object directly
 
 export async function GET(request: NextRequest) {
   try {
     // Apply rate limiting
     try {
       const ip = request.headers.get('x-forwarded-for') || 'unknown';
-      await limiter.check(request, 10, ip); // 10 requests per minute
+      await limiter.check(request, 10, ip);
     } catch (error) {
       return ApiResponse.rateLimitExceeded();
     }
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       return ApiResponse.error({
         error: 'Email parameter is required',
         status: 400,
-        code: 'EMAIL_REQUIRED'
+        code: 'EMAIL_REQUED'
       });
     }
 
@@ -45,20 +45,30 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    await connectDB();
-
     try {
+      await connectDB();
+      
+      // Escape special regex characters in email
+      const escapedEmail = sanitizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
       // Check if a student with this email already exists (case-insensitive)
       const existingStudent = await Student.findOne({ 
-        email: { $regex: new RegExp(`^${sanitizedEmail}$`, 'i') }
-      });
+        email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') }
+      }).lean();
 
-      return ApiResponse.success({
+      return new Response(JSON.stringify({
+        success: true,
         data: {
           exists: !!existingStudent,
           message: existingStudent 
             ? 'A student with this email already exists' 
             : 'Email is available'
+        }
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...securityHeaders(request).headers
         }
       });
 

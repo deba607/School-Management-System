@@ -25,25 +25,57 @@ async function getAuthenticatedUser(req: NextRequest) {
   return token;
 }
 
+// Helper function to parse form data
+async function parseFormData(req: Request) {
+  const formData = await req.formData();
+  const body: Record<string, any> = {};
+  const files: File[] = [];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+  for (const [key, value] of formData.entries()) {
+    if (key === 'pictures' && value instanceof File) {
+      // Validate file size and type
+      if (value.size > MAX_FILE_SIZE) {
+        throw new Error(`File ${value.name} is too large. Maximum size is 5MB.`);
+      }
+      if (!ALLOWED_FILE_TYPES.includes(value.type)) {
+        throw new Error(`File type ${value.type} is not supported. Please upload a JPEG, PNG, or WebP image.`);
+      }
+      files.push(value);
+    } else if (typeof value === 'string') {
+      body[key] = value;
+    }
+  }
+
+  return { ...body, pictures: files };
+}
+
 // POST - Create a new student
 export const POST = async (request: NextRequest) => {
   return withAuth(
     request,
     async (req) => {
-      // Your handler function
       try {
         // Apply rate limiting
         try {
           const ip = req.headers.get('x-forwarded-for') || 'unknown';
-          await limiter.check(req, 10, ip); // 5 requests per minute
+          await limiter.check(req, 10, ip);
         } catch (error) {
           return ApiResponse.rateLimitExceeded();
         }
 
-        // Parse and validate request body
-        const body = await req.json();
-        const validation = validateStudent(body);
+        // Parse form data
+        let body;
+        try {
+          body = await parseFormData(req);
+        } catch (error) {
+          console.error('Error parsing form data:', error);
+          return ApiResponse.error({ error: 'Invalid form data', status: 400 });
+        }
 
+        // Validate request body
+        const validation = validateStudent(body);
         if (!validation.success) {
           return ApiResponse.validationError(validation.errors.map(e => ({
             path: e.path.join('.'),
@@ -51,59 +83,78 @@ export const POST = async (request: NextRequest) => {
           })));
         }
 
-        // Create student with validated data
-        const { name, email, password, class: className, sec, address, pictures, schoolId, otp, otpExpiry } = validation.data;
-      
-        try {
-          await connectDB();
-          const student = await studentService.createStudent({
-            name,
-            email,
-            password,
-            class: className,
-            sec,
-            address,
-            pictures,
-            schoolId: new mongoose.Types.ObjectId(schoolId),
-            ...(otp && { otp }),
-            ...(otpExpiry && { otpExpiry })
-          } as any);
-          
-          // Convert to plain object and remove sensitive data
-          const studentObj = student.toObject();
-          delete studentObj.password;
-          
-          // Return success response
-          return ApiResponse.success({ 
-            data: studentObj, 
-            message: 'Student created successfully', 
-            status: 201 
-          });
-        } catch (error: any) {
-          console.error('Error creating student:', error);
-          
-          if (error.message && error.message.includes('already exists')) {
-            return ApiResponse.error({
-              error: 'A student with this email already exists',
-              status: 409,
-              code: 'DUPLICATE_EMAIL'
-            });
+        // Process file uploads if any
+        const { name, email, password, class: className, sec, address, schoolId, otp, otpExpiry } = validation.data;
+        let picturesData: any[] = [];
+
+        if (body.pictures && Array.isArray(body.pictures) && body.pictures.length > 0) {
+          try {
+            picturesData = await Promise.all(
+              body.pictures.map(async (file: File) => {
+                const buffer = await file.arrayBuffer();
+                const base64 = Buffer.from(buffer).toString('base64');
+                return {
+                  originalName: file.name,
+                  mimeType: file.type,
+                  size: file.size,
+                  base64Data: base64,
+                  uploadedAt: new Date()
+                };
+              })
+            );
+          } catch (error) {
+            console.error('Error processing file upload:', error);
+            throw new Error('Failed to process uploaded files. Please try again.');
           }
-          
-          const errorMessage = error instanceof Error ? error.message : 'Failed to create student';
-          return ApiResponse.error({ 
-            error: errorMessage, 
-            status: 500 
+        }
+
+        // Create student with validated data
+        await connectDB();
+        const student = await studentService.createStudent({
+          name,
+          email,
+          password,
+          class: className,
+          sec,
+          address,
+          pictures: picturesData, // Use the processed pictures data
+          schoolId: new mongoose.Types.ObjectId(schoolId),
+          ...(otp && { otp }),
+          ...(otpExpiry && { otpExpiry })
+        } as any);
+        
+        // Convert to plain object and remove sensitive data
+        const studentObj = student.toObject();
+        delete studentObj.password;
+        
+        // Return success response
+        return ApiResponse.success({ 
+          data: studentObj, 
+          message: 'Student created successfully', 
+          status: 201 
+        });
+      } catch (error: any) {
+        console.error('Error creating student:', error);
+        
+        if (error.message && error.message.includes('already exists')) {
+          return ApiResponse.error({
+            error: 'A student with this email already exists',
+            status: 409,
+            code: 'DUPLICATE_EMAIL'
           });
         }
-      } catch (error) {
-        console.error('Unexpected error in student creation:', error);
-        return ApiResponse.serverError(error);
+        
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create student';
+        return ApiResponse.error({ 
+          error: errorMessage, 
+          status: 500 
+        });
       }
     },
     ['admin', 'school'] // Allow admin and school roles
   );
-}
+};
+
 // GET - Get all students
 export const GET = (request: NextRequest) => {
   return withAuth(
