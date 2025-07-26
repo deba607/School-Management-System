@@ -56,13 +56,14 @@ export default function AddStudent() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    const fieldName = name as FormField;
+    setForm(prev => ({ ...prev, [fieldName]: value }));
     
     // Clear the error for the current field when user types
-    if (fieldErrors[name as keyof typeof fieldErrors]) {
+    if (fieldErrors[fieldName]) {
       setFieldErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[name as keyof typeof newErrors];
+        delete newErrors[fieldName];
         return newErrors;
       });
     }
