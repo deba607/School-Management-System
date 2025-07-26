@@ -6,15 +6,24 @@ import { jwtDecode } from 'jwt-decode';
 interface School {
   _id: string;
   schoolId: string;
-  name?: string;
-  email?: string;
-  pictures?: Array<{
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  website?: string;
+  description?: string;
+  pictures: Array<{
     originalName: string;
     mimeType: string;
     size: number;
     base64Data: string;
   }>;
-  // Add other fields as needed
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface SchoolContextType {

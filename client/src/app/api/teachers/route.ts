@@ -80,7 +80,7 @@ async function createTeacher(request: NextRequest) {
     // Validate required fields
     const requiredFields = [
       'name', 'email', 'phone', 'subject', 
-      'address', 'password', 'confirmPassword'
+      'address', 'password'
     ];
     const missingFields = requiredFields.filter(field => !body[field]);
     
@@ -92,6 +92,13 @@ async function createTeacher(request: NextRequest) {
           message: `${field} is required`
         }))
       );
+    }
+    
+    // Check for confirmPassword separately
+    if (body.confirmPassword === undefined) {
+      return ApiResponse.validationError([
+        { field: 'confirmPassword', message: 'Please confirm your password' }
+      ]);
     }
     
     // Validate email format
