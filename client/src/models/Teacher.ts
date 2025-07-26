@@ -13,8 +13,8 @@ export interface ITeacher extends Document {
     size: number;
     base64Data: string;
   }>;
-  otp: string;
-  otpExpiry: Date;
+  otp?: string;
+  otpExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
   schoolId: mongoose.Schema.Types.ObjectId;
