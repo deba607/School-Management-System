@@ -24,6 +24,7 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState<Student[]>([]);
+  const [hasError, setHasError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewStudent, setViewStudent] = useState<Student | null>(null);
@@ -33,16 +34,36 @@ export default function StudentsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/students");
+      const { authFetch } = await import('@/utils/authFetch');
+      const res = await authFetch("/api/students");
+      
+      if (res.status === 401) {
+        // Token is missing or invalid, redirect to login
+        router.push('/Login');
+        return;
+      }
+      
       const data = await res.json();
-      if (data.success) {
-        setStudents(data.data || []);
-        setFiltered(data.data || []);
+      if (data.success && data.data && Array.isArray(data.data.students)) {
+        // Handle paginated response format
+        setStudents(data.data.students);
+        setFiltered(data.data.students);
+        setHasError(false);
+      } else if (data.success && Array.isArray(data.data)) {
+        // Fallback to non-paginated format if needed
+        setStudents(data.data);
+        setFiltered(data.data);
+        setHasError(false);
       } else {
-        setError(data.error || "Failed to fetch students");
+        console.error('Invalid data format from API:', data);
+        setError(data.error || "Failed to fetch students: Invalid data format");
+        setHasError(true);
+        setStudents([]);
+        setFiltered([]);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to fetch students");
+      console.error('Error fetching students:', err);
+      setError(err.message || "Failed to fetch students. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -72,7 +93,17 @@ export default function StudentsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this student?")) return;
     try {
-      const res = await fetch(`/api/students/${id}`, { method: "DELETE" });
+      const { authFetch } = await import('@/utils/authFetch');
+      const res = await authFetch(`/api/students/${id}`, { 
+        method: "DELETE" 
+      });
+      
+      if (res.status === 401) {
+        // Token is missing or invalid, redirect to login
+        router.push('/Login');
+        return;
+      }
+      
       const data = await res.json();
       if (data.success) {
         setStudents(prev => prev.filter(t => t._id !== id));
@@ -80,6 +111,7 @@ export default function StudentsPage() {
         alert(data.error || "Failed to delete student");
       }
     } catch (err: any) {
+      console.error('Error deleting student:', err);
       alert(err.message || "Failed to delete student");
     }
   };
@@ -115,7 +147,7 @@ export default function StudentsPage() {
               <div className="text-center text-blue-700">Loading...</div>
             ) : error ? (
               <div className="text-center text-red-600">{error}</div>
-            ) : filtered.length === 0 ? (
+            ) : !Array.isArray(filtered) || filtered.length === 0 ? (
               <div className="text-center text-blue-700">No students found.</div>
             ) : (
               <div className="space-y-4">

@@ -78,38 +78,63 @@ export default function AddStudent() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    // Validate form data
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
+  const validateForm = () => {
     // Check if all required fields are filled
-    if (!form.name || !form.email || !form.password || !form.class || !form.sec || !form.address) {
-      setError("Please fill in all required fields");
-      return;
+    const requiredFields = ['name', 'email', 'password', 'class', 'sec', 'address'];
+    const missingFields = requiredFields.filter(field => {
+      const value = form[field as keyof typeof form];
+      return value === undefined || value === null || value === '';
+    });
+    
+    if (missingFields.length > 0) {
+      const fieldNames = missingFields.map(field => {
+        if (field === 'sec') return 'section';
+        return field;
+      });
+      return `Please fill in all required fields: ${fieldNames.join(', ')}`;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
-      setError("Please enter a valid email address");
-      return;
+      return "Please enter a valid email address";
     }
 
     // Validate password strength
     if (form.password.length < 6) {
-      setError("Password must be at least 6 characters long");
-      return;
+      return "Password must be at least 6 characters long";
     }
 
+    // Check password match if confirmPassword exists in the form
+    if ('confirmPassword' in form && form.password !== form.confirmPassword) {
+      return "Passwords do not match";
+    }
+
+    return null; // No validation errors
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
     setLoading(true);
     
     try {
+      // Log form data for debugging
+      console.log('Form data being submitted:', {
+        ...form,
+        password: '***', // Don't log actual password
+        confirmPassword: '***'
+      });
+      
+      // Validate form
+      const validationError = validateForm();
+      if (validationError) {
+        console.error('Client-side validation failed:', validationError);
+        setError(validationError);
+        setLoading(false);
+        return;
+      }
+
       // First check if user with this email already exists
       const userExists = await checkIfUserExists(form.email);
       if (userExists) {
@@ -149,24 +174,39 @@ export default function AddStudent() {
         }
       }
 
+      // Get authentication token
+      const token = localStorage.getItem('school_management_token');
+      if (!token) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+
       // Submit the student data
+      console.log('Submitting student data to API...');
       const response = await fetch("/api/students", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(studentData),
       });
 
       const result = await response.json();
+      console.log('API Response:', {
+        status: response.status,
+        ok: response.ok,
+        result
+      });
       
       if (!response.ok) {
         // Handle validation errors
         if (response.status === 400 && result.details) {
           // Format validation errors into a user-friendly message
-          const errorMessages = result.details.map((error: any) => 
-            `- ${error.path}: ${error.message}`
-          ).join('\n');
+          const errorMessages = result.details.map((error: any) => {
+            // Format field names to be more user-friendly
+            const fieldName = error.path[0] === 'sec' ? 'section' : error.path[0];
+            return `- ${fieldName}: ${error.message}`;
+          }).join('\n');
           
           throw new Error(`Validation failed:\n${errorMessages}`);
         } 
@@ -174,9 +214,13 @@ export default function AddStudent() {
         else if (response.status === 409) {
           throw new Error("A student with this email already exists");
         } 
+        // Handle unauthorized/forbidden
+        else if (response.status === 401 || response.status === 403) {
+          throw new Error("You don't have permission to perform this action. Please log in again.");
+        }
         // Handle other errors
         else {
-          throw new Error(result.error || "Failed to create student. Please try again.");
+          throw new Error(result.error || `Failed to create student (${response.status}). Please try again.`);
         }
       }
 
@@ -192,12 +236,23 @@ export default function AddStudent() {
       } else {
         throw new Error(result.error || "Failed to create student. Please try again.");
       }
-    } catch (error: any) {
-      // Handle network errors or other issues
-      console.error('Error creating student:', error);
-      const errorMessage = error.message || "An unexpected error occurred. Please try again.";
+    } catch (error) {
+      // Type-safe error handling
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String(error.message)
+          : 'An error occurred while submitting the form';
+          
+      console.error('Error in form submission:', {
+        error,
+        errorString: String(error),
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+        errorMessage,
+        errorStack: error instanceof Error ? error.stack : undefined
+      });
+      
       setError(errorMessage);
-    } finally {
       setLoading(false);
     }
   };
@@ -253,9 +308,23 @@ export default function AddStudent() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-3 rounded-lg bg-red-100 text-red-800 text-center font-semibold"
+                className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm"
               >
-                {error}
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="font-medium">Error</h3>
+                    <div className="mt-1 text-sm">
+                      {error.split('\n').map((line, i) => (
+                        <p key={i} className="whitespace-pre-wrap">{line}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
