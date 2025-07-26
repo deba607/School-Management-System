@@ -38,30 +38,104 @@ export async function POST(req: NextRequest) {
     const { userId, role, otp } = await req.json();
     console.log('OTP Verification Request:', { userId, role, otp });
     
+    // Input validation
+    if (!userId || !role || !otp) {
+      console.error('Missing required fields for OTP verification');
+      return NextResponse.json(
+        { success: false, error: "Missing required fields (userId, role, or otp)" }, 
+        { status: 400 }
+      );
+    }
+    
+    // Verify OTP
     const valid = await verifyOTP(userId, role, otp);
     console.log('OTP Verification Result:', valid);
     
     if (!valid) {
-      return NextResponse.json({ success: false, error: "Invalid or expired OTP" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Invalid or expired OTP. Please request a new one if needed." }, 
+        { status: 400 }
+      );
     }
     
-    // Get the school ID based on the user's role
-    const schoolId = await getSchoolId(userId, role);
-    console.log('Retrieved school ID:', schoolId);
-    
-    // Include schoolId in the JWT token if available
-    const tokenPayload: any = { userId, role: role.toLowerCase() };
-    if (schoolId) {
-      tokenPayload.schoolId = schoolId;
+    // Get user details based on role
+    let userDetails: any = null;
+    let schoolId = null;
+
+    if (role === 'Teacher') {
+      // Fetch teacher details including school info
+      userDetails = await Teacher.findById(userId)
+        .populate('schoolId', 'name email address')
+        .lean();
+      
+      if (!userDetails) {
+        console.error('Teacher not found:', userId);
+        return NextResponse.json(
+          { success: false, error: "Teacher account not found" },
+          { status: 404 }
+        );
+      }
+      
+      schoolId = userDetails.schoolId?._id?.toString() || null;
+      
+      if (!schoolId) {
+        console.error('Teacher login failed - No school ID associated with teacher:', userId);
+        return NextResponse.json(
+          { success: false, error: "Teacher account not properly associated with a school. Please contact support." },
+          { status: 400 }
+        );
+      }
+    } else {
+      // For other roles, use the existing getSchoolId function
+      schoolId = await getSchoolId(userId, role);
     }
+
+    console.log('Retrieved user details:', { userId, role, schoolId });
     
-    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: "7d" });
+    // Prepare token payload with user details
+    const tokenPayload: any = { 
+      userId,
+      role: role.toLowerCase(),
+      email: userDetails?.email || '',
+      name: userDetails?.name || userDetails?.schoolId?.name || 'User',
+      schoolId: schoolId,
+      schoolName: userDetails?.schoolId?.name || '',
+      picture: userDetails?.pictures?.[0]?.base64Data 
+        ? `data:${userDetails.pictures[0].mimeType};base64,${userDetails.pictures[0].base64Data}`
+        : undefined
+    };
+    
+    // Sign the JWT token
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { 
+      expiresIn: "7d" 
+    });
+    
+    console.log('JWT token generated successfully for user:', { 
+      userId, 
+      role,
+      hasSchoolId: !!schoolId 
+    });
+    
     return NextResponse.json({ 
       success: true, 
       token,
-      schoolId // Also include in the response for immediate use if needed
+      schoolId, // Also include in the response for immediate use if needed
+      role: role.toLowerCase()
     });
+    
   } catch (error) {
-    return NextResponse.json({ success: false, error: (error as any).message }, { status: 500 });
+    console.error('Error in OTP verification:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: "An error occurred during OTP verification. Please try again later." 
+      }, 
+      { status: 500 }
+    );
   }
 }

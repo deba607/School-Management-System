@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import { getToken, removeToken, setToken, getCurrentUser } from '@/utils/auth';
 
-interface User {
-  userId: string;
-  role: string;
-  schoolId?: string;
+import { DecodedToken } from '@/utils/auth';
+
+interface User extends DecodedToken {
+  isAuthenticated: boolean;
+  loading: boolean;
 }
 
 interface AuthContextType {
@@ -22,8 +23,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User>({ 
+    isAuthenticated: false, 
+    loading: true 
+  } as User);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -37,17 +41,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData = getCurrentUser();
         if (userData) {
           setUser({
-            userId: userData.userId,
-            role: userData.role,
-            schoolId: userData.schoolId
+            ...userData,
+            isAuthenticated: true,
+            loading: false
           });
+          return;
         }
       }
+      // If we get here, either no token or invalid user
+      setUser(prev => ({
+        ...prev,
+        isAuthenticated: false,
+        loading: false
+      }));
     } catch (error) {
       console.error('Error initializing auth:', error);
       removeToken();
-    } finally {
-      setLoading(false);
+      setUser(prev => ({
+        ...prev,
+        isAuthenticated: false,
+        loading: false
+      }));
     }
   };
 
@@ -56,16 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userData = getCurrentUser();
     if (userData) {
       setUser({
-        userId: userData.userId,
-        role: userData.role,
-        schoolId: userData.schoolId
+        ...userData,
+        isAuthenticated: true,
+        loading: false
       });
     }
   };
 
   const logout = () => {
     removeToken();
-    setUser(null);
+    setUser({
+      isAuthenticated: false,
+      loading: false
+    } as User);
     router.push('/Login');
   };
 
@@ -75,8 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         login,
         logout,
-        isAuthenticated: !!user,
-        loading,
+        isAuthenticated: user.isAuthenticated,
+        loading: user.loading,
       }}
     >
       {children}

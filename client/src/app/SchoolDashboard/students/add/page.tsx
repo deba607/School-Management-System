@@ -272,14 +272,14 @@ export default function AddStudent() {
         throw new Error('Authentication required. Please log in again.');
       }
 
-      // Create FormData for the request
+      // Create FormData and append all fields individually
       const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
+      formData.append('name', form.name.trim());
+      formData.append('email', form.email.trim().toLowerCase());
       formData.append('password', form.password);
-      formData.append('class', form.class);
-      formData.append('sec', form.sec);
-      formData.append('address', form.address);
+      formData.append('class', form.class.trim());
+      formData.append('sec', form.sec.trim().toUpperCase());
+      formData.append('address', form.address.trim());
       formData.append('schoolId', schoolId);
 
       // Handle file uploads if any
@@ -293,10 +293,10 @@ export default function AddStudent() {
       const response = await fetch("/api/students", {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${token}`
-          // Don't set Content-Type header when using FormData
-          // The browser will set it automatically with the correct boundary
+          "Authorization": `Bearer ${token}`,
+          // Let the browser set the Content-Type with boundary for FormData
         },
+        credentials: 'include',
         body: formData,
       });
 
