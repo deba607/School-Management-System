@@ -110,6 +110,7 @@ export default function AddTeacher() {
         subject: form.subject,
         address: form.address, // Explicitly include address
         password: form.password,
+        confirmPassword: form.confirmPassword, // Add confirmPassword for validation
         schoolId,
         pictures: [],
       };

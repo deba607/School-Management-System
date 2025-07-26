@@ -33,18 +33,22 @@ async function parseFormData(req: Request) {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+  // First, collect all fields
   for (const [key, value] of formData.entries()) {
     if (key === 'pictures' && value instanceof File) {
-      // Validate file size and type
-      if (value.size > MAX_FILE_SIZE) {
-        throw new Error(`File ${value.name} is too large. Maximum size is 5MB.`);
-      }
-      if (!ALLOWED_FILE_TYPES.includes(value.type)) {
-        throw new Error(`File type ${value.type} is not supported. Please upload a JPEG, PNG, or WebP image.`);
-      }
       files.push(value);
-    } else if (typeof value === 'string') {
+    } else if (key !== 'pictures') {
       body[key] = value;
+    }
+  }
+
+  // Then validate files if any
+  for (const file of files) {
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`File ${file.name} is too large. Maximum size is 5MB.`);
+    }
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      throw new Error(`File type ${file.type} is not supported. Please upload a JPEG, PNG, or WebP image.`);
     }
   }
 
