@@ -40,9 +40,13 @@ export default function AddStudent() {
 
   useEffect(() => {
     if (contextSchoolId) {
+      console.log('Setting schoolId from context:', contextSchoolId);
       setSchoolId(contextSchoolId);
+    } else if (!schoolLoading && !contextSchoolId) {
+      console.error('No schoolId available in context after loading');
+      setError('School information not available. Please try logging in again.');
     }
-  }, [contextSchoolId]);
+  }, [contextSchoolId, schoolLoading]);
 
   useEffect(() => {
     // GSAP animations on mount
@@ -252,10 +256,19 @@ export default function AddStudent() {
       return;
     }
     
+    // Validate schoolId is available
+    if (!schoolId) {
+      setLoading(false);
+      setError('School ID is not available. Please refresh the page or log in again.');
+      console.error('Missing schoolId during form submission');
+      return;
+    }
+    
     try {
       // Log form data for debugging
       console.log('Form data being submitted:', {
         ...form,
+        schoolId, // Log the schoolId being used
         password: '***', // Don't log actual password
         confirmPassword: '***'
       });
@@ -289,7 +302,7 @@ export default function AddStudent() {
         });
       }
 
-      console.log('Submitting student data to API...');
+      console.log('Submitting student data to API with schoolId:', schoolId);
       const response = await fetch("/api/students", {
         method: "POST",
         headers: { 
@@ -316,7 +329,7 @@ export default function AddStudent() {
       
       if (!response.ok) {
         // Handle validation errors
-        if (response.status === 400 && result.details) {
+        if ((response.status === 400 || response.status === 422) && result.details) {
           const errorMessages = Array.isArray(result.details) 
             ? result.details.map((error: any) => {
                 const fieldName = error.path?.[0] === 'sec' ? 'section' : error.path?.[0] || 'field';
@@ -674,4 +687,4 @@ export default function AddStudent() {
       </div>
     </div>
   );
-} 
+}

@@ -3,10 +3,11 @@ import Event from "../../../../models/Event";
 import { EventSchema } from "../../../../validators/EventValidators";
 import connectDB from "../../../../lib/mongodb";
 import mongoose from "mongoose";
+import { withAuth } from "@/middleware/withAuth";
 
-export async function GET(req: Request, context: { params: { id: string } }) {
+async function handleGET(req: NextRequest, context: { params: { id: string } }) {
   await connectDB();
-  const { params } = await Promise.resolve(context);
+  const { params } = context;
   try {
     const event = await Event.findById(params.id);
     if (!event) return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });
@@ -16,9 +17,9 @@ export async function GET(req: Request, context: { params: { id: string } }) {
   }
 }
 
-export async function PUT(req: Request, context: { params: { id: string } }) {
+async function handlePUT(req: NextRequest, context: { params: { id: string } }) {
   await connectDB();
-  const { params } = await Promise.resolve(context);
+  const { params } = context;
   try {
     const body = await req.json();
     const parsed = EventSchema.safeParse(body);
@@ -33,9 +34,9 @@ export async function PUT(req: Request, context: { params: { id: string } }) {
   }
 }
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+async function handleDELETE(req: NextRequest, context: { params: { id: string } }) {
   await connectDB();
-  const { params } = await Promise.resolve(context);
+  const { params } = context;
   try {
     const event = await Event.findByIdAndDelete(params.id);
     if (!event) return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });
@@ -43,4 +44,8 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
   } catch (error) {
     return NextResponse.json({ success: false, error: (error as any).message }, { status: 500 });
   }
-} 
+}
+
+export const GET = (req: NextRequest, context: { params: { id: string } }) => withAuth(req, (r) => handleGET(r, context), ['school', 'teacher', 'student']);
+export const PUT = (req: NextRequest, context: { params: { id: string } }) => withAuth(req, (r) => handlePUT(r, context), ['school']);
+export const DELETE = (req: NextRequest, context: { params: { id: string } }) => withAuth(req, (r) => handleDELETE(r, context), ['school']);

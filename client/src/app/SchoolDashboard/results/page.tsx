@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { useSchool } from "../school-context";
+import { authFetch, initializeAuthFetch } from "@/utils/authFetch";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
@@ -51,11 +52,16 @@ export default function ResultsPage() {
     );
   }, []);
 
+  // Initialize authFetch
+  useEffect(() => {
+    initializeAuthFetch();
+  }, []);
+
   const fetchResults = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/results");
+      const res = await authFetch("/api/results");
       const data = await res.json();
       if (data.success) {
         setResultsData(data.data || []);
@@ -90,7 +96,7 @@ export default function ResultsPage() {
     if (!showModal) return;
     async function fetchSubjectsAndTeachers() {
       try {
-        const res = await fetch("/api/teachers");
+        const res = await authFetch("/api/teachers");
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           setTeachers(data.data.map((t: any) => ({ _id: t._id, name: t.name, subject: t.subject })));
@@ -111,11 +117,11 @@ export default function ResultsPage() {
     if (!showModal || !resultForm.className || !resultForm.section) return;
     async function fetchStudents() {
       try {
-        const res = await fetch(`/api/students?class=${resultForm.className}&section=${resultForm.section}`);
+        const res = await authFetch(`/api/students?class=${resultForm.className}&section=${resultForm.section}`);
         const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          setStudents(data.data.map((s: any) => ({ id: s._id, name: s.name })));
-          setResultForm((prev) => ({ ...prev, students: data.data.map((s: any) => ({ id: s._id, name: s.name, marks: "", grade: "" })) }));
+        if (data.success && Array.isArray(data.data.students)) {
+          setStudents(data.data.students.map((s: any) => ({ id: s._id, name: s.name })));
+          setResultForm((prev) => ({ ...prev, students: data.data.students.map((s: any) => ({ id: s._id, name: s.name, marks: "", grade: "" })) }));
         }
       } catch {}
     }
@@ -160,7 +166,7 @@ export default function ResultsPage() {
     setFormError(null);
     try {
       const formData = { ...resultForm, schoolId };
-      const res = await fetch("/api/results", {
+      const res = await authFetch("/api/results", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -180,7 +186,7 @@ export default function ResultsPage() {
     if (!confirm("Are you sure you want to delete this result?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/results/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/results/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setResultsData(prev => prev.filter(r => r._id !== id));
@@ -447,4 +453,4 @@ export default function ResultsPage() {
       </div>
     </div>
   );
-} 
+}

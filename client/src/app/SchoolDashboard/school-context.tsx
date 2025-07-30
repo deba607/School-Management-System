@@ -57,20 +57,35 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
       setError(null);
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('school_management_token') : null;
-        if (!token) throw new Error('No token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          throw new Error('No token');
+        }
+        
         const decoded: any = jwtDecode(token);
+        console.log('Decoded token:', { ...decoded, token: '***' }); // Log decoded token without the actual token
+        
         let userId = decoded.userId;
         let role = decoded.role;
-        if (!userId || role !== 'school') throw new Error('Not a school user');
+        if (!userId || role !== 'school') {
+          console.error('Invalid user role or ID', { role, userId: userId ? '***' : 'missing' });
+          throw new Error('Not a school user');
+        }
+        
         // Fetch school info from API
         const res = await fetch(`/api/schools/${userId}`);
         const data = await res.json();
+        console.log('School data response:', { status: res.status, success: data.success });
+        
         if (res.ok && data.success && data.data) {
+          console.log('School data loaded successfully with ID:', data.data.schoolId || data.data._id);
           setSchool(data.data);
         } else {
+          console.error('Failed to fetch school data:', data.error);
           throw new Error(data.error || 'Failed to fetch school');
         }
       } catch (err: any) {
+        console.error('Error in fetchSchool:', err);
         setError(err.message || 'Failed to fetch school');
         setSchool(null);
       } finally {
@@ -83,11 +98,11 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
   return (
     <SchoolContext.Provider value={{
       school,
-      schoolId: school?.schoolId || null,
+      schoolId: school?._id || school?.schoolId || null, // Use _id as fallback
       loading,
       error,
     }}>
       {children}
     </SchoolContext.Provider>
   );
-}; 
+};

@@ -9,6 +9,7 @@ export const ClassScheduleSchema = z.object({
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
   description: z.string().optional(),
+  schoolId: z.string().optional(), // Make it optional since we'll add it in the API
 });
 
 export function validateClassSchedule(data: any) {
@@ -18,4 +19,4 @@ export function validateClassSchedule(data: any) {
     data: result.success ? result.data : null,
     errors: result.success ? null : result.error.flatten().fieldErrors,
   };
-} 
+}

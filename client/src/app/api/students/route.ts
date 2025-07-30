@@ -181,11 +181,23 @@ export const GET = (request: NextRequest) => {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100); // Max 100 items per page
         const skip = (page - 1) * limit;
-
+        
+        // Get class and section filters
+        const className = searchParams.get('class');
+        const section = searchParams.get('section');
+        const user = await getAuthenticatedUser(req);
+        const schoolId = user?.schoolId;
+        
+        // Build query based on filters
+        const query: any = {};
+        if (className) query.class = className;
+        if (section) query.sec = section;
+        if (schoolId) query.schoolId = schoolId;
+        
         // Get total count and paginated results
         const [total, students] = await Promise.all([
-          Student.countDocuments({}),
-          Student.find({})
+          Student.countDocuments(query),
+          Student.find(query)
             .select('-password') // Exclude password field
             .skip(skip)
             .limit(limit)
