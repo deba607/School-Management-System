@@ -13,6 +13,7 @@ export const AttendanceSchema = z.object({
   teacher: z.string().min(1),
   date: z.string().min(1),
   students: z.array(AttendanceStudentSchema).min(1),
+  schoolId: z.string().min(1),
 });
 
 export function validateAttendance(data: any) {
@@ -22,4 +23,4 @@ export function validateAttendance(data: any) {
     data: result.success ? result.data : null,
     errors: result.success ? null : result.error.flatten().fieldErrors,
   };
-} 
+}

@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { useSchool } from "../school-context";
+import { authFetch, initializeAuthFetch } from "@/utils/authFetch";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
@@ -55,11 +56,16 @@ export default function AttendancePage() {
     );
   }, []);
 
+  // Initialize authFetch
+  useEffect(() => {
+    initializeAuthFetch();
+  }, []);
+
   const fetchAttendance = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/attendance");
+      const res = await authFetch("/api/attendance");
       const data = await res.json();
       if (data.success) {
         setAttendanceData(data.data || []);
@@ -150,11 +156,11 @@ export default function AttendancePage() {
     if (!showModal || !attendanceForm.className || !attendanceForm.section) return;
     async function fetchStudents() {
       try {
-        const res = await fetch(`/api/students?class=${attendanceForm.className}&section=${attendanceForm.section}`);
+        const res = await authFetch(`/api/students?class=${attendanceForm.className}&section=${attendanceForm.section}`);
         const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          setStudents(data.data.map((s: any) => ({ id: s._id, name: s.name })));
-          setAttendanceForm((prev) => ({ ...prev, students: data.data.map((s: any) => ({ id: s._id, name: s.name, status: "Present" })), teacher: prev.teacher || "" }));
+        if (data.success && Array.isArray(data.data.students)) {
+          setStudents(data.data.students.map((s: any) => ({ id: s._id, name: s.name })));
+          setAttendanceForm((prev) => ({ ...prev, students: data.data.students.map((s: any) => ({ id: s._id, name: s.name, status: "Present" })), teacher: prev.teacher || "" }));
         }
       } catch {}
     }
@@ -172,7 +178,7 @@ export default function AttendancePage() {
     setFormError(null);
     try {
       const formData = { ...attendanceForm, schoolId };
-      const res = await fetch("/api/attendance", {
+      const res = await authFetch("/api/attendance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -192,7 +198,7 @@ export default function AttendancePage() {
     if (!confirm("Are you sure you want to delete this attendance record?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/attendance/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/attendance/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setAttendanceData(prev => prev.filter(a => a._id !== id));
@@ -463,4 +469,4 @@ export default function AttendancePage() {
       </div>
     </div>
   );
-} 
+}

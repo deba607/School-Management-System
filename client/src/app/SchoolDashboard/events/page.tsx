@@ -28,9 +28,8 @@ export default function EventsPage() {
     setLoading(true);
     setError(null);
     try {
-      // Pass schoolId as a query param if available
-      const url = schoolId ? `/api/events?schoolId=${encodeURIComponent(schoolId)}` : "/api/events";
-      const res = await fetch(url);
+      // Use authFetch instead of fetch
+      const res = await window.authFetch(`/api/events`);
       if (!res.ok) throw new Error("Failed to fetch events");
       const data = await res.json();
       if (data.success) {
@@ -59,7 +58,8 @@ export default function EventsPage() {
     if (!confirm("Are you sure you want to delete this event?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      // Use authFetch instead of fetch
+      const res = await window.authFetch(`/api/events/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setEvents(prev => prev.filter(e => e._id !== id));
