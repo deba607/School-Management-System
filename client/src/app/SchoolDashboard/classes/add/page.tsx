@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { useSchool } from "../../school-context";
+import { authFetch } from "@/utils/authFetch";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
@@ -37,6 +38,13 @@ export default function AddClassSchedule() {
   const router = useRouter();
   const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
+  // Add this useEffect to set the schoolId from context
+  useEffect(() => {
+    if (contextSchoolId) {
+      setSchoolId(contextSchoolId);
+    }
+  }, [contextSchoolId]);
+
   useEffect(() => {
     gsap.fromTo(
       containerRef.current,
@@ -54,7 +62,7 @@ export default function AddClassSchedule() {
     async function fetchDropdowns() {
       setDropdownLoading(true);
       try {
-        const res = await fetch("/api/teachers");
+        const res = await authFetch("/api/teachers");
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           const teachersArr = data.data.map((t: any) => ({ _id: t._id, name: t.name }));
@@ -98,7 +106,7 @@ export default function AddClassSchedule() {
         ...form,
         schoolId,
       };
-      const res = await fetch("/api/class-schedules", {
+      const res = await authFetch("/api/class-schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -302,4 +310,4 @@ export default function AddClassSchedule() {
       </div>
     </div>
   );
-} 
+}
