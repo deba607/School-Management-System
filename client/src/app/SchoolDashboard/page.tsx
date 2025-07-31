@@ -33,13 +33,14 @@ const SchoolDashboardPage = () => {
       router.push('/Login');
       return;
     }
-    if (!decoded || (decoded as any).role !== 'school') {
+    if (!decoded || !['school', 'teacher'].includes((decoded as any).role)) {
       localStorage.removeItem('school_management_token');
       router.push('/Login');
       return;
     }
   }, [router]);
 
+  // Remove redundant authFetch initialization since it's handled by initializeAuthFetch
   // Helper for authenticated fetch
   React.useEffect(() => {
     window.authFetch = async (url: RequestInfo | URL, options: RequestInit = {}) => {
