@@ -1,17 +1,62 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 
-const overviewData = [
-  { label: "Total Classes", value: 8 },
-  { label: "Attendance", value: "97%" },
-  { label: "Upcoming Events", value: 2 },
-  { label: "Results", value: "A" },
-];
+interface StudentData {
+  _id: string;
+  name: string;
+  email: string;
+  class: string;
+  sec: string;
+  address: string;
+  pictures?: Array<{
+    originalName: string;
+    mimeType: string;
+    size: number;
+    base64Data: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  schoolId: string;
+}
 
-const StudentHome = () => {
+interface StudentHomeProps {
+  studentData: StudentData | null;
+}
+
+const StudentHome: React.FC<StudentHomeProps> = ({ studentData }) => {
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [attendanceData, setAttendanceData] = useState<any>(null);
+  const [eventsData, setEventsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch attendance and events data
+    const fetchData = async () => {
+      try {
+        // Fetch events
+        const eventsResponse = await window.authFetch('/api/events');
+        if (eventsResponse.ok) {
+          const eventsResult = await eventsResponse.json();
+          if (eventsResult.success) {
+            setEventsData(eventsResult.data || []);
+          }
+        }
+
+        // You can add more data fetching here as needed
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (studentData) {
+      fetchData();
+    }
+  }, [studentData]);
 
   useEffect(() => {
     cardRefs.current.forEach((ref, idx) => {
@@ -32,6 +77,14 @@ const StudentHome = () => {
     });
   }, []);
 
+  // Prepare overview data with real values where possible
+  const overviewData = [
+    { label: "Class", value: studentData ? `${studentData.class}-${studentData.sec}` : "--" },
+    { label: "Upcoming Events", value: eventsData ? eventsData.length : 0 },
+    { label: "Email", value: studentData?.email || "--" },
+    { label: "Address", value: studentData?.address || "--" },
+  ];
+
   return (
     <div className="p-4 sm:p-8">
       <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-blue-900 tracking-wide text-center sm:text-left">Student Overview</h2>
@@ -47,10 +100,12 @@ const StudentHome = () => {
             whileHover={{ scale: 1.08 }}
           >
             <span className="text-base sm:text-lg text-blue-700 mb-2 font-semibold text-center">{item.label}</span>
-            <span className="text-2xl sm:text-4xl font-extrabold text-blue-900 drop-shadow-lg">{item.value}</span>
+            <span className="text-xl sm:text-xl font-extrabold text-blue-900 drop-shadow-lg break-words text-center overflow-hidden text-ellipsis">{item.value}</span>
           </motion.div>
         ))}
       </div>
+
+      {/* You can add more sections here with real data */}
     </div>
   );
 };
