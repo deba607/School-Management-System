@@ -1,6 +1,6 @@
 # School Management System
 
-A modern, full-stack school management system built with Next.js, React, and TypeScript. This application provides a comprehensive solution for managing students, teachers, classes, and other school-related activities.
+A modern, full-stack school management system built with Next.js, React, and TypeScript. This application provides a comprehensive solution for managing students, teachers, classes, and other school-related activities. It is easy to use for everyone.
 
 ## 🚀 Features
 
