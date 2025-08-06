@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { authFetch } from "@/utils/auth";
 import { IAttendance, IAttendanceStudent } from "@/types/attendance";
+import { motion } from "framer-motion";
 
 const AttendancePage = () => {
   const [attendance, setAttendance] = useState<IAttendanceWithStudentStatus[]>([]);
@@ -39,35 +40,47 @@ const AttendancePage = () => {
   }
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4 text-center">Attendance</h1>
+    <div className="p-4 sm:p-8">
+      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-blue-900 tracking-wide text-center sm:text-left">Attendance</h2>
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center h-40">
+          <p className="text-blue-700 font-medium">Loading...</p>
+        </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="bg-white/80 shadow-xl rounded-2xl p-6 sm:p-8 border border-red-100">
+          <p className="text-red-500 text-center">{error}</p>
+        </div>
       ) : attendance.length === 0 ? (
-        <p>No attendance records found.</p>
+        <div className="bg-white/80 shadow-xl rounded-2xl p-6 sm:p-8 border border-blue-100">
+          <p className="text-blue-700 text-center font-medium">No attendance records found.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded shadow">
-            <thead>
+        <div className="overflow-x-auto bg-white/80 shadow-xl rounded-2xl border border-blue-100">
+          <table className="min-w-full">
+            <thead className="bg-blue-50">
               <tr>
-                <th className="py-2 px-4">Class</th>
-                <th className="py-2 px-4">Section</th>
-                <th className="py-2 px-4">Subject</th>
-                <th className="py-2 px-4">Date</th>
-                <th className="py-2 px-4">Status</th>
+                <th className="py-3 px-4 text-blue-900 font-semibold text-left">Class</th>
+                <th className="py-3 px-4 text-blue-900 font-semibold text-left">Section</th>
+                <th className="py-3 px-4 text-blue-900 font-semibold text-left">Subject</th>
+                <th className="py-3 px-4 text-blue-900 font-semibold text-left">Date</th>
+                <th className="py-3 px-4 text-blue-900 font-semibold text-left">Status</th>
               </tr>
             </thead>
             <tbody>
-              {attendance.map((rec) => (
-                <tr key={String(rec._id)} className="border-t">
-                  <td className="py-2 px-4">{rec.className}</td>
-                  <td className="py-2 px-4">{rec.section}</td>
-                  <td className="py-2 px-4">{rec.subject}</td>
-                  <td className="py-2 px-4">{formatDate(rec.date)}</td>
-                  <td className="py-2 px-4">{rec.studentStatus?.status}</td>
-                </tr>
+              {attendance.map((rec, idx) => (
+                <motion.tr 
+                  key={String(rec._id)} 
+                  className="border-t border-blue-100 hover:bg-blue-50 transition-colors duration-150"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * idx }}
+                >
+                  <td className="py-3 px-4 text-blue-800">{rec.className}</td>
+                  <td className="py-3 px-4 text-blue-800">{rec.section}</td>
+                  <td className="py-3 px-4 text-blue-800">{rec.subject}</td>
+                  <td className="py-3 px-4 text-blue-800">{formatDate(rec.date)}</td>
+                  <td className="py-3 px-4 text-blue-800 font-medium">{rec.studentStatus?.status}</td>
+                </motion.tr>
               ))}
             </tbody>
           </table>

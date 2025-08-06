@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { authFetch } from "@/utils/auth";
 import { IEvent } from "@/types/event";
+import { motion } from "framer-motion";
 
 const EventsPage = () => {
   const [events, setEvents] = useState<IEvent[]>([]);
@@ -32,24 +33,37 @@ const EventsPage = () => {
   }, []);
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4 text-center">Events</h1>
+    <div className="p-4 sm:p-8">
+      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-blue-900 tracking-wide text-center sm:text-left">Events</h2>
       {loading ? (
-        <p>Loading...</p>
+        <div className="flex justify-center items-center h-40">
+          <p className="text-blue-700 font-medium">Loading...</p>
+        </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="bg-white/80 shadow-xl rounded-2xl p-6 sm:p-8 border border-red-100">
+          <p className="text-red-500 text-center">{error}</p>
+        </div>
       ) : events.length === 0 ? (
-        <p>No events found.</p>
+        <div className="bg-white/80 shadow-xl rounded-2xl p-6 sm:p-8 border border-blue-100">
+          <p className="text-blue-700 text-center font-medium">No events found.</p>
+        </div>
       ) : (
-        <ul className="space-y-4">
-          {events.map((event) => (
-            <li key={String(event._id)} className="bg-white rounded shadow p-4">
-              <h2 className="text-xl font-semibold mb-2">{event.title}</h2>
-              <p className="text-gray-700 mb-1">{event.description}</p>
-              <p className="text-gray-500 text-sm">Date: {event.date instanceof Date ? event.date.toLocaleDateString() : event.date}</p>
-            </li>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {events.map((event, idx) => (
+            <motion.div
+              key={String(event._id)}
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 * idx, type: "spring", stiffness: 90 }}
+              className="bg-white/80 shadow-xl rounded-2xl p-6 border border-blue-100 hover:shadow-2xl transition-all duration-300"
+              whileHover={{ scale: 1.03 }}
+            >
+              <h2 className="text-xl font-bold mb-3 text-blue-900">{event.title}</h2>
+              <p className="text-blue-800 mb-3">{event.description}</p>
+              <p className="text-blue-600 text-sm font-medium">Date: {event.date instanceof Date ? event.date.toLocaleDateString() : event.date}</p>
+            </motion.div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
