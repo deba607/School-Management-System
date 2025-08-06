@@ -1,7 +1,7 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { ResultService } from "@/services/resultService";
-import { getCurrentUser } from "@/utils/auth";
+import { authFetch } from "@/utils/auth";
 import { IResult, IResultStudent } from "@/types/result";
 
 const ResultsPage = () => {
@@ -14,18 +14,14 @@ const ResultsPage = () => {
       setLoading(true);
       setError("");
       try {
-        const user = getCurrentUser();
-        if (!user?.userId) throw new Error("No userId found in user token");
-        const service = new ResultService();
-        const data = await service.getAllResults();
-        // Filter for current student
-        const filtered = data.map((rec) => ({
-          ...rec,
-          _id: rec._id ? String(rec._id) : undefined,
-          date: rec.date,
-          studentResult: rec.students.find((s) => s.id === user.userId)
-        })).filter((rec) => rec.studentResult);
-        setResults(filtered);
+        // Use the new API endpoint
+        const response = await authFetch('/api/results/by-student');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch results');
+        }
+        const data = await response.json();
+        setResults(data.data);
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -88,4 +84,4 @@ interface IResultWithStudentResult extends IResult {
   studentResult?: IResultStudent;
 }
 
-export default ResultsPage; 
+export default ResultsPage;

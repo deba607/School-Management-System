@@ -1,6 +1,7 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { getAllEvents } from "@/services/eventService";
+import { authFetch } from "@/utils/auth";
 import { IEvent } from "@/types/event";
 
 const EventsPage = () => {
@@ -13,8 +14,14 @@ const EventsPage = () => {
       setLoading(true);
       setError("");
       try {
-        const data = await getAllEvents();
-        setEvents(data);
+        // Use the API endpoint instead of the service
+        const response = await authFetch('/api/events');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch events');
+        }
+        const data = await response.json();
+        setEvents(data.data);
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -48,4 +55,4 @@ const EventsPage = () => {
   );
 };
 
-export default EventsPage; 
+export default EventsPage;

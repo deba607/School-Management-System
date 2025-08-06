@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import StudentSidebar from "./student-sidebar";
 import StudentHeader from "./student-header";

@@ -11,15 +11,28 @@ async function handleGET(request: NextRequest) {
   try {
     await connectDB();
     const schoolId = request.user?.schoolId || request.user?.userId;
-    
+    const userId = request.user?.userId; // Get userId for student-specific filtering
+
     let attendance;
     if (schoolId) {
-      attendance = await Attendance.find({ schoolId });
+      attendance = await Attendance.find({ schoolId }).sort({ date: -1 });
+
+      // If userId is present, filter for the specific student on the server-side
+      if (userId) {
+        attendance = attendance.map((rec) => ({
+          ...rec.toObject(), // Convert Mongoose document to plain object
+          _id: rec._id ? String(rec._id) : undefined,
+          date: rec.date,
+          studentStatus: rec.students.find((s: { id: string }) => s.id === userId)
+        })).filter((rec) => rec.studentStatus);
+      }
+
     } else {
       attendance = await attendanceService.getAllAttendance();
     }
     return NextResponse.json({ success: true, data: attendance });
   } catch (error) {
+    console.error('Error fetching attendance:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch attendance' }, { status: 500 });
   }
 }

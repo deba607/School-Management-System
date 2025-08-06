@@ -1,7 +1,8 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { ClassScheduleService } from "@/services/classScheduleService";
-import { getCurrentUser } from "@/utils/auth";
+import { getCurrentUser, authFetch } from "@/utils/auth";
 import { IClassSchedule } from "@/types/classSchedule";
 
 const ClassesPage = () => {
@@ -15,10 +16,37 @@ const ClassesPage = () => {
       setError("");
       try {
         const user = getCurrentUser();
-        if (!user?.schoolId) throw new Error("No schoolId found in user token");
-        const service = new ClassScheduleService();
-        const data = await service.getClassSchedulesBySchool(user.schoolId);
-        const mapped = data.map((cls) => ({
+        if (!user?.schoolId) {
+          throw new Error("No schoolId found in user token");
+        }
+
+        // Fetch student details to get class and section
+        const studentResponse = await authFetch('/api/student/me');
+        if (!studentResponse.ok) {
+          throw new Error('Failed to fetch student details');
+        }
+        const studentData = await studentResponse.json();
+        if (!studentData.success || !studentData.data) {
+          throw new Error(studentData.error || 'Failed to retrieve student data');
+        }
+
+        const { class: studentClass, sec: studentSection } = studentData.data;
+
+        if (!studentClass || !studentSection) {
+          throw new Error("Student class or section not found");
+        }
+
+        // Fetch class schedules using the new API endpoint
+        const classSchedulesResponse = await authFetch(
+          `/api/class-schedules/by-student?schoolId=${user.schoolId}&className=${studentClass}&section=${studentSection}`
+        );
+
+        if (!classSchedulesResponse.ok) {
+          throw new Error('Failed to fetch class schedules');
+        }
+        const classSchedulesData = await classSchedulesResponse.json();
+
+        const mapped = classSchedulesData.map((cls: any) => ({
           ...cls,
           _id: cls._id ? String(cls._id) : undefined,
           createdAt: cls.createdAt instanceof Date ? cls.createdAt.toISOString() : cls.createdAt,
@@ -75,4 +103,4 @@ const ClassesPage = () => {
   );
 };
 
-export default ClassesPage; 
+export default ClassesPage;

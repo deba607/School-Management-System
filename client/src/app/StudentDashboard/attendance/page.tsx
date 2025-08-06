@@ -1,7 +1,7 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { AttendanceService } from "@/services/attendanceService";
-import { getCurrentUser } from "@/utils/auth";
+import { authFetch } from "@/utils/auth";
 import { IAttendance, IAttendanceStudent } from "@/types/attendance";
 
 const AttendancePage = () => {
@@ -14,18 +14,14 @@ const AttendancePage = () => {
       setLoading(true);
       setError("");
       try {
-        const user = getCurrentUser();
-        if (!user?.schoolId || !user?.userId) throw new Error("No schoolId or userId found in user token");
-        const service = new AttendanceService();
-        const data = await service.getAttendanceBySchool(user.schoolId);
-        // Filter for current student
-        const filtered = data.map((rec) => ({
-          ...rec,
-          _id: rec._id ? String(rec._id) : undefined,
-          date: rec.date,
-          studentStatus: rec.students.find((s) => s.id === user.userId)
-        })).filter((rec) => rec.studentStatus);
-        setAttendance(filtered);
+        // Use the new API endpoint
+        const response = await authFetch('/api/attendance/by-student');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch attendance');
+        }
+        const data = await response.json();
+        setAttendance(data.data);
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -86,4 +82,4 @@ interface IAttendanceWithStudentStatus extends IAttendance {
   studentStatus?: IAttendanceStudent;
 }
 
-export default AttendancePage; 
+export default AttendancePage;

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -37,9 +38,14 @@ const StudentHeader: React.FC<StudentHeaderProps> = ({ studentData }) => {
   }, []);
 
   // Generate profile picture URL or use the first picture from student data
+  // Update the getProfilePicture function to properly handle the base64 data
   const getProfilePicture = () => {
     if (studentData?.pictures && studentData.pictures.length > 0 && studentData.pictures[0].base64Data) {
-      return `data:${studentData.pictures[0].mimeType};base64,${studentData.pictures[0].base64Data}`;
+      // Make sure the base64 string doesn't already have the data URL prefix
+      const base64Data = studentData.pictures[0].base64Data.startsWith('data:') 
+        ? studentData.pictures[0].base64Data 
+        : `data:${studentData.pictures[0].mimeType};base64,${studentData.pictures[0].base64Data}`;
+      return base64Data;
     }
     const name = studentData?.name || 'Student';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
