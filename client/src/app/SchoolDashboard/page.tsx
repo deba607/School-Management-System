@@ -1,11 +1,4 @@
 "use client";
-// Extend Window type for authFetch
-declare global {
-  interface Window {
-    authFetch: (url: RequestInfo | URL, options?: RequestInit) => Promise<Response>;
-  }
-}
-
 
 import React from "react";
 import Sidebar from "./sidebar";
@@ -15,6 +8,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { authFetch } from "@/utils/auth";
 
 const SchoolDashboardPage = () => {
   const router = useRouter();
@@ -40,18 +34,6 @@ const SchoolDashboardPage = () => {
     }
   }, [router]);
 
-  // Remove redundant authFetch initialization since it's handled by initializeAuthFetch
-  // Helper for authenticated fetch
-  React.useEffect(() => {
-    window.authFetch = async (url: RequestInfo | URL, options: RequestInit = {}) => {
-      const token = localStorage.getItem('school_management_token');
-      const headers = {
-        ...(options.headers ?? {}),
-        Authorization: token ? `Bearer ${token}` : ""
-      };
-      return fetch(url, { ...options, headers });
-    };
-  }, []);
   return (
     <>
       <motion.div

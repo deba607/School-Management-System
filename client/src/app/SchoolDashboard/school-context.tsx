@@ -31,6 +31,7 @@ interface SchoolContextType {
   schoolId: string | null;
   loading: boolean;
   error: string | null;
+  userRole: string | null;
 }
 
 const SchoolContext = createContext<SchoolContextType>({
@@ -38,6 +39,7 @@ const SchoolContext = createContext<SchoolContextType>({
   schoolId: null,
   loading: true,
   error: null,
+  userRole: null,
 });
 
 export const useSchool = () => useContext(SchoolContext);
@@ -50,6 +52,8 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
   const [school, setSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [teacherSchoolId, setTeacherSchoolId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSchool() {
@@ -67,6 +71,19 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
         
         let userId = decoded.userId;
         let role = decoded.role;
+        let schoolId = decoded.schoolId;
+        setUserRole(role);
+        
+        // If user is a teacher, we store the schoolId from the token
+        if (role === 'teacher') {
+          if (schoolId) {
+            setTeacherSchoolId(schoolId);
+          }
+          setLoading(false);
+          return;
+        }
+        
+        // For school role, fetch school info
         if (!userId || role !== 'school') {
           console.error('Invalid user role or ID', { role, userId: userId ? '***' : 'missing' });
           throw new Error('Not a school user');
@@ -98,9 +115,10 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
   return (
     <SchoolContext.Provider value={{
       school,
-      schoolId: school?._id || school?.schoolId || null, // Use _id as fallback
+      schoolId: userRole === 'teacher' ? teacherSchoolId : (school?._id || school?.schoolId || null), // Use teacher's schoolId if teacher role
       loading,
       error,
+      userRole,
     }}>
       {children}
     </SchoolContext.Provider>

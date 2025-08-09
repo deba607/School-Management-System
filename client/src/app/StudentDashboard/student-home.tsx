@@ -3,30 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import { useStudentData } from "@/contexts/StudentDataContext";
+import { authFetch } from "@/utils/auth";
 
-interface StudentData {
-  _id: string;
-  name: string;
-  email: string;
-  class: string;
-  sec: string;
-  address: string;
-  pictures?: Array<{
-    originalName: string;
-    mimeType: string;
-    size: number;
-    base64Data: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  schoolId: string;
-}
-
-interface StudentHomeProps {
-  studentData: StudentData | null;
-}
-
-const StudentHome: React.FC<StudentHomeProps> = ({ studentData }) => {
+const StudentHome: React.FC = () => {
+  const { studentData } = useStudentData();
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [attendanceData, setAttendanceData] = useState<any>(null);
   const [eventsData, setEventsData] = useState<any[]>([]);
@@ -37,7 +18,7 @@ const StudentHome: React.FC<StudentHomeProps> = ({ studentData }) => {
     const fetchData = async () => {
       try {
         // Fetch events
-        const eventsResponse = await window.authFetch('/api/events');
+        const eventsResponse = await authFetch('/api/events');
         if (eventsResponse.ok) {
           const eventsResult = await eventsResponse.json();
           if (eventsResult.success) {

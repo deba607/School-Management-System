@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import StudentSidebar from "./student-sidebar";
 import StudentHeader from "./student-header";
 import { authFetch } from "@/utils/auth"; // Import authFetch directly
+import { StudentDataProvider } from "@/contexts/StudentDataContext";
 
 interface StudentData {
   _id: string;
@@ -91,20 +92,22 @@ const StudentDashboardLayout: React.FC<StudentDashboardLayoutProps> = ({ childre
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-      className="flex min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 relative"
-    >
-      <StudentSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden min-h-screen">
-        <StudentHeader studentData={studentData} />
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </motion.div>
+    <StudentDataProvider studentData={studentData} loading={loading} error={error}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="flex min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 relative"
+      >
+        <StudentSidebar />
+        <div className="flex-1 flex flex-col overflow-hidden min-h-screen">
+          <StudentHeader studentData={studentData} />
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+      </motion.div>
+    </StudentDataProvider>
   );
 };
 
