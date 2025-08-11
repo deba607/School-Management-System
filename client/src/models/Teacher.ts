@@ -13,11 +13,11 @@ export interface ITeacher extends Document {
     size: number;
     base64Data: string;
   }>;
-  otp: string;
-  otpExpiry: Date;
+  otp?: string;
+  otpExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
-  schoolId: string;
+  schoolId: mongoose.Schema.Types.ObjectId;
 }
 
 const TeacherSchema: Schema = new Schema({
@@ -64,9 +64,9 @@ const TeacherSchema: Schema = new Schema({
     base64Data: { type: String, required: true }
   }],
   schoolId: {
-    type: String,
-    required: [true, 'School ID is required'],
-    trim: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    required: true
   },
 }, {
   timestamps: true
