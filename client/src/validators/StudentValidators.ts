@@ -37,9 +37,7 @@ export const StudentInputSchema = z.object({
     .trim(),
   schoolId: z.string()
     .min(1, 'School ID is required')
-    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
-      message: 'Invalid school ID format'
-    }),
+    .trim(),
   pictures: z.array(PictureSchema).optional().default([])
 });
 
@@ -75,7 +73,7 @@ type StudentInputData = {
   class: string;
   sec: string;
   address: string;
-  schoolId: mongoose.Types.ObjectId;
+  schoolId: string; // Always a string, never converted to ObjectId
   pictures: Array<{
     originalName: string;
     mimeType: string;
@@ -101,7 +99,7 @@ export const validateStudent = (data: unknown): StudentValidationResult => {
   // Create the validated data with proper types
   const validatedData: StudentInputData = {
     ...result.data,
-    schoolId: new mongoose.Types.ObjectId(result.data.schoolId),
+    schoolId: result.data.schoolId, // Keep as string
     pictures: result.data.pictures || []
   };
   

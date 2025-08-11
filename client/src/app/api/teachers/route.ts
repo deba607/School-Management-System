@@ -133,10 +133,10 @@ async function createTeacher(request: NextRequest) {
     
     // Use the schoolId from the authenticated user
     const schoolId = user.schoolId || user.userId;
-    if (!schoolId || !Types.ObjectId.isValid(schoolId)) {
-      console.error('Invalid or missing school ID for user:', user);
+    if (!schoolId) {
+      console.error('Missing school ID for user:', user);
       return ApiResponse.error({ 
-        error: 'Invalid school ID',
+        error: 'School ID is required',
         status: 400
       });
     }

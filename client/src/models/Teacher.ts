@@ -17,7 +17,7 @@ export interface ITeacher extends Document {
   otpExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
-  schoolId: mongoose.Schema.Types.ObjectId;
+  schoolId: string;
 }
 
 const TeacherSchema: Schema = new Schema({
@@ -64,9 +64,9 @@ const TeacherSchema: Schema = new Schema({
     base64Data: { type: String, required: true }
   }],
   schoolId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'School',
-    required: true
+    type: String,
+    required: [true, 'School ID is required'],
+    trim: true
   },
 }, {
   timestamps: true

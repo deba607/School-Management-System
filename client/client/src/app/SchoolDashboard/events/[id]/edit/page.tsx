@@ -5,6 +5,7 @@ import Header from "../../../header";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import { authFetch } from "@/utils/authFetch";
 
 const initialForm = { title: "", description: "", date: "" };
 
@@ -29,7 +30,7 @@ export default function EditEventPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/events/${id}`);
+        const res = await authFetch(`/api/events/${id}`);
         const data = await res.json();
         if (data.success && data.data) {
           setForm({
@@ -60,7 +61,7 @@ export default function EditEventPage() {
     setError(null);
     setSuccess(false);
     try {
-      const res = await fetch(`/api/events/${id}`, {
+      const res = await authFetch(`/api/events/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

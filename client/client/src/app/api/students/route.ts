@@ -3,6 +3,7 @@ import { StudentService } from '@/services/studentService';
 import { validateStudent } from '@/validators/StudentValidators';
 import { connectDB } from '@/lib/mongoose';
 import { Student } from '@/models/Student';
+import { School } from '@/models/School';
 import mongoose from 'mongoose';
 import { rateLimit } from '@/lib/rateLimit';
 import { ApiResponse } from '@/lib/apiResponse';
@@ -52,7 +53,7 @@ async function parseFormData(req: Request) {
     }
   }
 
-  return { ...body, pictures: files };
+  return { ...body, pictures: files } as Record<string, any> & { pictures: File[] };
 }
 
 // POST - Create a new student
@@ -78,7 +79,10 @@ export const POST = async (request: NextRequest) => {
           return ApiResponse.error({ error: 'Invalid form data', status: 400 });
         }
 
-        // Validate request body
+        // Connect to database
+        await connectDB();
+
+        // Validate request body with the schoolId string
         const validation = validateStudent(body);
         if (!validation.success) {
           return ApiResponse.validationError(validation.errors.map(e => ({
@@ -101,19 +105,20 @@ export const POST = async (request: NextRequest) => {
                   originalName: file.name,
                   mimeType: file.type,
                   size: file.size,
-                  base64Data: base64,
-                  uploadedAt: new Date()
+                  base64Data: base64
                 };
               })
             );
           } catch (error) {
-            console.error('Error processing file upload:', error);
-            throw new Error('Failed to process uploaded files. Please try again.');
+            console.error('Error processing file uploads:', error);
+            return ApiResponse.error({ 
+              error: 'Error processing file uploads', 
+              status: 500 
+            });
           }
         }
 
         // Create student with validated data
-        await connectDB();
         const student = await studentService.createStudent({
           name,
           email,
@@ -122,10 +127,10 @@ export const POST = async (request: NextRequest) => {
           sec,
           address,
           pictures: picturesData, // Use the processed pictures data
-          schoolId: new mongoose.Types.ObjectId(schoolId),
+          schoolId: schoolId, // Use the schoolId string directly
           ...(otp && { otp }),
           ...(otpExpiry && { otpExpiry })
-        } as any);
+        });
         
         // Convert to plain object and remove sensitive data
         const studentObj = student.toObject();

@@ -11,7 +11,7 @@ export class TeacherService {
     address: string;
     password: string;
     pictures: any[];
-    schoolId: string | import('mongoose').Types.ObjectId;
+    schoolId: string;
     otp?: string;
     otpExpiry?: Date;
   }): Promise<ITeacher> {

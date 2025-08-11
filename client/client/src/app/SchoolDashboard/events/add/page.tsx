@@ -5,7 +5,7 @@ import Header from "../../header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { jwtDecode } from "jwt-decode";
+import { useSchool } from "../../school-context";
 
 const initialForm = { title: "", description: "", date: "" };
 
@@ -18,6 +18,7 @@ export default function AddEventPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [schoolId, setSchoolId] = useState('');
+  const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
 
   useEffect(() => {
     gsap.fromTo(containerRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
@@ -25,15 +26,15 @@ export default function AddEventPage() {
   }, []);
 
   useEffect(() => {
-    // Set schoolId from JWT
-    const token = typeof window !== 'undefined' ? localStorage.getItem('school_management_token') : null;
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        setSchoolId(decoded.schoolId || '');
-      } catch {}
+    // Set schoolId from context
+    if (contextSchoolId) {
+      console.log('Setting schoolId from context:', contextSchoolId);
+      setSchoolId(contextSchoolId);
+    } else if (!schoolLoading && !contextSchoolId) {
+      console.error('No schoolId available in context after loading');
+      setError('School information not available. Please try logging in again.');
     }
-  }, []);
+  }, [contextSchoolId, schoolLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

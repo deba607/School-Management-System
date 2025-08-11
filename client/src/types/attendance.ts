@@ -14,7 +14,7 @@ export interface IAttendance {
   teacher: string;
   date: Date | string;
   students: IAttendanceStudent[];
-  schoolId: string | Types.ObjectId;
+  schoolId: string;
   createdAt: Date | string;
   updatedAt: Date | string;
 } 

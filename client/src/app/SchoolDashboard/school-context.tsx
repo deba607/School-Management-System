@@ -95,7 +95,7 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
         console.log('School data response:', { status: res.status, success: data.success });
         
         if (res.ok && data.success && data.data) {
-          console.log('School data loaded successfully with ID:', data.data.schoolId || data.data._id);
+          console.log('School data loaded successfully with ID:', data.data.schoolId);
           setSchool(data.data);
         } else {
           console.error('Failed to fetch school data:', data.error);
@@ -115,7 +115,7 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
   return (
     <SchoolContext.Provider value={{
       school,
-      schoolId: userRole === 'teacher' ? teacherSchoolId : (school?._id || school?.schoolId || null), // Use teacher's schoolId if teacher role
+      schoolId: userRole === 'teacher' ? teacherSchoolId : (school?.schoolId || null), // Use schoolId field consistently
       loading,
       error,
       userRole,

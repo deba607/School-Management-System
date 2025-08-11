@@ -12,5 +12,5 @@ export interface IClassSchedule {
   description?: string;
   createdAt: Date | string;
   updatedAt: Date | string;
-  schoolId: string | Types.ObjectId;
+  schoolId: string;
 } 

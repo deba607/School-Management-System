@@ -92,7 +92,7 @@ const Header = () => {
         return {
           displayName,
           displayEmail: school?.email || '',
-          displayId: school?._id ? `School ID: ${school._id.substring(0, 8)}...` : '',
+          displayId: school?.schoolId ? `School ID: ${school.schoolId}` : '',
           displayPic
         };
       }

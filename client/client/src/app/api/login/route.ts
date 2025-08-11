@@ -31,28 +31,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: "School ID is required for teachers" }, { status: 400 });
       }
       
-      // First try to find the school by name if ObjectId is not valid
-      let schoolObjectId: mongoose.Types.ObjectId;
-      
-      if (mongoose.Types.ObjectId.isValid(schoolId)) {
-        // If it's a valid ObjectId, use it directly
-        schoolObjectId = new mongoose.Types.ObjectId(schoolId);
-      } else {
-        // If not a valid ObjectId, try to find school by name
-        const school = await School.findOne({ name: { $regex: new RegExp(`^${schoolId}$`, 'i') } });
-        if (!school) {
-          return NextResponse.json({ 
-            success: false, 
-            error: "School not found. Please check the school name or ID and try again." 
-          }, { status: 404 });
-        }
-        schoolObjectId = school._id;
-      }
+      // Use schoolId as string directly, do not convert to ObjectId
+      const schoolId = req.body.schoolId;
       
       // Now find the teacher with the school ID
       user = await Teacher.findOne({ 
         email: { $regex: new RegExp(`^${email}$`, 'i') },
-        schoolId: schoolObjectId 
+        schoolId: schoolId 
       }).select("+password");
     } else {
       return NextResponse.json({ success: false, error: "Invalid role" }, { status: 400 });

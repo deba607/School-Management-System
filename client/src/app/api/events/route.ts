@@ -8,9 +8,8 @@ import { withAuth } from "@/middleware/withAuth";
 async function handleGET(request: NextRequest) {
   await connectDB();
   try {
-    // Get schoolId from authenticated user or query params
-    const { searchParams } = new URL(request.url);
-    const schoolId = request.user?.schoolId || searchParams.get('schoolId');
+    // Get schoolId from authenticated user
+    const schoolId = request.user?.schoolId;
     
     let events;
     if (schoolId) {
@@ -31,7 +30,7 @@ async function handlePOST(req: NextRequest) {
     
     // Add schoolId from authenticated user if not provided
     if (!body.schoolId) {
-      const schoolId = req.user?.schoolId || req.user?.userId;
+      const schoolId = req.user?.schoolId;
       if (schoolId) {
         body.schoolId = schoolId;
       }

@@ -18,7 +18,7 @@ async function getSchoolId(userId: string, role: string): Promise<string | null>
       return user?.schoolId?.toString() || null;
     } else if (role === 'School') {
       user = await School.findById(userId);
-      return user?._id?.toString() || null; // For school users, the ID is the school ID
+      return user?.schoolId || null; // Use schoolId field instead of _id
     } else if (role === 'Teacher') {
       user = await Teacher.findById(userId);
       return user?.schoolId?.toString() || null;
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         );
       }
       
-      schoolId = userDetails.schoolId?._id?.toString() || null;
+      schoolId = userDetails.schoolId?.toString() || null;
       
       if (!schoolId) {
         console.error('Teacher login failed - No school ID associated with teacher:', userId);

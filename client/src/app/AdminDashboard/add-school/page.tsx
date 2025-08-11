@@ -1,7 +1,5 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, easeOut } from 'framer-motion';
-import { gsap } from 'gsap';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -102,36 +100,7 @@ export default function AddSchool() {
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    // GSAP animations on mount
-    const tl = gsap.timeline();
-    
-    tl.fromTo(titleRef.current, 
-      { y: -50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
-    )
-    .fromTo('.form-field', 
-      { x: -100, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
-      "-=0.4"
-    )
-    .fromTo('.submit-btn', 
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" },
-      "-=0.2"
-    );
-
-    // Floating animation for the container
-    gsap.to(containerRef.current, {
-      y: -10,
-      duration: 2,
-      ease: "power2.inOut",
-      yoyo: true,
-      repeat: -1
-    });
-
-    return () => {
-      gsap.killTweensOf(containerRef.current);
-    };
+    // Removed GSAP animations
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -236,11 +205,8 @@ export default function AddSchool() {
         <AdminSidebar />
         <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
           <div className="max-w-6xl mx-auto">
-            <motion.div
+            <div
               ref={containerRef}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
               className="relative"
             >
               {/* Background Glow */}
@@ -248,18 +214,14 @@ export default function AddSchool() {
               
               <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-4 sm:p-6 lg:p-8 shadow-2xl">
                 {/* Header */}
-                <motion.div
-                  initial={{ opacity: 0, y: -30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.8 }}
+                <div
                   className="text-center mb-6 sm:mb-8"
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.05, rotate: 5 }}
+                  <div
                     className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl mb-4 sm:mb-6 shadow-lg"
                   >
                     <Building2 className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                  </motion.div>
+                  </div>
                   
                   <h1 
                     ref={titleRef}
@@ -271,59 +233,43 @@ export default function AddSchool() {
                   <p className="text-slate-300 text-sm sm:text-base lg:text-lg">
                     Register a new school in the management system
                   </p>
-                </motion.div>
+                </div>
 
                 {/* Success Message */}
-                <AnimatePresence>
-                  {success && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: -20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                      className="mb-6 bg-green-500/20 border border-green-400/30 rounded-xl p-4 flex items-center gap-3"
-                    >
-                      <CheckCircle2 className="w-6 h-6 text-green-400" />
-                      <div>
-                        <h3 className="text-green-300 font-semibold text-sm sm:text-base">Success!</h3>
-                        <p className="text-green-200 text-xs sm:text-sm">School registered successfully.</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {success && (
+                  <div
+                    className="mb-6 bg-green-500/20 border border-green-400/30 rounded-xl p-4 flex items-center gap-3"
+                  >
+                    <CheckCircle2 className="w-6 h-6 text-green-400" />
+                    <div>
+                      <h3 className="text-green-300 font-semibold text-sm sm:text-base">Success!</h3>
+                      <p className="text-green-200 text-xs sm:text-sm">School registered successfully.</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Error Message */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8, y: -20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                      className="mb-6 bg-red-500/20 border border-red-400/30 rounded-xl p-4 flex items-center gap-3"
-                    >
-                      <AlertCircle className="w-6 h-6 text-red-400" />
-                      <div>
-                        <h3 className="text-red-300 font-semibold text-sm sm:text-base">Error!</h3>
-                        <p className="text-red-200 text-xs sm:text-sm">{error}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {error && (
+                  <div
+                    className="mb-6 bg-red-500/20 border border-red-400/30 rounded-xl p-4 flex items-center gap-3"
+                  >
+                    <AlertCircle className="w-6 h-6 text-red-400" />
+                    <div>
+                      <h3 className="text-red-300 font-semibold text-sm sm:text-base">Error!</h3>
+                      <p className="text-red-200 text-xs sm:text-sm">{error}</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Form */}
                 <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   {/* Basic Information Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.6 }}
+                  <div
                     className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
                   >
                     {/* School Name */}
-                    <motion.div
+                    <div
                       className="form-field sm:col-span-2"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4, duration: 0.6 }}
                     >
                       <Label htmlFor="name" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <div className="flex items-center gap-2 mb-2">
@@ -341,14 +287,11 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* Email */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5, duration: 0.6 }}
                     >
                       <Label htmlFor="email" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <div className="flex items-center gap-2 mb-2">
@@ -366,14 +309,11 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* Phone */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.6, duration: 0.6 }}
                     >
                       <Label htmlFor="phone" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <div className="flex items-center gap-2 mb-2">
@@ -391,22 +331,16 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
-                  </motion.div>
+                    </div>
+                  </div>
 
                   {/* Address Section */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7, duration: 0.6 }}
+                  <div
                     className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
                   >
                     {/* Address */}
-                    <motion.div
+                    <div
                       className="form-field sm:col-span-2"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.8, duration: 0.6 }}
                     >
                       <Label htmlFor="address" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <div className="flex items-center gap-2 mb-2">
@@ -424,14 +358,11 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* City */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.9, duration: 0.6 }}
                     >
                       <Label htmlFor="city" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <span>City</span>
@@ -446,14 +377,11 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* State */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.0, duration: 0.6 }}
                     >
                       <Label htmlFor="state" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <span>State</span>
@@ -468,14 +396,11 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* Zip Code */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.1, duration: 0.6 }}
                     >
                       <Label htmlFor="zipCode" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <span>Zip Code</span>
@@ -490,14 +415,11 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* Country */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.2, duration: 0.6 }}
                     >
                       <Label htmlFor="country" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <span>Country</span>
@@ -512,22 +434,16 @@ export default function AddSchool() {
                         required
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
-                  </motion.div>
+                    </div>
+                  </div>
 
                   {/* Additional Information */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.3, duration: 0.6 }}
+                  <div
                     className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
                   >
                     {/* Website */}
-                    <motion.div
+                    <div
                       className="form-field"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.4, duration: 0.6 }}
                     >
                       <Label htmlFor="website" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <span>Website (Optional)</span>
@@ -541,14 +457,11 @@ export default function AddSchool() {
                         placeholder="Enter school website"
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                       />
-                    </motion.div>
+                    </div>
 
                     {/* Description */}
-                    <motion.div
+                    <div
                       className="form-field sm:col-span-2"
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.5, duration: 0.6 }}
                     >
                       <Label htmlFor="description" className="text-white text-sm sm:text-base font-medium mb-2 block">
                         <span>Description (Optional)</span>
@@ -562,15 +475,12 @@ export default function AddSchool() {
                         rows={3}
                         className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base resize-none"
                       />
-                    </motion.div>
-                  </motion.div>
+                    </div>
+                  </div>
 
                   {/* School ID */}
-                  <motion.div
+                  <div
                     className="form-field"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.35, duration: 0.6 }}
                   >
                     <Label htmlFor="schoolId" className="text-white text-sm sm:text-base font-medium mb-2 block">
                       <span>School ID</span>
@@ -585,14 +495,11 @@ export default function AddSchool() {
                       required
                       className="w-full bg-white/10 border-white/20 text-white placeholder-slate-400 focus:border-purple-400 focus:ring-purple-400/20 rounded-xl px-4 py-3 text-sm sm:text-base"
                     />
-                  </motion.div>
+                  </div>
 
                   {/* Password */}
-                  <motion.div
+                  <div
                     className="form-field"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.36, duration: 0.6 }}
                   >
                     <Label htmlFor="password" className="text-white text-sm sm:text-base font-medium mb-2 block">
                       <span>Password</span>
@@ -618,14 +525,11 @@ export default function AddSchool() {
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
 
                   {/* Confirm Password */}
-                  <motion.div
+                  <div
                     className="form-field"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.37, duration: 0.6 }}
                   >
                     <Label htmlFor="confirmPassword" className="text-white text-sm sm:text-base font-medium mb-2 block">
                       <span>Confirm Password</span>
@@ -651,14 +555,11 @@ export default function AddSchool() {
                         {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
 
                   {/* Pictures Section */}
-                  <motion.div
+                  <div
                     className="form-field"
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.6, duration: 0.6 }}
                   >
                     <Label htmlFor="pictures" className="text-white text-sm sm:text-base font-medium mb-2 block">
                       <div className="flex items-center gap-2 mb-2">
@@ -679,45 +580,36 @@ export default function AddSchool() {
                       
                       {/* Selected Files Display */}
                       {selectedFiles.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                        <div
                           className="bg-white/5 rounded-lg p-3 sm:p-4 border border-white/10"
                         >
                           <h4 className="text-white font-medium text-sm sm:text-base mb-2">Selected Files:</h4>
                           <div className="space-y-1">
                             {selectedFiles.map((fileName, index) => (
-                              <motion.div
+                              <div
                                 key={index}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
                                 className="flex items-center gap-2 text-slate-300 text-xs sm:text-sm"
                               >
                                 <CheckCircle2 className="w-3 h-3 sm:w-4 h-4 text-green-400" />
                                 {fileName}
-                              </motion.div>
+                              </div>
                             ))}
                           </div>
-                        </motion.div>
+                        </div>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
 
                   {/* Submit Button */}
-                  <motion.button
+                  <button
                     type="submit"
                     disabled={loading}
                     className="submit-btn w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-purple-800 disabled:to-pink-800 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none text-sm sm:text-base lg:text-lg flex items-center justify-center gap-2"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                   >
                     {loading ? (
                       <>
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full"
+                        <div
+                          className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
                         />
                         Creating School...
                       </>
@@ -727,10 +619,10 @@ export default function AddSchool() {
                         Create School
                       </>
                     )}
-                  </motion.button>
+                  </button>
                 </form>
               </div>
-            </motion.div>
+            </div>
           </div>
         </main>
       </div>

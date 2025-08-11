@@ -1,7 +1,6 @@
 import { Student, IStudent } from '@/models/Student';
 import { connectDB } from '@/lib/mongoose';
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose'; // added import statement for mongoose
 
 export class StudentService {
   async createStudent(studentData: {
@@ -12,7 +11,7 @@ export class StudentService {
     sec: string;
     address: string;
     pictures: any[];
-    schoolId: string | mongoose.Types.ObjectId;
+    schoolId: string;
     otp?: string;
     otpExpiry?: Date;
   }): Promise<IStudent> {
@@ -24,15 +23,10 @@ export class StudentService {
         throw new Error('Student with this email already exists');
       }
       
-      // Ensure schoolId is an ObjectId
-      const schoolId = typeof studentData.schoolId === 'string' 
-        ? new mongoose.Types.ObjectId(studentData.schoolId)
-        : studentData.schoolId;
-      
       // Create student data with proper types
       const studentDataToSave = {
         ...studentData,
-        schoolId,
+        schoolId: studentData.schoolId, // Use schoolId string directly
         password: await bcrypt.hash(studentData.password, 10)
       };
       

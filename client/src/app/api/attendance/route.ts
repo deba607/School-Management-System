@@ -10,7 +10,7 @@ const attendanceService = new AttendanceService();
 async function handleGET(request: NextRequest) {
   try {
     await connectDB();
-    const schoolId = request.user?.schoolId || request.user?.userId;
+    const schoolId = request.user?.schoolId;
     const userId = request.user?.userId; // Get userId for student-specific filtering
 
     let attendance;

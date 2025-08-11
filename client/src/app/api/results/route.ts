@@ -13,7 +13,7 @@ async function handleGET(request: NextRequest) {
     await connectDB();
     
     // Get schoolId from authenticated user
-    const schoolId = request.user?.schoolId || request.user?.userId;
+    const schoolId = request.user?.schoolId;
     
     let results;
     if (schoolId) {

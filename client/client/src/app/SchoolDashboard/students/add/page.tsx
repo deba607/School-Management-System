@@ -1,7 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import Header from "../../header";
 import Sidebar from "../../sidebar";
@@ -47,16 +45,6 @@ export default function AddStudent() {
       setError('School information not available. Please try logging in again.');
     }
   }, [contextSchoolId, schoolLoading]);
-
-  useEffect(() => {
-    // GSAP animations on mount
-    const tl = gsap.timeline();
-    tl.fromTo(titleRef.current, { y: -50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" })
-      .fromTo('.form-field', { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }, "-=0.4")
-      .fromTo('.submit-btn', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }, "-=0.2");
-    gsap.to(containerRef.current, { y: -10, duration: 2, ease: "power2.inOut", yoyo: true, repeat: -1 });
-    return () => { gsap.killTweensOf(containerRef.current); };
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -418,17 +406,11 @@ export default function AddStudent() {
       <div className="flex-1 flex flex-col h-screen min-h-screen">
         <Header />
         <main className="flex-1 flex flex-col justify-center items-center py-12 px-2 overflow-auto h-full">
-          <motion.div
+          <div
             ref={containerRef}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
             className="relative w-full max-w-lg max-h-[calc(100vh-4rem)] bg-white/80 backdrop-blur-xl rounded-3xl border border-blue-200 p-4 sm:p-8 shadow-2xl mt-8 sm:mt-12 overflow-auto z-10"
           >
-            <motion.div
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
+            <div
               className="text-center mb-6 sm:mb-8"
             >
               <h1
@@ -440,20 +422,16 @@ export default function AddStudent() {
               <p className="text-blue-700 text-sm sm:text-base">
                 Create a new student profile for your school
               </p>
-            </motion.div>
+            </div>
             {success && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
                 className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 text-center font-semibold"
               >
                 Student created successfully!
-              </motion.div>
+              </div>
             )}
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
                 className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm"
               >
                 <div className="flex items-start">
@@ -471,10 +449,10 @@ export default function AddStudent() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+              <div className="form-field">
                 <label htmlFor="schoolId" className="block text-blue-900 font-medium mb-2">School ID</label>
                 <input
                   id="schoolId"
@@ -484,8 +462,8 @@ export default function AddStudent() {
                   disabled
                   className="w-full bg-white/60 border border-blue-200 text-blue-900 placeholder-blue-400 focus:border-blue-400 focus:ring-blue-200 rounded-xl px-4 py-3 text-sm sm:text-base opacity-70 cursor-not-allowed"
                 />
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="name" className="block text-blue-900 font-medium mb-2">Full Name</label>
                 <div className="relative">
                   <input
@@ -503,8 +481,8 @@ export default function AddStudent() {
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>
                   )}
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="email" className="block text-blue-900 font-medium mb-2">Email Address</label>
                 <div className="relative">
                   <input
@@ -522,8 +500,8 @@ export default function AddStudent() {
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
                   )}
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="password" className="block text-blue-900 font-medium mb-2">Password</label>
                 <div className="relative">
                   <input
@@ -540,19 +518,18 @@ export default function AddStudent() {
                   {fieldErrors.password && (
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
                   )}
-                  <motion.button
+                  <button
                     type="button"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
                     onClick={() => setShowPassword(v => !v)}
-                    whileTap={{ scale: 0.85 }}
                     tabIndex={-1}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </motion.button>
+                  </button>
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="confirmPassword" className="block text-blue-900 font-medium mb-2">Confirm Password</label>
                 <div className="relative">
                   <input
@@ -569,19 +546,18 @@ export default function AddStudent() {
                   {fieldErrors.confirmPassword && (
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
                   )}
-                  <motion.button
+                  <button
                     type="button"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white rounded p-1 shadow-sm focus:outline-none"
                     onClick={() => setShowConfirmPassword(v => !v)}
-                    whileTap={{ scale: 0.85 }}
                     tabIndex={-1}
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </motion.button>
+                  </button>
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="class" className="block text-blue-900 font-medium mb-2">Class</label>
                 <div className="relative">
                   <select
@@ -602,8 +578,8 @@ export default function AddStudent() {
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.class}</p>
                   )}
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.65, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="sec" className="block text-blue-900 font-medium mb-2">Section</label>
                 <div className="relative">
                   <select
@@ -624,8 +600,8 @@ export default function AddStudent() {
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.sec}</p>
                   )}
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.68, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="address" className="block text-blue-900 font-medium mb-2">Address</label>
                 <div className="relative">
                   <textarea
@@ -643,8 +619,8 @@ export default function AddStudent() {
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.address}</p>
                   )}
                 </div>
-              </motion.div>
-              <motion.div className="form-field" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 0.6 }}>
+              </div>
+              <div className="form-field">
                 <label htmlFor="pictures" className="block text-blue-900 font-medium mb-2">Profile Photo</label>
                 <input
                   id="pictures"
@@ -660,29 +636,25 @@ export default function AddStudent() {
                     Selected: {selectedFiles.join(", ")}
                   </div>
                 )}
-              </motion.div>
-              <motion.button
+              </div>
+              <button
                 type="submit"
                 disabled={loading}
                 className="submit-btn w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-blue-300 disabled:to-cyan-300 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none text-base flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
               >
                 {loading ? (
                   <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                    <div
+                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
                     />
                     Creating Student...
                   </>
                 ) : (
                   <>Create Student</>
                 )}
-              </motion.button>
+              </button>
             </form>
-          </motion.div>
+          </div>
         </main>
       </div>
     </div>

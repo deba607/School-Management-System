@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         );
       }
       
-      schoolId = userDetails.schoolId?._id?.toString() || null;
+      schoolId = userDetails.schoolId?.toString() || null;
       
       if (!schoolId) {
         console.error('Teacher login failed - No school ID associated with teacher:', userId);

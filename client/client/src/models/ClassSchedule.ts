@@ -11,7 +11,7 @@ export interface IClassSchedule extends Document {
   description?: string;
   createdAt: Date;
   updatedAt: Date;
-  schoolId: Types.ObjectId;
+  schoolId: string;
 }
 
 const ClassScheduleSchema: Schema = new Schema({
@@ -24,9 +24,9 @@ const ClassScheduleSchema: Schema = new Schema({
   endTime: { type: String, required: true },
   description: { type: String, trim: true },
   schoolId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'School',
-    required: true
+    type: String,
+    required: [true, 'School ID is required'],
+    trim: true
   },
 }, { timestamps: true });
 

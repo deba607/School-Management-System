@@ -12,6 +12,12 @@ export class SchoolService {
         throw new Error('School with this email already exists');
       }
 
+      // Check if school with same schoolId already exists
+      const existingSchoolId = await School.findOne({ schoolId: schoolData.schoolId });
+      if (existingSchoolId) {
+        throw new Error('School with this School ID already exists');
+      }
+
       // Create new school
       const school = new School(schoolData);
       const savedSchool = await school.save();
@@ -54,6 +60,18 @@ export class SchoolService {
       return school;
     } catch (error) {
       console.error('Error fetching school by email:', error);
+      throw error;
+    }
+  }
+
+  async getSchoolBySchoolId(schoolId: string): Promise<ISchool | null> {
+    await connectDB();
+    
+    try {
+      const school = await School.findOne({ schoolId });
+      return school;
+    } catch (error) {
+      console.error('Error fetching school by schoolId:', error);
       throw error;
     }
   }
