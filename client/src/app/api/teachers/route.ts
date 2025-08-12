@@ -5,7 +5,6 @@ import { connectDB } from '@/lib/mongoose';
 import { Teacher } from '@/models/Teacher';
 import { ApiResponse } from '@/lib/apiResponse';
 import { withAuth } from '@/middleware/withAuth';
-import { Types } from 'mongoose';
 
 const teacherService = new TeacherService();
 
@@ -20,8 +19,8 @@ export async function GET(request: NextRequest) {
     
     // Build query
     const query: any = {};
-    if (schoolId && Types.ObjectId.isValid(schoolId)) {
-      query.schoolId = schoolId;
+    if (schoolId) {
+      query.schoolId = schoolId; // Filter by string schoolId
     }
     
     // Execute query
