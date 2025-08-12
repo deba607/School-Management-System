@@ -1,40 +1,34 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-
-export interface IAttendanceStudent {
-  id: string;
-  name: string;
-  status: 'Present' | 'Absent' | 'Late';
-}
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IAttendance extends Document {
-  className: string;
-  section: string;
-  subject: string;
-  teacher: string;
-  date: string;
-  students: IAttendanceStudent[];
-  schoolId: Types.ObjectId;
+  date: Date;
+  students: Array<{
+    id: string;
+    status: string;
+    name: string;
+    class: string;
+    sec: string;
+  }>;
+  schoolId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const AttendanceSchema: Schema = new Schema({
-  className: { type: String, required: true },
-  section: { type: String, required: true },
-  subject: { type: String, required: true },
-  teacher: { type: String, required: true },
-  date: { type: String, required: true },
+  date: { type: Date, required: true },
   students: [
     {
       id: { type: String, required: true },
+      status: { type: String, required: true },
       name: { type: String, required: true },
-      status: { type: String, enum: ['Present', 'Absent', 'Late'], required: true },
+      class: { type: String, required: true },
+      sec: { type: String, required: true },
     },
   ],
   schoolId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'School',
-    required: true
+    type: String,
+    required: [true, 'School ID is required'],
+    trim: true
   },
 }, { timestamps: true });
 

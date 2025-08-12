@@ -5,7 +5,6 @@ import { connectDB } from '@/lib/mongoose';
 import { Teacher } from '@/models/Teacher';
 import { ApiResponse } from '@/lib/apiResponse';
 import { withAuth } from '@/middleware/withAuth';
-import { Types } from 'mongoose';
 
 const teacherService = new TeacherService();
 
@@ -20,8 +19,8 @@ export async function GET(request: NextRequest) {
     
     // Build query
     const query: any = {};
-    if (schoolId && Types.ObjectId.isValid(schoolId)) {
-      query.schoolId = schoolId;
+    if (schoolId) {
+      query.schoolId = schoolId; // Filter by string schoolId
     }
     
     // Execute query
@@ -80,7 +79,7 @@ async function createTeacher(request: NextRequest) {
     // Validate required fields
     const requiredFields = [
       'name', 'email', 'phone', 'subject', 
-      'address', 'password', 'confirmPassword'
+      'address', 'password'
     ];
     const missingFields = requiredFields.filter(field => !body[field]);
     
@@ -92,6 +91,13 @@ async function createTeacher(request: NextRequest) {
           message: `${field} is required`
         }))
       );
+    }
+    
+    // Check for confirmPassword separately
+    if (body.confirmPassword === undefined) {
+      return ApiResponse.validationError([
+        { field: 'confirmPassword', message: 'Please confirm your password' }
+      ]);
     }
     
     // Validate email format
@@ -126,10 +132,10 @@ async function createTeacher(request: NextRequest) {
     
     // Use the schoolId from the authenticated user
     const schoolId = user.schoolId || user.userId;
-    if (!schoolId || !Types.ObjectId.isValid(schoolId)) {
-      console.error('Invalid or missing school ID for user:', user);
+    if (!schoolId) {
+      console.error('Missing school ID for user:', user);
       return ApiResponse.error({ 
-        error: 'Invalid school ID',
+        error: 'School ID is required',
         status: 400
       });
     }

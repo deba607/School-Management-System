@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import ClassesCalendar from "./calendar";
+import { authFetch } from "@/utils/authFetch";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
@@ -23,6 +24,7 @@ export default function ClassesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Initialize animations
     gsap.fromTo(
       containerRef.current,
       { y: 60, opacity: 0 },
@@ -33,13 +35,17 @@ export default function ClassesPage() {
       { scale: 0.8, opacity: 0 },
       { scale: 1, opacity: 1, duration: 0.8, delay: 0.2, ease: "elastic.out(1, 0.5)" }
     );
+    
+    // Initialize authFetch
+    const { initializeAuthFetch } = require('@/utils/authFetch');
+    initializeAuthFetch();
   }, []);
 
   const fetchClasses = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/class-schedules");
+      const res = await authFetch("/api/class-schedules");
       const data = await res.json();
       if (data.success) {
         setClassSchedules(data.data || []);
@@ -73,7 +79,7 @@ export default function ClassesPage() {
     if (!confirm("Are you sure you want to delete this class schedule?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/class-schedules/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/class-schedules/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setClassSchedules(prev => prev.filter(s => s._id !== id));
@@ -210,4 +216,4 @@ export default function ClassesPage() {
       </div>
     </div>
   );
-} 
+}

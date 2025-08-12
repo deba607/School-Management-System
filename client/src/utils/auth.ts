@@ -15,7 +15,11 @@ export interface DecodedToken {
   schoolId?: string;
   exp?: number;
   iat?: number;
-  // Add other token fields as needed
+  // Additional user details
+  name?: string;
+  email?: string;
+  schoolName?: string;
+  picture?: string;
 }
 
 // Token storage key
@@ -74,17 +78,23 @@ export const getSchoolIdFromToken = (): string | null => {
 };
 
 // Get current user from token
-export const getCurrentUser = (): DecodedToken | null => {
+export function getCurrentUser(): DecodedToken | null {
   const token = getToken();
   if (!token) return null;
-
+  
   try {
-    const decoded: DecodedToken = jwtDecode(token);
-    if (isTokenExpired(token)) {
-      removeToken();
-      return null;
-    }
-    return decoded;
+    const decoded = jwtDecode<DecodedToken>(token);
+    // Include all token fields in the return value
+    return {
+      ...decoded,
+      userId: decoded.userId,
+      role: decoded.role,
+      schoolId: decoded.schoolId,
+      name: (decoded as any).name || 'User',
+      email: (decoded as any).email || '',
+      schoolName: (decoded as any).schoolName || '',
+      picture: (decoded as any).picture || undefined
+    };
   } catch (error) {
     console.error('Error decoding token:', error);
     removeToken();

@@ -4,11 +4,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useSchool } from "./school-context";
-import { initializeAuthFetch } from "@/utils/authFetch";
+import { authFetch } from "@/utils/auth";
 
 const Home = () => {
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const { school, schoolId, loading: schoolLoading, error: schoolError } = useSchool();
+  const { school, schoolId, loading: schoolLoading, error: schoolError, userRole } = useSchool();
   const [stats, setStats] = useState({
     teachers: 0,
     students: 0,
@@ -38,18 +38,15 @@ const Home = () => {
   }, [stats]);
 
   useEffect(() => {
-    // Initialize authFetch function
-    initializeAuthFetch();
-
     async function fetchStats() {
       setStats(s => ({ ...s, loading: true, error: null }));
       try {
-        // Use window.authFetch for authenticated requests
+        // Use authFetch for authenticated requests
         const [teachersRes, studentsRes, classesRes, attendanceRes] = await Promise.all([
-          window.authFetch(`/api/teachers`),
-          window.authFetch(`/api/students`),
-          window.authFetch(`/api/class-schedules`),
-          window.authFetch(`/api/attendance`),
+          authFetch(`/api/teachers`),
+          authFetch(`/api/students`),
+          authFetch(`/api/class-schedules`),
+          authFetch(`/api/attendance`),
         ]);
         const teachersData = await teachersRes.json();
         const studentsData = await studentsRes.json();
@@ -88,7 +85,9 @@ const Home = () => {
 
   return (
     <div className="p-4 sm:p-8">
-      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-blue-900 tracking-wide text-center sm:text-left">School Overview</h2>
+      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-blue-900 tracking-wide text-center sm:text-left">
+        {userRole === 'teacher' ? 'Teacher Dashboard' : 'School Overview'}
+      </h2>
       {stats.error && <div className="text-red-600 mb-4">{stats.error}</div>}
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
         {overviewData.map((item, idx) => (

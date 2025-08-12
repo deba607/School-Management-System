@@ -9,4 +9,8 @@ export const createEvent = async (data: EventInput) => {
 
 export const getAllEvents = async () => {
   return await Event.find().sort({ date: -1 });
-}; 
+};
+
+export const getEventsBySchool = async (schoolId: string) => {
+  return await Event.find({ schoolId }).sort({ date: -1 });
+};

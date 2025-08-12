@@ -5,8 +5,8 @@ import Header from "../header";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { jwtDecode } from "jwt-decode";
 import { useSchool } from "../school-context";
+import { authFetch } from "@/utils/authFetch";
 
 export default function EventsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,9 +28,7 @@ export default function EventsPage() {
     setLoading(true);
     setError(null);
     try {
-      // Pass schoolId as a query param if available
-      const url = schoolId ? `/api/events?schoolId=${encodeURIComponent(schoolId)}` : "/api/events";
-      const res = await fetch(url);
+      const res = await authFetch(`/api/events`);
       if (!res.ok) throw new Error("Failed to fetch events");
       const data = await res.json();
       if (data.success) {
@@ -59,7 +57,7 @@ export default function EventsPage() {
     if (!confirm("Are you sure you want to delete this event?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/events/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         setEvents(prev => prev.filter(e => e._id !== id));

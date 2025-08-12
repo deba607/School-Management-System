@@ -7,6 +7,7 @@ import { School } from "../../../models/School";
 import bcrypt from "bcryptjs";
 import { generateAndSaveOTP } from "../../../services/otpService";
 import { sendEmail } from "../../../utils/sendEmail";
+import mongoose from "mongoose";
 
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -29,12 +30,24 @@ export async function POST(req: NextRequest) {
       if (!schoolId) {
         return NextResponse.json({ success: false, error: "School ID is required for teachers" }, { status: 400 });
       }
-      user = await Teacher.findOne({ email, schoolId }).select("+password");
+      
+      // Use schoolId as string directly, do not convert to ObjectId
+      const schoolId = req.body.schoolId;
+      
+      // Now find the teacher with the school ID
+      user = await Teacher.findOne({ 
+        email: { $regex: new RegExp(`^${email}$`, 'i') },
+        schoolId: schoolId 
+      }).select("+password");
     } else {
       return NextResponse.json({ success: false, error: "Invalid role" }, { status: 400 });
     }
     if (!user) {
-      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+      let errorMessage = "User not found";
+      if (role === "Teacher") {
+        errorMessage = "Teacher not found. Please check your email and school ID/name and try again.";
+      }
+      return NextResponse.json({ success: false, error: errorMessage }, { status: 404 });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {

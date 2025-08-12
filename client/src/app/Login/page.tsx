@@ -85,8 +85,13 @@ export default function LoginPage() {
     setError(null);
     try {
       const loginBody: any = { role, email, password };
+      
+      // Always include schoolId for School, Student, and Teacher roles
       if (role === "School" || role === "Student" || role === "Teacher") {
-        loginBody.schoolId = schoolId;
+        if (!schoolId.trim()) {
+          throw new Error("School ID is required");
+        }
+        loginBody.schoolId = schoolId.trim();
       }
       
       const res = await fetch("/api/login", {

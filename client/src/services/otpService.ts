@@ -14,26 +14,90 @@ export async function generateAndSaveOTP(user: any, role: string) {
 }
 
 export async function verifyOTP(userId: string, role: string, otp: string) {
-  let user = null;
-  if (role === "Admin") user = await Admin.findById(userId);
-  else if (role === "Student") user = await Student.findById(userId);
-  else if (role === "School") user = await School.findById(userId);
-  else if (role === "Teacher") user = await Teacher.findById(userId);
-  console.log('User found for OTP:', user);
-  if (!user || !user.otp || !user.otpExpiry) {
-    console.log('OTP or expiry missing:', { otp: user?.otp, otpExpiry: user?.otpExpiry });
+  try {
+    console.log(`Verifying OTP for ${role} with ID:`, userId);
+    
+    // Find the user based on role
+    let user = null;
+    switch (role) {
+      case "Admin":
+        user = await Admin.findById(userId);
+        break;
+      case "Student":
+        user = await Student.findById(userId);
+        break;
+      case "School":
+        user = await School.findById(userId);
+        break;
+      case "Teacher":
+        user = await Teacher.findById(userId);
+        break;
+      default:
+        console.error('Invalid role for OTP verification:', role);
+        return false;
+    }
+    
+    console.log('User found for OTP verification:', { 
+      userId, 
+      role,
+      userExists: !!user,
+      hasOtp: user?.otp ? 'yes' : 'no',
+      otpExpiry: user?.otpExpiry,
+      currentTime: new Date()
+    });
+
+    // Check if user exists and has OTP data
+    if (!user) {
+      console.error('User not found for OTP verification');
+      return false;
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+      console.error('OTP or expiry missing for user:', { 
+        userId, 
+        hasOtp: !!user.otp, 
+        hasExpiry: !!user.otpExpiry 
+      });
+      return false;
+    }
+
+    // Verify OTP
+    if (user.otp !== otp) {
+      console.error('OTP mismatch:', { 
+        expected: user.otp, 
+        received: otp,
+        userId,
+        role
+      });
+      return false;
+    }
+
+    // Check expiry
+    if (user.otpExpiry < new Date()) {
+      console.error('OTP expired:', { 
+        otpExpiry: user.otpExpiry, 
+        currentTime: new Date(),
+        userId,
+        role
+      });
+      return false;
+    }
+
+    // Clear OTP data after successful verification
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+    
+    console.log('OTP verified successfully for user:', { userId, role });
+    return true;
+    
+  } catch (error) {
+    console.error('Error in verifyOTP:', { 
+      error: error.message, 
+      stack: error.stack,
+      userId,
+      role
+    });
     return false;
   }
-  if (user.otp !== otp) {
-    console.log('OTP mismatch:', { expected: user.otp, received: otp });
-    return false;
-  }
-  if (user.otpExpiry < new Date()) {
-    console.log('OTP expired:', { otpExpiry: user.otpExpiry, now: new Date() });
-    return false;
-  }
-  user.otp = undefined;
-  user.otpExpiry = undefined;
-  await user.save();
-  return true;
-} 
+}
