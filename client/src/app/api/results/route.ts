@@ -14,13 +14,18 @@ async function handleGET(request: NextRequest) {
     
     // Get schoolId from authenticated user
     const schoolId = request.user?.schoolId;
+
+    // Optional query filters
+    const { searchParams } = new URL(request.url);
+    const className = searchParams.get('className');
+    const section = searchParams.get('section');
+
+    const query: any = {};
+    if (schoolId) query.schoolId = schoolId;
+    if (className) query.className = className;
+    if (section) query.section = section;
     
-    let results;
-    if (schoolId) {
-      results = await Result.find({ schoolId });
-    } else {
-      results = await resultService.getAllResults();
-    }
+    const results = await Result.find(query);
     return ApiResponse.success({ data: results });
   } catch (error) {
     return ApiResponse.serverError(error);
@@ -33,7 +38,7 @@ async function handlePOST(request: NextRequest) {
     const body = await request.json();
     
     // Add schoolId from authenticated user
-    const schoolId = request.user?.schoolId || request.user?.userId;
+    const schoolId = request.user?.schoolId;
     
     if (!schoolId) {
       return ApiResponse.error({

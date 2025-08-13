@@ -4,6 +4,8 @@ export interface IAttendanceStudent {
   id: string;
   name: string;
   status: 'Present' | 'Absent' | 'Late';
+  class: string;
+  sec: string;
 }
 
 export interface IAttendance {

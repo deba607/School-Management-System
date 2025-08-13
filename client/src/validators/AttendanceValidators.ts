@@ -4,6 +4,8 @@ export const AttendanceStudentSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   status: z.enum(['Present', 'Absent', 'Late']),
+  class: z.string().min(1),
+  sec: z.string().min(1),
 });
 
 export const AttendanceSchema = z.object({

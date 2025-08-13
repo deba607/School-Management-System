@@ -36,21 +36,24 @@ export default function AdminHome() {
         const schoolsData = await schoolsRes.json();
         const adminsData = await adminsRes.json();
         const attendanceData = await attendanceRes.json();
-        // Calculate today's attendance percentage
-        let attendanceToday = null;
-        if (attendanceData.success && Array.isArray(attendanceData.data)) {
+        // Calculate today's attendance percentage based on student-level records
+        let attendanceToday: number | null = null;
+        if (attendanceData?.success && Array.isArray(attendanceData.data)) {
           const today = new Date().toISOString().slice(0, 10);
           const todayRecords = attendanceData.data.filter((a: any) => a.date && a.date.slice(0, 10) === today);
-          const total = todayRecords.length;
-          const present = todayRecords.reduce((acc: number, a: any) => acc + (a.presentCount || 0), 0);
-          const possible = todayRecords.reduce((acc: number, a: any) => acc + (a.totalCount || 0), 0);
+          const present = todayRecords.reduce((acc: number, a: any) => acc + (a.students?.filter((s: any) => s.status === 'Present').length || 0), 0);
+          const possible = todayRecords.reduce((acc: number, a: any) => acc + (a.students?.length || 0), 0);
           attendanceToday = possible > 0 ? Math.round((present / possible) * 100) : null;
         }
+
+        // Totals: handle either arrays or paginated objects
         setStats({
-          students: studentsData.data?.length || 0,
-          teachers: teachersData.data?.length || 0,
-          schools: schoolsData.data?.length || 0,
-          admins: adminsData.data?.length || 0,
+          students: typeof studentsData?.data?.total === 'number'
+            ? studentsData.data.total
+            : (Array.isArray(studentsData?.data) ? studentsData.data.length : (Array.isArray(studentsData) ? studentsData.length : 0)),
+          teachers: Array.isArray(teachersData?.data) ? teachersData.data.length : (Array.isArray(teachersData) ? teachersData.length : 0),
+          schools: Array.isArray(schoolsData?.data) ? schoolsData.data.length : (Array.isArray(schoolsData) ? schoolsData.length : 0),
+          admins: Array.isArray(adminsData?.data) ? adminsData.data.length : (Array.isArray(adminsData) ? adminsData.length : 0),
           attendanceToday,
         });
       } catch (err: any) {

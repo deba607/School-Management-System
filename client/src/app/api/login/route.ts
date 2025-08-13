@@ -30,14 +30,10 @@ export async function POST(req: NextRequest) {
       if (!schoolId) {
         return NextResponse.json({ success: false, error: "School ID is required for teachers" }, { status: 400 });
       }
-      
-      // Use schoolId as string directly, do not convert to ObjectId
-      const schoolId = req.body.schoolId;
-      
-      // Now find the teacher with the school ID
-      user = await Teacher.findOne({ 
+      // Use schoolId string directly (already parsed from body above)
+      user = await Teacher.findOne({
         email: { $regex: new RegExp(`^${email}$`, 'i') },
-        schoolId: schoolId 
+        schoolId: schoolId.trim()
       }).select("+password");
     } else {
       return NextResponse.json({ success: false, error: "Invalid role" }, { status: 400 });

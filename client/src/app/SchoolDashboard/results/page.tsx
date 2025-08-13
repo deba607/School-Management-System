@@ -61,11 +61,22 @@ export default function ResultsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await authFetch("/api/results");
+      // Request results for the selected class/section when provided
+      const params = new URLSearchParams();
+      if (searchClass) params.set('className', searchClass);
+      if (searchSection) params.set('section', searchSection);
+      const url = `/api/results${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await authFetch(url);
       const data = await res.json();
       if (data.success) {
-        setResultsData(data.data || []);
-        setFiltered(data.data || []);
+        const list = data.data || [];
+        // Apply client-side filter too, as a safety
+        const filteredNow = list.filter((r: any) =>
+          (!searchClass || r.className === searchClass) &&
+          (!searchSection || r.section === searchSection)
+        );
+        setResultsData(list);
+        setFiltered(filteredNow);
       } else {
         setError(data.error || "Failed to fetch results");
       }

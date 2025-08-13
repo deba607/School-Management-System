@@ -4,6 +4,8 @@ import Sidebar from "../../sidebar";
 import Header from "../../header";
 import { useRouter } from "next/navigation";
 import { useSchool } from "../../school-context";
+import { authFetch } from "@/utils/authFetch";
+import { isAuthenticated } from "@/utils/auth";
 
 const initialForm = { title: "", description: "", date: "" };
 
@@ -17,6 +19,15 @@ export default function AddEventPage() {
   const router = useRouter();
   const [schoolId, setSchoolId] = useState('');
   const { schoolId: contextSchoolId, loading: schoolLoading, error: schoolError } = useSchool();
+
+  // Auth guard: redirect if missing/expired token
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setError('Session expired. Please log in again.');
+      router.push('/Login');
+      return;
+    }
+  }, [router]);
 
   useEffect(() => {
     // Set schoolId from context
@@ -44,7 +55,7 @@ export default function AddEventPage() {
         ...form,
         schoolId,
       };
-      const res = await fetch("/api/events", {
+      const res = await authFetch("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

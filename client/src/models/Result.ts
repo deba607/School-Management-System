@@ -14,6 +14,7 @@ export interface IResult extends Document {
   teacher: string;
   date: string;
   students: IResultStudent[];
+  schoolId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,6 +33,12 @@ const ResultSchema: Schema = new Schema({
       grade: { type: String, required: true },
     },
   ],
+  schoolId: { type: String, required: true, trim: true },
 }, { timestamps: true });
 
-export const Result = mongoose.models.Result || mongoose.model<IResult>('Result', ResultSchema); 
+// In development/Next.js, a previously cached model may have an outdated schema.
+// Ensure the latest schema (with schoolId) is applied by removing the cached model first.
+if (mongoose.models.Result) {
+  delete mongoose.models.Result;
+}
+export const Result = mongoose.model<IResult>('Result', ResultSchema);

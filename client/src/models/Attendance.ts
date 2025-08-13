@@ -1,6 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IAttendance extends Document {
+  className: string;
+  section: string;
+  subject: string;
+  teacher: string;
   date: Date;
   students: Array<{
     id: string;
@@ -15,6 +19,10 @@ export interface IAttendance extends Document {
 }
 
 const AttendanceSchema: Schema = new Schema({
+  className: { type: String, required: true },
+  section: { type: String, required: true },
+  subject: { type: String, required: true },
+  teacher: { type: String, required: true },
   date: { type: Date, required: true },
   students: [
     {
@@ -32,4 +40,8 @@ const AttendanceSchema: Schema = new Schema({
   },
 }, { timestamps: true });
 
-export const Attendance = mongoose.models.Attendance || mongoose.model<IAttendance>('Attendance', AttendanceSchema); 
+// Ensure latest schema is applied in dev/Next.js by clearing cached model
+if (mongoose.models.Attendance) {
+  delete mongoose.models.Attendance;
+}
+export const Attendance = mongoose.model<IAttendance>('Attendance', AttendanceSchema);
