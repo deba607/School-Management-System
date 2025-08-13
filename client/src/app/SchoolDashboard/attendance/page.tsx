@@ -159,8 +159,13 @@ export default function AttendancePage() {
         const res = await authFetch(`/api/students?class=${attendanceForm.className}&section=${attendanceForm.section}`);
         const data = await res.json();
         if (data.success && Array.isArray(data.data.students)) {
-          setStudents(data.data.students.map((s: any) => ({ id: s._id, name: s.name })));
-          setAttendanceForm((prev) => ({ ...prev, students: data.data.students.map((s: any) => ({ id: s._id, name: s.name, status: "Present" })), teacher: prev.teacher || "" }));
+          const mappedStudents = data.data.students.map((s: any) => ({ id: s._id, name: s.name, class: s.class, sec: s.sec }));
+          setStudents(mappedStudents.map((s: any) => ({ id: s.id, name: s.name })));
+          setAttendanceForm((prev) => ({
+            ...prev,
+            students: mappedStudents.map((s: any) => ({ id: s.id, name: s.name, class: s.class, sec: s.sec, status: "Present" })),
+            teacher: prev.teacher || ""
+          }));
         }
       } catch {}
     }

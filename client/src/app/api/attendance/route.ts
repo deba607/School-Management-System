@@ -42,8 +42,8 @@ async function handlePOST(request: NextRequest) {
     await connectDB();
     const body = await request.json();
     
-    // Add schoolId from authenticated user
-    const schoolId = request.user?.schoolId || request.user?.userId;
+    // Add schoolId from authenticated user (string)
+    const schoolId = request.user?.schoolId;
     
     if (!schoolId) {
       return NextResponse.json({ 
