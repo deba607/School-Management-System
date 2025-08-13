@@ -18,7 +18,7 @@ export interface ITeacher extends Document {
   otpExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
-  schoolId: mongoose.Schema.Types.ObjectId;
+  schoolId: string;
 }
 
 const TeacherSchema: Schema = new Schema({

@@ -14,6 +14,7 @@ export const ResultSchema = z.object({
   teacher: z.string().min(1),
   date: z.string().min(1),
   students: z.array(ResultStudentSchema).min(1),
+  schoolId: z.string().min(1),
 });
 
 export function validateResult(data: any) {

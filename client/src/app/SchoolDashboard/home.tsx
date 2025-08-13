@@ -62,9 +62,11 @@ const Home = () => {
           attendanceToday = possible > 0 ? Math.round((present / possible) * 100) : null;
         }
         setStats({
-          teachers: teachersData.data?.length || 0,
-          students: studentsData.data?.length || 0,
-          classes: classesData.data?.length || 0,
+          teachers: Array.isArray(teachersData?.data) ? teachersData.data.length : (Array.isArray(teachersData) ? teachersData.length : 0),
+          students: typeof studentsData?.data?.total === 'number'
+            ? studentsData.data.total
+            : (Array.isArray(studentsData?.data) ? studentsData.data.length : (Array.isArray(studentsData) ? studentsData.length : 0)),
+          classes: Array.isArray(classesData?.data) ? classesData.data.length : (Array.isArray(classesData) ? classesData.length : 0),
           attendanceToday,
           loading: false,
           error: null,

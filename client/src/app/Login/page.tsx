@@ -6,12 +6,13 @@ import gsap from "gsap";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const roles = ["Admin", "Student", "School", "Teacher"];
+// Define roles at module scope to avoid TDZ issues when used in initial state
+const roles = ["Admin", "Student", "School", "Teacher"] as const;
 
 export default function LoginPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const [role, setRole] = useState(roles[0]);
+  const [role, setRole] = useState<typeof roles[number]>(roles[0]);
   const [schoolId, setSchoolId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -65,11 +65,16 @@ export default function AttendancePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await authFetch("/api/attendance");
+      const params = new URLSearchParams();
+      if (searchClass) params.set('className', searchClass);
+      if (searchSection) params.set('section', searchSection);
+      const url = `/api/attendance${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await authFetch(url);
       const data = await res.json();
       if (data.success) {
-        setAttendanceData(data.data || []);
-        setFiltered(data.data || []);
+        const list = data.data || [];
+        setAttendanceData(list);
+        setFiltered(list);
       } else {
         setError(data.error || "Failed to fetch attendance");
       }
@@ -80,9 +85,20 @@ export default function AttendancePage() {
     }
   };
 
+  const handleFetchClick = () => {
+    fetchAttendance();
+  };
+
   useEffect(() => {
     fetchAttendance();
   }, []);
+
+  // Refetch from server when filters change so server-side filtering by
+  // className/section is applied and payload size is minimized
+  useEffect(() => {
+    fetchAttendance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchClass, searchSection]);
 
   useEffect(() => {
     let filteredList = attendanceData;
@@ -243,7 +259,7 @@ export default function AttendancePage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <button
-                onClick={fetchAttendance}
+                onClick={handleFetchClick}
                 className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow"
               >
                 Fetch Attendance
@@ -282,10 +298,12 @@ export default function AttendancePage() {
               <div className="text-center text-blue-700">Loading...</div>
             ) : error ? (
               <div className="text-center text-red-600">{error}</div>
-            ) : (!searchClass || !searchSection) ? (
-              <div className="text-center text-blue-700">Please select both a class and section to view attendance records.</div>
             ) : filtered.length === 0 ? (
-              <div className="text-center text-blue-700">No attendance records found for the selected class and section.</div>
+              <div className="text-center text-blue-700">
+                {searchClass && searchSection
+                  ? 'No attendance records found for the selected class and section.'
+                  : 'No attendance records available yet.'}
+              </div>
             ) : (
               <div className="space-y-4">
                 {filtered.map((record, idx) => (

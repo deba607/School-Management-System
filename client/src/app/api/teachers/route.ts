@@ -131,7 +131,7 @@ async function createTeacher(request: NextRequest) {
     });
     
     // Use the schoolId from the authenticated user
-    const schoolId = user.schoolId || user.userId;
+    const schoolId = user.schoolId; // always the string schoolId
     if (!schoolId) {
       console.error('Missing school ID for user:', user);
       return ApiResponse.error({ 
