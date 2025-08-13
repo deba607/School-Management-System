@@ -79,22 +79,8 @@ export const POST = async (request: NextRequest) => {
           return ApiResponse.error({ error: 'Invalid form data', status: 400 });
         }
 
-        // Connect to database
-        await connectDB();
-
-        // Validate request body with the schoolId string
-        const validation = validateStudent(body);
-        if (!validation.success) {
-          return ApiResponse.validationError(validation.errors.map(e => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })));
-        }
-
-        // Process file uploads if any
-        const { name, email, password, class: className, sec, address, schoolId, otp, otpExpiry } = validation.data;
+        // Convert pictures (File[]) to expected object array BEFORE validation
         let picturesData: any[] = [];
-
         if (body.pictures && Array.isArray(body.pictures) && body.pictures.length > 0) {
           try {
             picturesData = await Promise.all(
@@ -117,6 +103,23 @@ export const POST = async (request: NextRequest) => {
             });
           }
         }
+        // Always set pictures to the expected array (even if empty)
+        body.pictures = picturesData;
+
+        // Connect to database
+        await connectDB();
+
+        // Validate request body with the schoolId string
+        const validation = validateStudent(body);
+        if (!validation.success) {
+          return ApiResponse.validationError(validation.errors.map(e => ({
+            path: e.path.join('.'),
+            message: e.message,
+          })));
+        }
+
+        // Use validated data
+        const { name, email, password, class: className, sec, address, schoolId, otp, otpExpiry, pictures } = validation.data;
 
         // Create student with validated data
         const student = await studentService.createStudent({
@@ -126,7 +129,7 @@ export const POST = async (request: NextRequest) => {
           class: className,
           sec,
           address,
-          pictures: picturesData, // Use the processed pictures data
+          pictures, // Already formatted
           schoolId: schoolId, // Use the schoolId string directly
           ...(otp && { otp }),
           ...(otpExpiry && { otpExpiry })

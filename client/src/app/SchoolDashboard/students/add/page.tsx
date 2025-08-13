@@ -320,7 +320,13 @@ export default function AddStudent() {
         if ((response.status === 400 || response.status === 422) && result.details) {
           const errorMessages = Array.isArray(result.details) 
             ? result.details.map((error: any) => {
-                const fieldName = error.path?.[0] === 'sec' ? 'section' : error.path?.[0] || 'field';
+                const rawPath = error.path;
+                const firstSegment = Array.isArray(rawPath)
+                  ? rawPath[0]
+                  : typeof rawPath === 'string'
+                    ? rawPath.split('.')[0]
+                    : 'field';
+                const fieldName = firstSegment === 'sec' ? 'section' : firstSegment || 'field';
                 return `- ${fieldName}: ${error.message || 'Invalid value'}`;
               }).join('\n')
             : result.message || 'Validation failed';
@@ -328,10 +334,8 @@ export default function AddStudent() {
           throw new Error(`Validation failed:\n${errorMessages}`);
         } 
         // Handle other error cases
-        throw new Error(
-          result.message || 
-          `Failed to create student. Status: ${response.status} ${response.statusText}`
-        );
+        const apiError = result?.error || result?.message || `Failed to create student. Status: ${response.status} ${response.statusText}`;
+        throw new Error(apiError);
       }
 
       if (result.success) {
