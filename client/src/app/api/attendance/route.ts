@@ -24,16 +24,18 @@ async function handleGET(request: NextRequest) {
     if (className) query.className = className;
     if (section) query.section = section;
 
-    let attendance = await Attendance.find(query).sort({ date: -1 });
+    const attendance = await Attendance.find(query).sort({ date: -1 });
 
     // Only apply per-student filtering when the requester is a student
     if (role === 'student' && userId) {
-      attendance = attendance.map((rec) => ({
+      const filteredAttendance = attendance.map((rec) => ({
         ...rec.toObject(),
         _id: rec._id ? String(rec._id) : undefined,
         date: rec.date,
         studentStatus: rec.students.find((s: { id: string }) => s.id === userId)
       })).filter((rec) => rec.studentStatus);
+
+      return NextResponse.json({ success: true, data: filteredAttendance });
     }
 
     return NextResponse.json({ success: true, data: attendance });
@@ -69,8 +71,8 @@ async function handlePOST(request: NextRequest) {
     // Persist className and section at root for efficient filtering
     const payload = {
       ...validation.data,
-      className: validation.data.className,
-      section: validation.data.section,
+      className: validation.data?.className,
+      section: validation.data?.section,
     } as any;
 
     const attendance = await attendanceService.createAttendance(payload);

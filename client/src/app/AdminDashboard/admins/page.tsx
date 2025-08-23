@@ -139,19 +139,19 @@ export default function AdminsPage() {
   };
 
   const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 50, 
+    hidden: {
+      opacity: 0,
+      y: 50,
       scale: 0.9,
       rotateX: -15
     },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       rotateX: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 15
       }
@@ -161,7 +161,7 @@ export default function AdminsPage() {
       scale: 1.02,
       rotateY: 5,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 20
       }
@@ -170,11 +170,11 @@ export default function AdminsPage() {
 
   const iconVariants = {
     hidden: { scale: 0, rotate: -180 },
-    visible: { 
-      scale: 1, 
+    visible: {
+      scale: 1,
       rotate: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 200,
         damping: 15
       }
@@ -184,31 +184,31 @@ export default function AdminsPage() {
       rotate: 360,
       transition: {
         duration: 0.6,
-        ease: "easeInOut"
+        ease: [0.42, 0, 0.58, 1] as const
       }
     }
   };
 
   const textVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       x: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
+        ease: [0.25, 0.46, 0.45, 0.94] as const
       }
     }
   };
 
   const imageModalVariants = {
     hidden: { opacity: 0, scale: 0.8, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 200,
         damping: 20
       }
@@ -248,7 +248,7 @@ export default function AdminsPage() {
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear" as const
           }}
           className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-full blur-3xl"
         />
@@ -261,7 +261,7 @@ export default function AdminsPage() {
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear" as const
           }}
           className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-full blur-3xl"
         />
@@ -276,7 +276,7 @@ export default function AdminsPage() {
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as const }}
               className="text-center mb-8 sm:mb-12"
             >
               <motion.div
@@ -319,7 +319,7 @@ export default function AdminsPage() {
                 >
                   <motion.div
                     animate={loading ? { rotate: 360 } : {}}
-                    transition={{ duration: 1, repeat: loading ? Infinity : 0, ease: "linear" }}
+                    transition={{ duration: 1, repeat: loading ? Infinity : 0, ease: "linear" as const }}
                   >
                     <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
                   </motion.div>
@@ -447,7 +447,7 @@ export default function AdminsPage() {
                           transition={{
                             duration: 20,
                             repeat: Infinity,
-                            ease: "linear"
+                            ease: "linear" as const
                           }}
                           className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full"
                         />
@@ -476,7 +476,7 @@ export default function AdminsPage() {
                                 transition={{
                                   duration: 2,
                                   repeat: Infinity,
-                                  ease: "easeInOut"
+                                  ease: [0.42, 0, 0.58, 1] as const
                                 }}
                                 className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl sm:rounded-2xl blur-sm"
                               />
@@ -599,7 +599,7 @@ export default function AdminsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] as const }}
                 className="text-center py-12 sm:py-20"
               >
                 <motion.div

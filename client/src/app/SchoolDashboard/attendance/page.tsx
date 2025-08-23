@@ -5,18 +5,47 @@ import Header from "../header";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+
 import { useSchool } from "../school-context";
 import { authFetch, initializeAuthFetch } from "@/utils/authFetch";
 
 const classOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
 const sectionOptions = ["A", "B", "C", "D"];
 
+interface AttendanceRecord {
+  _id: string;
+  studentId: {
+    _id: string;
+    name: string;
+    rollNumber: string;
+    class: string;
+    section: string;
+  };
+  date: string;
+  status: 'present' | 'absent' | 'late';
+  remarks?: string;
+  schoolId: string;
+  createdAt: string;
+  updatedAt: string;
+  className?: string;
+  section?: string;
+  subject?: string;
+  teacher?: string;
+  teacherName?: string;
+  students?: Array<{
+    id: string;
+    name: string;
+    status: string;
+    class: string;
+    sec: string;
+  }>;
+}
+
 export default function AttendancePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const [attendanceData, setAttendanceData] = useState<any[]>([]);
-  const [filtered, setFiltered] = useState<any[]>([]);
+  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+  const [filtered, setFiltered] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchClass, setSearchClass] = useState("");
@@ -38,10 +67,9 @@ export default function AttendancePage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<string[]>([]);
   const [teachers, setTeachers] = useState<{ _id: string; name: string; subject: string }[]>([]);
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
-  const { schoolId, loading: schoolLoading, error: schoolError } = useSchool();
+  const { schoolId } = useSchool();
 
   useEffect(() => {
     gsap.fromTo(
@@ -78,8 +106,9 @@ export default function AttendancePage() {
       } else {
         setError(data.error || "Failed to fetch attendance");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch attendance");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch attendance";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -176,7 +205,6 @@ export default function AttendancePage() {
         const data = await res.json();
         if (data.success && Array.isArray(data.data.students)) {
           const mappedStudents = data.data.students.map((s: any) => ({ id: s._id, name: s.name, class: s.class, sec: s.sec }));
-          setStudents(mappedStudents.map((s: any) => ({ id: s.id, name: s.name })));
           setAttendanceForm((prev) => ({
             ...prev,
             students: mappedStudents.map((s: any) => ({ id: s.id, name: s.name, class: s.class, sec: s.sec, status: "Present" })),

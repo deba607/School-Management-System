@@ -59,14 +59,14 @@ export async function POST(req: NextRequest) {
     }
     
     // Get user details based on role
-    let userDetails: any = null;
-    let schoolId = null;
+    let userDetails: Record<string, unknown> | null = null;
+    let schoolId: string | null = null;
 
     if (role === 'Teacher') {
       // Fetch teacher details including school info
       userDetails = await Teacher.findById(userId)
         .populate('schoolId', 'name email address')
-        .lean();
+        .lean() as Record<string, unknown> | null;
       
       if (!userDetails) {
         console.error('Teacher not found:', userId);
@@ -93,15 +93,25 @@ export async function POST(req: NextRequest) {
     console.log('Retrieved user details:', { userId, role, schoolId });
     
     // Prepare token payload with user details
-    const tokenPayload: any = { 
+    interface TokenPayload {
+      userId: string;
+      role: string;
+      email: string;
+      name: string;
+      schoolId: string | null;
+      schoolName: string;
+      picture?: string;
+    }
+
+    const tokenPayload: TokenPayload = {
       userId,
       role: role.toLowerCase(),
-      email: userDetails?.email || '',
-      name: userDetails?.name || userDetails?.schoolId?.name || 'User',
+      email: (userDetails?.email as string) || '',
+      name: (userDetails?.name as string) || ((userDetails?.schoolId as any)?.name) || 'User',
       schoolId: schoolId,
-      schoolName: userDetails?.schoolId?.name || '',
-      picture: userDetails?.pictures?.[0]?.base64Data 
-        ? `data:${userDetails.pictures[0].mimeType};base64,${userDetails.pictures[0].base64Data}`
+      schoolName: ((userDetails?.schoolId as any)?.name) || '',
+      picture: (userDetails?.pictures as any)?.[0]?.base64Data
+        ? `data:${(userDetails?.pictures as any)?.[0]?.mimeType};base64,${(userDetails?.pictures as any)?.[0]?.base64Data}`
         : undefined
     };
     

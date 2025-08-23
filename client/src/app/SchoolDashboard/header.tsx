@@ -3,34 +3,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import Image from "next/image";
 
-interface School {
-  _id: string;
-  name: string;
-  email: string;
-  address: string;
-  phone: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  website?: string;
-  description?: string;
-  pictures?: Array<{
-    originalName: string;
-    mimeType: string;
-    size: number;
-    base64Data: string;
-  }>;
-}
 
-interface HeaderProps {
-  school?: School;
-  isTeacher?: boolean;
-  displayName?: string;
-  displayEmail?: string;
-  displayId?: string;
-}
+
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useSchool } from "./school-context";
 
@@ -174,12 +151,14 @@ const Header = () => {
             transition={{ type: "spring", stiffness: 120, delay: 0.3 }}
           >
             {displayPic && !displayPic.startsWith('data:') ? (
-              <img
+              <Image
                 ref={imgRef}
                 src={displayPic}
                 alt={isTeacher ? "Teacher Profile" : "School Logo"}
                 className="w-full h-full object-cover"
                 onError={handleImageError}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">

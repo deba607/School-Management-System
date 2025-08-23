@@ -84,7 +84,7 @@ const AttendancePage = () => {
                     <td className="py-3 px-4 text-blue-800">{rec.subject}</td>
                     <td className="py-3 px-4 text-blue-800">{formatDate(rec.date)}</td>
                     <td className="py-3 px-4 text-blue-800 font-medium">{rec.studentStatus?.status}</td>
-                    <td className="py-3 px-4 text-blue-800">{typeof rec.teacher === 'object' ? rec.teacher.name : rec.teacher}</td>
+                    <td className="py-3 px-4 text-blue-800">{typeof rec.teacher === 'object' ? (rec.teacher as any)?.name : rec.teacher}</td>
                   </motion.tr>
                 ))}
               </tbody>

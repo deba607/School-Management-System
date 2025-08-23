@@ -4,6 +4,7 @@ import Header from "../header";
 import Sidebar from "../sidebar";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Student {
   _id: string;
@@ -160,11 +161,15 @@ export default function StudentsPage() {
                     className="flex flex-col sm:flex-row items-center gap-4 bg-white/80 rounded-xl shadow p-4 border border-blue-100"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <img
-                        src={student.pictures && student.pictures[0] ? student.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(student.name)}
-                        alt={student.name}
-                        className="w-16 h-16 rounded-full border-2 border-blue-300 object-cover bg-white"
-                      />
+                      <div className="relative w-16 h-16">
+                        <Image
+                          src={student.pictures && student.pictures[0] ? student.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(student.name)}
+                          alt={student.name}
+                          className="rounded-full border-2 border-blue-300 object-cover bg-white"
+                          fill
+                          sizes="64px"
+                        />
+                      </div>
                       <div>
                         <div className="font-bold text-blue-900 text-lg">{student.name}</div>
                         <div className="text-blue-700 text-sm">Class: {student.class} | Section: {student.sec}</div>
@@ -207,11 +212,15 @@ export default function StudentsPage() {
                     &times;
                   </button>
                   <div className="flex flex-col items-center gap-4">
-                    <img
-                      src={viewStudent.pictures && viewStudent.pictures[0] ? viewStudent.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(viewStudent.name)}
-                      alt={viewStudent.name}
-                      className="w-20 h-20 rounded-full border-2 border-blue-300 object-cover bg-white"
-                    />
+                    <div className="relative w-20 h-20">
+                      <Image
+                        src={viewStudent.pictures && viewStudent.pictures[0] ? viewStudent.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(viewStudent.name)}
+                        alt={viewStudent.name}
+                        className="rounded-full border-2 border-blue-300 object-cover bg-white"
+                        fill
+                        sizes="80px"
+                      />
+                    </div>
                     <div className="text-center">
                       <div className="font-bold text-blue-900 text-xl mb-1">{viewStudent.name}</div>
                       <div className="text-blue-700 text-base mb-1">Class: {viewStudent.class} | Section: {viewStudent.sec}</div>

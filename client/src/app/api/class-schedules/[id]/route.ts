@@ -4,8 +4,8 @@ import { connectDB } from '@/lib/mongoose';
 import { validateClassSchedule } from '@/validators/ClassScheduleValidators';
 
 // GET - Get a single class schedule by id
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const schedule = await ClassSchedule.findById(params.id).populate('teacher', 'name');
@@ -21,8 +21,8 @@ export async function GET(request: NextRequest, context: { params: { id: string 
 }
 
 // PUT - Update a class schedule by id
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const body = await request.json();
@@ -47,8 +47,8 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
 }
 
 // DELETE - Delete a class schedule by id
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const deleted = await ClassSchedule.findByIdAndDelete(params.id);

@@ -3,6 +3,14 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
+interface JWTPayload {
+  userId: string;
+  role: 'admin' | 'school' | 'teacher' | 'student';
+  schoolId?: string;
+  iat?: number;
+  exp?: number;
+}
+
 interface School {
   _id: string;
   schoolId: string;
@@ -66,12 +74,12 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
           throw new Error('No token');
         }
         
-        const decoded: any = jwtDecode(token);
+        const decoded: JWTPayload = jwtDecode(token);
         console.log('Decoded token:', { ...decoded, token: '***' }); // Log decoded token without the actual token
-        
-        let userId = decoded.userId;
-        let role = decoded.role;
-        let schoolId = decoded.schoolId;
+
+        const userId = decoded.userId;
+        const role = decoded.role;
+        const schoolId = decoded.schoolId;
         setUserRole(role);
         
         // If user is a teacher, we store the schoolId from the token
@@ -101,9 +109,10 @@ export const SchoolProvider = ({ children }: SchoolProviderProps) => {
           console.error('Failed to fetch school data:', data.error);
           throw new Error(data.error || 'Failed to fetch school');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error in fetchSchool:', err);
-        setError(err.message || 'Failed to fetch school');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch school';
+        setError(errorMessage);
         setSchool(null);
       } finally {
         setLoading(false);

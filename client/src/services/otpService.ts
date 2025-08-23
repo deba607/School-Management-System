@@ -92,9 +92,9 @@ export async function verifyOTP(userId: string, role: string, otp: string) {
     return true;
     
   } catch (error) {
-    console.error('Error in verifyOTP:', { 
-      error: error.message, 
-      stack: error.stack,
+    console.error('Error in verifyOTP:', {
+      error: (error as Error)?.message,
+      stack: (error as Error)?.stack,
       userId,
       role
     });

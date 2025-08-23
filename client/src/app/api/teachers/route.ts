@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { TeacherService } from '@/services/teacherService';
-import { validateTeacher } from '@/validators/TeacherValidators';
+
 import { connectDB } from '@/lib/mongoose';
 import { Teacher } from '@/models/Teacher';
 import { ApiResponse } from '@/lib/apiResponse';
@@ -123,7 +123,7 @@ async function createTeacher(request: NextRequest) {
     }
     
     // Remove confirmPassword and trim all string fields
-    const { confirmPassword, ...teacherData } = body;
+    const { confirmPassword: _confirmPassword, ...teacherData } = body;
     Object.keys(teacherData).forEach(key => {
       if (typeof teacherData[key] === 'string') {
         teacherData[key] = teacherData[key].trim();
@@ -157,7 +157,7 @@ async function createTeacher(request: NextRequest) {
     const teacher = await teacherService.createTeacher(teacherData);
     
     // Return success response (without sensitive data)
-    const { password, __v, ...responseData } = teacher.toObject();
+    const { password: _password, __v: _version, ...responseData } = teacher.toObject();
     
     return ApiResponse.success({ 
       data: responseData,
