@@ -26,7 +26,7 @@ export default function LoginPage() {
   const [otpSuccess, setOtpSuccess] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotRole, setForgotRole] = useState(roles[0]);
+  const [forgotRole, setForgotRole] = useState<typeof roles[number]>(roles[0]);
   const [forgotSchoolId, setForgotSchoolId] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState("");
@@ -85,7 +85,14 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const loginBody: any = { role, email, password };
+      interface LoginBody {
+        role: string;
+        email: string;
+        password: string;
+        schoolId?: string;
+      }
+
+      const loginBody: LoginBody = { role, email, password };
       
       // Always include schoolId for School, Student, and Teacher roles
       if (role === "School" || role === "Student" || role === "Teacher") {
@@ -117,9 +124,10 @@ export default function LoginPage() {
         else if (role === "School") router.push("/SchoolDashboard");
         else if (role === "Teacher") router.push("/SchoolDashboard"); // Teachers use SchoolDashboard for now
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
-      setError(err.message || "Login failed. Please check your credentials and try again.");
+      const errorMessage = err instanceof Error ? err.message : "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -156,9 +164,10 @@ export default function LoginPage() {
       
       // The useEffect will handle the actual redirect
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('OTP verification error:', err);
-      setOtpError(err.message || "Failed to verify OTP. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Failed to verify OTP. Please try again.";
+      setOtpError(errorMessage);
     } finally {
       setOtpLoading(false);
     }
@@ -170,7 +179,13 @@ export default function LoginPage() {
     setForgotSuccess("");
     setForgotError("");
     try {
-      const forgotBody: any = { email: forgotEmail, role: forgotRole };
+      interface ForgotPasswordBody {
+        email: string;
+        role: string;
+        schoolId?: string;
+      }
+
+      const forgotBody: ForgotPasswordBody = { email: forgotEmail, role: forgotRole };
       if (forgotRole === "School" || forgotRole === "Student" || forgotRole === "Teacher") {
         forgotBody.schoolId = forgotSchoolId;
       }
@@ -185,8 +200,9 @@ export default function LoginPage() {
       setTimeout(() => {
         setForgotStep('verify');
       }, 1000);
-    } catch (err: any) {
-      setForgotError(err.message || "Failed to send OTP");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to send OTP";
+      setForgotError(errorMessage);
     } finally {
       setForgotLoading(false);
     }
@@ -203,7 +219,15 @@ export default function LoginPage() {
       return;
     }
     try {
-      const resetBody: any = {
+      interface ResetPasswordBody {
+        email: string;
+        role: string;
+        otp: string;
+        newPassword: string;
+        schoolId?: string;
+      }
+
+      const resetBody: ResetPasswordBody = {
         email: forgotEmail,
         role: forgotRole,
         otp: forgotOtp,
@@ -229,8 +253,9 @@ export default function LoginPage() {
         setForgotConfirmPassword("");
         setResetSuccess("");
       }, 1500);
-    } catch (err: any) {
-      setResetError(err.message || "Failed to reset password");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to reset password";
+      setResetError(errorMessage);
     } finally {
       setResetLoading(false);
     }
@@ -241,7 +266,13 @@ export default function LoginPage() {
     setResendSuccess("");
     setResendError("");
     try {
-      const resendBody: any = { email, role };
+      interface ResendOTPBody {
+        email: string;
+        role: string;
+        schoolId?: string;
+      }
+
+      const resendBody: ResendOTPBody = { email, role };
       if (role === "School" || role === "Student" || role === "Teacher") {
         resendBody.schoolId = schoolId;
       }
@@ -254,8 +285,9 @@ export default function LoginPage() {
       if (!res.ok || !data.success) throw new Error(data.error || "Failed to resend OTP");
       setResendSuccess("OTP resent to your email. Please check your inbox.");
       setResendTimer(30);
-    } catch (err: any) {
-      setResendError(err.message || "Failed to resend OTP");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to resend OTP";
+      setResendError(errorMessage);
     } finally {
       setResendLoading(false);
     }
@@ -293,7 +325,7 @@ export default function LoginPage() {
             >
               <motion.select
                 value={role}
-                onChange={e => setRole(e.target.value)}
+                onChange={e => setRole(e.target.value as typeof roles[number])}
                 className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900 shadow-sm"
                 whileFocus={{ scale: 1.03 }}
               >
@@ -501,7 +533,7 @@ export default function LoginPage() {
                         <label className="block text-blue-900 font-medium mb-1">Role</label>
                         <select
                           value={forgotRole}
-                          onChange={e => setForgotRole(e.target.value)}
+                          onChange={e => setForgotRole(e.target.value as typeof roles[number])}
                           className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:border-blue-400 bg-white/70 text-blue-900"
                         >
                           {roles.map(r => (

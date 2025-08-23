@@ -6,6 +6,7 @@ import Header from "../header";
 import Sidebar from "../sidebar";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Teacher {
   _id: string;
@@ -139,11 +140,15 @@ export default function TeachersPage() {
                     className="flex flex-col sm:flex-row items-center gap-4 bg-white/80 rounded-xl shadow p-4 border border-blue-100"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <img
-                        src={teacher.pictures && teacher.pictures[0] ? teacher.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(teacher.name)}
-                        alt={teacher.name}
-                        className="w-16 h-16 rounded-full border-2 border-blue-300 object-cover bg-white"
-                      />
+                      <div className="relative w-16 h-16">
+                        <Image
+                          src={teacher.pictures && teacher.pictures[0] ? teacher.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(teacher.name)}
+                          alt={teacher.name}
+                          className="rounded-full border-2 border-blue-300 object-cover bg-white"
+                          fill
+                          sizes="64px"
+                        />
+                      </div>
                       <div>
                         <div className="font-bold text-blue-900 text-lg">{teacher.name}</div>
                         <div className="text-blue-700 text-sm">{teacher.subject}</div>
@@ -188,11 +193,15 @@ export default function TeachersPage() {
               &times;
             </button>
             <div className="flex flex-col items-center gap-4">
-              <img
-                src={viewTeacher.pictures && viewTeacher.pictures[0] ? viewTeacher.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(viewTeacher.name)}
-                alt={viewTeacher.name}
-                className="w-20 h-20 rounded-full border-2 border-blue-300 object-cover bg-white"
-              />
+              <div className="relative w-20 h-20">
+                <Image
+                  src={viewTeacher.pictures && viewTeacher.pictures[0] ? viewTeacher.pictures[0].base64Data : "https://ui-avatars.com/api/?name=" + encodeURIComponent(viewTeacher.name)}
+                  alt={viewTeacher.name}
+                  className="rounded-full border-2 border-blue-300 object-cover bg-white"
+                  fill
+                  sizes="80px"
+                />
+              </div>
               <div className="text-center">
                 <div className="font-bold text-blue-900 text-xl mb-1">{viewTeacher.name}</div>
                 <div className="text-blue-700 text-base mb-1">{viewTeacher.subject}</div>

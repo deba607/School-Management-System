@@ -37,8 +37,9 @@ export default function ClassesPage() {
     );
     
     // Initialize authFetch
-    const { initializeAuthFetch } = require('@/utils/authFetch');
-    initializeAuthFetch();
+    import('@/utils/authFetch').then(({ initializeAuthFetch }) => {
+      initializeAuthFetch();
+    });
   }, []);
 
   const fetchClasses = async () => {
