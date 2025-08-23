@@ -4,8 +4,8 @@ import { connectDB } from '@/lib/mongoose';
 import { validateResult } from '@/validators/ResultValidators';
 
 // GET - Get a single result record by id
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const result = await Result.findById(params.id);
@@ -19,8 +19,8 @@ export async function GET(request: NextRequest, context: { params: { id: string 
 }
 
 // PUT - Update a result record by id
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const body = await request.json();
@@ -43,8 +43,8 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
 }
 
 // DELETE - Delete a result record by id
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const deleted = await Result.findByIdAndDelete(params.id);

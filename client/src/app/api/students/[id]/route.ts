@@ -3,8 +3,8 @@ import { Student } from '@/models/Student';
 import { connectDB } from '@/lib/mongoose';
 
 // GET - Get a single student by id
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const student = await Student.findById(params.id).select('-password');
@@ -18,8 +18,8 @@ export async function GET(request: NextRequest, context: { params: { id: string 
 }
 
 // PUT - Update a student by id
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const body = await request.json();
@@ -44,8 +44,8 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
 }
 
 // DELETE - Delete a student by id
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const student = await Student.findByIdAndDelete(params.id);

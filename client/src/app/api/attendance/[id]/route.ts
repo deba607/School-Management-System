@@ -4,8 +4,8 @@ import { connectDB } from '@/lib/mongoose';
 import { validateAttendance } from '@/validators/AttendanceValidators';
 
 // GET - Get a single attendance record by id
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const attendance = await Attendance.findById(params.id);
@@ -19,8 +19,8 @@ export async function GET(request: NextRequest, context: { params: { id: string 
 }
 
 // PUT - Update an attendance record by id
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const body = await request.json();
@@ -43,8 +43,8 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
 }
 
 // DELETE - Delete an attendance record by id
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
-  const { params } = await Promise.resolve(context);
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     await connectDB();
     const deleted = await Attendance.findByIdAndDelete(params.id);

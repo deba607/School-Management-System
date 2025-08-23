@@ -105,7 +105,7 @@ const ClassesPage = () => {
                     <td className="py-3 px-4 text-blue-800">{cls.className}</td>
                     <td className="py-3 px-4 text-blue-800">{cls.section}</td>
                     <td className="py-3 px-4 text-blue-800">{cls.subject}</td>
-                    <td className="py-3 px-4 text-blue-800">{typeof cls.teacher === 'object' ? cls.teacher.name : cls.teacher}</td>
+                    <td className="py-3 px-4 text-blue-800">{typeof cls.teacher === 'object' ? (cls.teacher as any)?.name : cls.teacher}</td>
                     <td className="py-3 px-4 text-blue-800">{cls.day?.join(", ")}</td>
                     <td className="py-3 px-4 text-blue-800">{cls.startTime} - {cls.endTime}</td>
                   </motion.tr>

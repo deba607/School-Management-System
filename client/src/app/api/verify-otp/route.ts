@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       // Fetch teacher details including school info
       userDetails = await Teacher.findById(userId)
         .populate('schoolId', 'name email address')
-        .lean();
+        .lean() as Record<string, unknown> | null;
       
       if (!userDetails) {
         console.error('Teacher not found:', userId);
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       schoolId: schoolId,
       schoolName: ((userDetails?.schoolId as any)?.name) || '',
       picture: (userDetails?.pictures as any)?.[0]?.base64Data
-        ? `data:${(userDetails.pictures as any)[0].mimeType};base64,${(userDetails.pictures as any)[0].base64Data}`
+        ? `data:${(userDetails?.pictures as any)?.[0]?.mimeType};base64,${(userDetails?.pictures as any)?.[0]?.base64Data}`
         : undefined
     };
     
